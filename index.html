@@ -64,7 +64,8 @@ h2{font-size:1.6rem}
 .stack{display:flex;flex-direction:column;gap:12px}
 
 /* home */
-.hero{padding:10px 0 4px;text-align:center}
+.hero{padding:18px 0 6px;text-align:center}
+.hero h1{margin:0}
 .hero h1 span{color:var(--mango)}
 .games{display:flex;flex-direction:column;gap:14px}
 .game{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;text-align:left;border:0;border-radius:var(--r);padding:16px;background:var(--paper);color:var(--ink);cursor:pointer;position:relative;font:inherit}
@@ -506,7 +507,6 @@ const screens = {
     return `
     <section class="screen">
       <div class="hero">
-        <span class="eyebrow">Giochi per la serata</span>
         <h1>A cosa <span>giochiamo?</span></h1>
       </div>
       ${S.game && !S.game.over ? `<button class="btn mint" id="resume">Riprendi la partita di Lampo</button>` : ""}
