@@ -476,7 +476,7 @@ const ICONS = (() => {
   };
 })();
 const CATALOG = [
-  {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"4-8", mins:"15-25", phones:"all", desc:"Gli altri disegnano la parola e te la inviano: chi arriva primo rischia, ma vale doppio."},
+  {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"4-8", mins:"15-25", phones:"all", desc:"Indovina la parola dai disegni dei tuoi amici."},
   {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:false, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
@@ -1099,8 +1099,19 @@ document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scal
 let lastTouchEnd = 0;
 document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:30";
-function hardReload(){ const done = () => location.reload(); fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000); }
+const APP_VERSION = "22.11 · 19:35";
+/* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
+function hardReload(){
+  let gone = false;
+  const done = () => { if(gone) return; gone = true; const q = new URLSearchParams(location.search); q.set("v", Date.now()); location.replace(location.pathname + "?" + q); };
+  const steps = [fetch(location.pathname, {cache:"reload"}).catch(()=>{})];
+  if(navigator.serviceWorker) steps.push(navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(()=>{}));
+  if(window.caches) steps.push(caches.keys().then(k => Promise.all(k.map(x => caches.delete(x)))).catch(()=>{}));
+  Promise.all(steps).then(done, done); setTimeout(done, 3000);
+}
+// tolgo il ?v=... dall'indirizzo dopo l'aggiornamento
+if(QS_V()) { try{ const q = new URLSearchParams(location.search); q.delete("v"); history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "")); }catch(e){} }
+function QS_V(){ return new URLSearchParams(location.search).has("v"); }
 setTimeout(() => {
   if(QS.get("room")) return;
   fetch(location.pathname + "?check=" + Date.now(), {cache:"no-store"}).then(r => r.text()).then(t => {
@@ -2021,6 +2032,6 @@ window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude
 })();
 </script>
 
-<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
+<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});</script>
 </body>
 </html>
