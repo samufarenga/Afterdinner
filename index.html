@@ -474,7 +474,7 @@ const CATALOG = [
   {id:"porcellino", name:"Il Porcellino", icon:"pig", color:"#e8233f", adult:true, players:"4-10", mins:"20-30", phones:"one", desc:"Domande e sfide per adulti, per quando la serata si scalda."},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
-const DEFAULT_SETTINGS = {sfx:true, music:false, volume:70, vibration:true, splash:true, awake:true};
+const DEFAULT_SETTINGS = {sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
 const $ = (s, r=document) => r.querySelector(s);
@@ -732,15 +732,18 @@ function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
 async function grabWake(){ if(!ST().awake) return; try{ wake = await navigator.wakeLock?.request("screen"); }catch(e){ wake=null; } }
 function releaseWake(){ try{ wake?.release(); }catch(e){} wake=null; }
 function ctx(){ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); if(audio.state!=="running") audio.resume().catch(()=>{}); return audio; }
+/* iPhone: con "ambient" il silenzioso zittisce l'app e non compare niente sulla Dynamic Island;
+   con "playback" suona anche col silenzioso, ma iPhone mostra l'icona audio. Lo sceglie Rob nelle impostazioni. */
+function setAudioSession(active){ try{ if(navigator.audioSession) navigator.audioSession.type = active && ST().silentOk ? "playback" : "ambient"; }catch(e){} }
 /* iPhone: l'audio parte solo dopo un tocco */
 function unlockAudio(){
-  try{ if(navigator.audioSession) navigator.audioSession.type = "ambient"; }catch(e){} // "ambient": niente lettore sulla Dynamic Island, rispetta il silenzioso
+  setAudioSession(true);
   try{ const a = ctx(); const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); }catch(e){}
 }
 ["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 /* app in background o schermo spento: tutto zitto; al ritorno riparte */
 document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} }
+  if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} setAudioSession(false); }
   else { if(audio) audio.resume().catch(()=>{}); if(ST().music) startMusic(); }
 });
 window.addEventListener("pagehide", () => { stopMusic(); try{ audio && audio.suspend(); }catch(e){} });
@@ -898,6 +901,7 @@ function openSettings(){
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
       ${sw("music","Musica","Sottofondo leggero mentre giocate")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
+      ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
       ${sw("vibration","Vibrazione","Quando si fa punto (solo Android)")}
       ${sw("awake","Schermo sempre acceso","Durante i turni a tempo")}
       ${sw("splash","Animazione iniziale","All'apertura dell'app")}
@@ -910,6 +914,7 @@ function openSettings(){
     const k = e.target.dataset.set; if(!k) return;
     st[k] = e.target.checked; save();
     if(k==="music"){ st.music ? startMusic() : stopMusic(); }
+    if(k==="silentOk"){ setAudioSession(true); if(st.sfx) sfx("correct"); }
     if(k==="sfx" && st.sfx) sfx("correct");
     if(k==="vibration" && st.vibration) buzz(30);
   });
