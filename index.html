@@ -330,6 +330,32 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .viewer img{width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
 .guessview{gap:12px}
+/* chi ha già disegnato: countdown, chi sta guardando, esito */
+.sentok{font:700 .95rem var(--display);color:var(--ink);background:var(--mint);border-radius:999px;padding:6px 14px;animation:popin .45s cubic-bezier(.3,1.6,.5,1)}
+img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rotate(-3deg);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.think{display:inline-flex;gap:6px;align-items:center}
+.think i{width:10px;height:10px;border-radius:50%;background:var(--mango);animation:thinkdot 1.1s infinite ease-in-out}
+.think i:nth-child(2){animation-delay:.15s;background:var(--pink)}.think i:nth-child(3){animation-delay:.3s;background:var(--mint)}
+@keyframes thinkdot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-8px);opacity:1}}
+.watchview{gap:10px}
+.watchhead{text-align:center;background:var(--night-2);border-radius:18px;padding:10px 14px;animation:popin .4s cubic-bezier(.3,1.4,.5,1)}
+.watchhead .wtitle{font:700 1.5rem/1.15 var(--display)}
+.watchhead.mine{background:linear-gradient(135deg,var(--mango),#ff8a3d);color:var(--ink)}
+.watchhead.mine .eyebrow{color:rgba(42,33,64,.75)}
+.watchhead.mine .wtitle{animation:beat 1.4s ease-in-out infinite}
+.qstrip{list-style:none;margin:0;padding:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.qstrip li{flex:1 0 0;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--night-2);border-radius:14px;padding:6px 4px;transition:opacity .3s,transform .3s}
+.qstrip li .av{width:26px;height:26px;font-size:.8rem}
+.qstrip .qn{font-size:.72rem;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qstrip .qs{font-size:.66rem;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:1em}
+.qstrip li.now{box-shadow:inset 0 0 0 2px var(--mango);transform:translateY(-2px)}
+.qstrip li.now .qs{color:var(--mango);font-weight:700}
+.qstrip li.ko{opacity:.6}.qstrip li.ko .qs{color:var(--pink)}
+.qstrip li.skip{opacity:.45}
+.qstrip li.next{opacity:.7}
+.watchview .viewer{position:relative}
+.thinkbub{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(27,30,58,.92);color:var(--paper);border-radius:999px;padding:8px 14px;font-weight:600;font-size:.9rem;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.thinkbub .think i{width:7px;height:7px}
 .guessview .viewer{aspect-ratio:1/1.3;max-height:56dvh}
 /* esito e classifica */
 .resultview{gap:10px}
@@ -1182,7 +1208,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 21:00";
+const APP_VERSION = "22.11 · 21:15";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1598,7 +1624,7 @@ function onState(s){
   if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0;
     NET.prevScores = {...s.scores}; NET.prevOrder = [...s.players].sort((a,b) => (s.scores[b.id]||0) - (s.scores[a.id]||0) || a.name.localeCompare(b.name)).map(p => p.id); }
   const showResult = s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal");
-  if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; if(amGuesser()) showX(t.text); else if(s.queue.includes(NET.myId)) buzz(15); }
+  if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; if(amGuesser()) showX(t.text); else showX(t.text, mpPlayer(s.order[s.turn])); }
   if(s.phase === "turn" && s.sprint && s.queue && s.queue.length === 1 && (NET.lastQ||0) === 0 && !amGuesser() && s.queue[0] !== NET.myId){ sprintAlert(); }
   if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ sfx("pop"); buzz(15); } NET.lastQ = s.queue.length; }
   if(s.phase === "reveal" && prevPhase === "turn"){ sfx("timeUp"); buzz([40,60,40]); }
@@ -1620,12 +1646,12 @@ function sprintAlert(){
   x.innerHTML = `<p>Primo disegno arrivato: 30 secondi!</p>`;
   document.body.appendChild(x); setTimeout(() => x.remove(), 1600);
 }
-function showX(text){
-  sfx("wrong"); buzz([60,40,60]);
+function showX(text, who){
+  sfx("wrong"); buzz(who ? 20 : [60,40,60]);
   document.querySelector(".xfail")?.remove();
   const x = document.createElement("div"); x.className = "xfail"; x.setAttribute("aria-live","assertive");
-  x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><p>«${esc(text)}» non è giusta</p>`;
-  document.body.appendChild(x); setTimeout(() => x.remove(), 1200);
+  x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><p>${who ? `${esc(who.name)} dice «${esc(text)}». Sbagliato!` : `«${esc(text)}» non è giusta`}</p>`;
+  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 1500 : 1200);
   const v = $(".viewer"); if(v){ v.classList.remove("shake"); void v.offsetWidth; v.classList.add("shake"); }
 }
 /* avvisi in basso: connessione persa, pausa, giocatori da togliere */
@@ -1896,6 +1922,12 @@ function guessInfo(){
   const q = [waiting > 0 ? `${waiting} in coda` : "", drawing > 0 ? `${drawing} ${drawing === 1 ? "sta" : "stanno"} ancora disegnando` : ""].filter(Boolean).join(", ");
   return pts + (q ? `<br>${q}` : "");
 }
+/* fila dei disegni: già visti (sbagliato o saltato), quello che sta guardando, quelli dopo */
+function qstripHTML(){
+  return `<ol class="qstrip">${M.queue.map((id, i) => { const p = mpPlayer(id), t = (M.tries || []).find(x => x.on === id);
+    const st = i < M.view ? (t ? "ko" : "skip") : i === M.view ? "now" : "next";
+    return `<li class="${st} ${id === NET.myId ? "me" : ""}" title="${esc(p ? p.name : "")}">${p ? av(p) : ""}<span class="qn">${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span><span class="qs">${st === "ko" ? `✗ ${esc(t.text)}` : st === "skip" ? "saltato" : st === "now" ? "ora" : ""}</span></li>`; }).join("")}</ol>`;
+}
 function triesHTML(){
   const t = M.tries || []; if(!t.length) return "";
   const g = mpPlayer(guesserId());
@@ -1966,11 +1998,13 @@ function mpView(){
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
           <div class="sentdots">${Array.from({length:drawers}, (_, i) => `<i class="${i < M.queue.length ? "on" : ""}"></i>`).join("")}</div></section>`;
-      if(sent) return `<section class="screen pass bigwait">${meBar()}
-          <span class="eyebrow">Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
-          <div class="mptime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
-          ${MD[NET.myId] ? `<img class="mine" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}
-          <p class="lead" style="margin:0">Aspetta la fine del tempo.</p></section>`;
+      if(sent) return `<section class="screen pass bigwait watchwait">${meBar()}
+          <span class="sentok">✓ Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
+          <p class="lead" style="margin:0">${esc(g.name)} inizia a guardare tra</p>
+          <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
+          <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
+          <div class="sentdots">${Array.from({length:drawers}, (_, i) => `<i class="${i < M.queue.length ? "on" : ""}"></i>`).join("")}</div>
+          ${MD[NET.myId] ? `<img class="mine small" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}</section>`;
       return `<section class="screen drawscreen">
           <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
@@ -1999,12 +2033,20 @@ function mpView(){
           <div class="row"><button class="btn ghost" id="mp-pass">Passo</button><button class="btn ghost" id="mp-adv">Salta</button></div>
         </section>`;
       }
-      return `<section class="screen guessview">${meBar()}
-          <div class="drawhead"><div><span class="eyebrow">La parola è «${esc(M.word)}»</span>
-          <div class="dword small">${M.revealed ? `${esc(g.name)} guarda ${cp && cp.id === NET.myId ? "il tuo" : `quello di ${esc(cp ? cp.name : "")}`}` : `${esc(g.name)} sta per scoprirli`}</div></div></div>
-          <div class="viewer">${M.revealed && cur && MD[cur] ? `<img src="${MD[cur]}" alt="Disegno che sta guardando">` : `<div class="dwait big">${M.queue.length} ${M.queue.length === 1 ? "disegno" : "disegni"} in arrivo</div>`}</div>
-          ${triesHTML()}
+      if(!M.revealed) return `<section class="screen pass bigwait watchwait">${meBar()}
+          <span class="eyebrow">Tempo scaduto</span>
+          <div class="big-av">${av(g)}</div>
+          <h2>${esc(g.name)} sta per scoprire i disegni</h2>
+          <div class="think"><i></i><i></i><i></i></div>
           <p class="hint" style="text-align:center">Zitti e niente gesti!</p></section>`;
+      const mine = cp && cp.id === NET.myId;
+      return `<section class="screen guessview watchview">${meBar()}
+          <div class="watchhead ${mine ? "mine" : ""}"><span class="eyebrow">${esc(g.name)} sta guardando · ${M.view+1} di ${M.queue.length}</span>
+            <div class="wtitle">${mine ? "Il TUO disegno" : `Il disegno di ${esc(cp ? cp.name : "")}`}</div></div>
+          ${qstripHTML()}
+          <div class="viewer"><img src="${MD[cur] || ""}" alt="Disegno che sta guardando" ${MD[cur] ? "" : "hidden"}>
+            <div class="thinkbub"><span>${esc(g.name)} ci pensa</span><span class="think"><i></i><i></i><i></i></span></div></div>
+          <p class="hint" style="text-align:center;margin:0">La parola è «${esc(M.word)}» · zitti e niente gesti!</p></section>`;
     }
     case "result": {
       const L = M.last || {}, helper = mpPlayer(L.helper);
