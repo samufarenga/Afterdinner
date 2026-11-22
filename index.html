@@ -531,7 +531,7 @@ const screens = {
         ${n ? `<button class="pclear" data-people="0" aria-label="Mostra tutti i giochi">✕</button>` : ""}</div>
       </div>
       <div class="chips" role="group" aria-label="Filtra i giochi">${chip("all","Tutti")}${chip("one","Un telefono")}${chip("many","Più telefoni")}</div>
-      <div class="viewsw" role="group" aria-label="Vista dei giochi"><button data-view="list" aria-pressed="${!ST().wheel}">☰ Lista</button><button data-view="wheel" aria-pressed="${!!ST().wheel}">◎ Ruota</button></div>
+
       ${ST().wheel && list.length ? wheelHTML(list) : `<ul class="ggrid">${list.map(g => `
         <li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-game="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
           <span class="gname">${g.name}</span>
@@ -753,15 +753,19 @@ function ctx(){ audio = audio || new (window.AudioContext||window.webkitAudioCon
    con "playback" suona anche col silenzioso, ma iPhone mostra l'icona audio. Lo sceglie Rob nelle impostazioni. */
 function setAudioSession(active){ try{ if(navigator.audioSession) navigator.audioSession.type = active && ST().silentOk ? "playback" : "ambient"; }catch(e){} }
 /* iPhone: l'audio parte solo dopo un tocco */
+let audioUnlocked = false, idleT = null;
 function unlockAudio(){
+  if(audioUnlocked) return;
   setAudioSession(true);
-  try{ const a = ctx(); const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); }catch(e){}
+  try{ const a = ctx(); const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); audioUnlocked = true; audioIdle(400); }catch(e){}
 }
+/* l'audio resta acceso solo mentre suona: finito l'effetto si spegne, così iPhone non mostra niente sulla Dynamic Island */
+function audioIdle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!musicT && audio && audio.state === "running") audio.suspend().catch(()=>{}); }, ms); }
 ["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 /* app in background o schermo spento: tutto zitto; al ritorno riparte */
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} setAudioSession(false); }
-  else { if(audio) audio.resume().catch(()=>{}); if(ST().music) startMusic(); }
+  else { if(ST().music) startMusic(); }
 });
 window.addEventListener("pagehide", () => { stopMusic(); try{ audio && audio.suspend(); }catch(e){} });
 /* effetti sonori sintetizzati: niente file da scaricare */
@@ -800,7 +804,7 @@ const SFX = {
   fanfare(){ [[392,0],[523,.12],[659,.24],[784,.36]].forEach(([f,t]) => tone(f, t, .14, {type:"square", gain:.06, lp:2200})); [784,988,1175].forEach(f => tone(f, .5, .8, {type:"square", gain:.05, lp:2000})); },
   sad(){ [[392,0],[370,.32],[349,.64]].forEach(([f,t]) => tone(f, t, .3, {type:"sawtooth", gain:.08, lp:1200})); tone(330, .96, .9, {type:"sawtooth", gain:.09, lp:1000, to:300}); }
 };
-function sfx(name, ...a){ if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); }catch(e){ console.warn("sfx", name, e); } }
+function sfx(name, ...a){ if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
 window.__sfxTest = () => Object.keys(SFX).map(k => { try{ ctx(); SFX[k](k === "drumroll" ? .5 : undefined); return k + ":ok"; }catch(e){ return k + ":" + e.message; } });
 function vol(){ return ST().volume/100; }
 function buzz(ms){ if(ST().vibration){ try{ navigator.vibrate?.(ms); }catch(e){} } }
@@ -831,7 +835,7 @@ function musicTick(){
   musicStep++;
 }
 function startMusic(){ if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
-function stopMusic(){ clearInterval(musicT); musicT = null; }
+function stopMusic(){ clearInterval(musicT); musicT = null; audioIdle(300); }
 document.addEventListener("pointerdown", () => { if(ST().music && !musicT) startMusic(); });
 document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]):not(#b-send):not(#mp-go):not(.gtile)")) sfx("tap"); }, true);
 
@@ -918,6 +922,7 @@ function openSettings(){
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
     <div class="set-list">
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
+      ${sw("wheel","Giochi a ruota","In home i giochi girano in cerchio invece che in lista")}
       ${sw("music","Musica","Sottofondo leggero mentre giocate")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
       ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
@@ -934,6 +939,7 @@ function openSettings(){
     const k = e.target.dataset.set; if(!k) return;
     st[k] = e.target.checked; save();
     if(k==="music"){ st.music ? startMusic() : stopMusic(); }
+    if(k==="wheel" && S.screen==="home"){ render(); }
     if(k==="silentOk"){ setAudioSession(true); if(st.sfx) sfx("correct"); }
     if(k==="sfx" && st.sfx) sfx("correct");
     if(k==="vibration" && st.vibration) buzz(30);
@@ -1093,7 +1099,7 @@ document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scal
 let lastTouchEnd = 0;
 document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:25";
+const APP_VERSION = "22.11 · 19:30";
 function hardReload(){ const done = () => location.reload(); fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000); }
 setTimeout(() => {
   if(QS.get("room")) return;
