@@ -235,6 +235,42 @@ header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
 .preview .pmeta span{font-size:.78rem;font-weight:700;background:var(--night-3);color:var(--paper);border-radius:999px;padding:4px 10px}
 .preview .row{width:100%}
 /* multi-telefono */
+.seg button.est{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1}
+.seg button.est small{font:600 .68rem var(--body);opacity:.75;white-space:nowrap}
+.seg button.est small.rec{opacity:1;color:var(--mango);text-transform:uppercase;letter-spacing:.06em;font-size:.6rem}
+.seg button.est[aria-pressed="true"] small.rec{color:var(--ink)}
+.toolbar{display:flex;align-items:center;gap:4px;background:var(--night-2);border-radius:999px;padding:5px 6px;align-self:center;max-width:100%;flex-wrap:nowrap;justify-content:center}
+.inks{display:flex;gap:5px}
+.ink{width:25px;height:25px;flex:none;border-radius:50%;border:0;background:var(--ink);cursor:pointer;padding:0;box-shadow:0 0 0 2px var(--night-2),0 0 0 2px transparent;transition:box-shadow .15s,transform .15s}
+.ink[aria-pressed="true"]{box-shadow:0 0 0 2px var(--night-2),0 0 0 4px var(--paper);transform:scale(1.05)}
+.tsep{width:1px;height:22px;background:var(--night-3);margin:0 2px}
+.tbtn{width:34px;height:34px;flex:none;border-radius:50%;border:0;background:transparent;color:var(--paper);display:grid;place-items:center;cursor:pointer;padding:0}
+.tbtn svg{width:20px;height:20px}
+.tbtn:hover{background:var(--night-3)}
+.tbtn[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+.sz{width:8px;height:8px;border-radius:50%;background:currentColor;transition:all .15s}
+.sz.thick{width:16px;height:16px}
+.finale{gap:14px}
+.rv{opacity:0;animation:rise .55s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.podium-list,.mid-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.podium-list li,.mid-list li,.lastrow{display:grid;grid-template-columns:44px 38px 1fr auto;align-items:center;gap:12px;background:var(--night-2);border-radius:18px;padding:12px 16px}
+.podium-list li{padding:16px}
+.podium-list .pnum{font:700 1.6rem var(--display)}
+.podium-list .pname{font:700 1.25rem var(--display)}
+.pod-oro{background:linear-gradient(100deg,#ffcf4a,#ffa41b)!important;color:var(--ink)}
+.pod-oro .pname{font-size:1.6rem!important}
+.pod-argento{background:linear-gradient(100deg,#e6e8f5,#b9bdd8)!important;color:var(--ink)}
+.pod-bronzo{background:linear-gradient(100deg,#f0a979,#c9774a)!important;color:var(--ink)}
+.pnum{font:700 1.1rem var(--display);text-align:center;font-variant-numeric:tabular-nums}
+.pname{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.ppts{font:700 1.1rem var(--display);font-variant-numeric:tabular-nums}
+.mid-list li{opacity:0}
+.last{background:var(--night-2);border:2px dashed var(--night-3);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px;text-align:center}
+.last .lastrow{grid-template-columns:38px 1fr auto;background:transparent;padding:0}
+.quip{font:600 1.15rem var(--display);margin:0;color:var(--paper);text-wrap:balance}
+.quip b{color:var(--pink)}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important}}
 .viewer{background:var(--paper);border-radius:22px;aspect-ratio:1/1.1;max-height:58vh;width:100%;display:grid;place-items:center;overflow:hidden}
 .viewer img{width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
@@ -904,13 +940,36 @@ function act(msg){ if(NET.role === "host") hostReceive(NET.myId, {...msg, pid:NE
 
 /* ---------- host: regole e stato ---------- */
 function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== NET.myId) NET.sendTo(p.id, msg); }); }
+function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
 function publish(){
+  if(M.phase === "lobby" && !M.roundsManual) M.rounds = recRounds(); // finché l'host non sceglie, uso i giri consigliati
   M.left = M.phase === "turn" ? Math.max(0, M.endsAt - Date.now()) : null;
   mpBroadcast({t:"state", s:M});
   onState(M);
 }
+const DRAW_WORDS = {
+  beginner: ["Casa","Sole","Albero","Gatto","Pesce","Mela","Banana","Ombrello","Occhiali","Chiave","Barca","Fiore","Luna","Pizza","Gelato","Cappello","Scarpa","Bicicletta","Automobile","Treno","Aereo","Pallone","Nuvola","Fungo","Uovo","Candela","Forbici","Tazza","Libro","Orologio","Lampadina","Torta","Ragno","Serpente","Lumaca","Farfalla","Cane","Montagna","Pennello","Matita","Bottiglia","Sedia","Finestra","Chitarra","Cactus","Ciambella","Anguria","Carota","Martello","Aquilone"],
+  medium: ["Pizzaiolo","Pompiere","Astronauta","Sirena","Pirata","Vulcano","Faro","Arcobaleno","Mongolfiera","Ponte","Castello","Robot","Dinosauro","Pinguino","Giraffa","Polpo","Canguro","Scheletro","Fantasma","Spaventapasseri","Paracadute","Sottomarino","Altalena","Tenda da campeggio","Pupazzo di neve","Corona","Spada","Microfono","Pianoforte","Valigia","Zaino","Semaforo","Lavatrice","Frigorifero","Aspirapolvere","Tostapane","Moka","Cannocchiale","Calamita","Clessidra","Monopattino","Elicottero","Trattore","Igloo","Piramide","Unicorno","Drago","Mummia","Vampiro","Sommergibile"],
+  extreme: ["Imbianchino","Equilibrista","Giocoliere","Domatore di leoni","Ventriloquo","Sommelier","Apicoltore","Spazzacamino","Torre di Pisa","Colosseo","Gondola","Partita a scacchi","Ingorgo stradale","Eclissi","Terremoto","Effetto domino","Montagne russe","Ruota panoramica","Acquario","Ragnatela","Formicaio","Alveare","Camaleonte","Ornitorinco","Medusa","Bastone per selfie","Karaoke","Matrimonio","Trasloco","Picnic","Sauna","Tatuaggio","Barbiere","Naufragio","Isola deserta","Caccia al tesoro","Tiro alla fune","Corsa nei sacchi","Lottatore di sumo","Ballerina classica","Mimo","Fachiro","Lupo mannaro","Labirinto","Cavallo a dondolo","Serenata","Ombra cinese","Prestigiatore","Fila alla posta","Pesca subacquea"]
+};
+const LAST_LINES = [
+  "Ultimo {n}. Non abbiamo scoperto niente di nuovo.",
+  "Ultimo {n}. Avevate aspettative diverse?",
+  "{n} chiude la classifica. Qualcuno doveva pur farlo.",
+  "Ultimo {n}. L'importante è partecipare, dicono.",
+  "{n}, la matita non era la tua arma.",
+  "Ultimo {n}. Il talento c'è, è solo molto timido.",
+  "{n} in fondo alla classifica. Si accettano lezioni private.",
+  "Ultimo {n}. Il pubblico chiede il rimborso.",
+  "{n}: stasera l'arte contemporanea ha perso.",
+  "Ultimo {n}. Ci hai provato. Più o meno.",
+  "{n} ultimo. Alla prossima andrà meglio. Forse.",
+  "Ultimo {n}. Anche i grandi artisti sono stati incompresi."
+];
+const LEVELS = [["beginner","Beginner"],["medium","Medium"],["extreme","Extreme"]];
 function drawWord(){
-  if(!NET.deck || !NET.deck.length) NET.deck = shuffle(Object.entries(WORDS).filter(([c]) => c !== "Azioni").flatMap(([cat, ws]) => ws.map(w => ({cat, word:w}))));
+  if(NET.deckLevel !== M.level){ NET.deck = null; NET.deckLevel = M.level; }
+  if(!NET.deck || !NET.deck.length) NET.deck = shuffle(DRAW_WORDS[M.level || "medium"].map(w => ({cat:LEVELS.find(l => l[0] === (M.level||"medium"))[1], word:w})));
   return NET.deck.pop();
 }
 function nextGuesser(){
@@ -982,6 +1041,7 @@ function hostReceive(pid, msg){
       if(M.phase === "result" && (pid === guesserId() || pid === M.host)){
         M.turn++; if(M.turn >= M.order.length){ M.turn = 0; M.round++; }
         M.phase = (M.round <= M.rounds && nextGuesser()) ? "ready" : "final";
+        if(M.phase === "final") M.lineSeed = Math.floor(Math.random()*1000);
         MD = {}; publish();
       } break;
   }
@@ -1008,21 +1068,26 @@ function onState(s){
 function onDrawings(){ if(M && (M.phase === "result" || (M.phase === "turn" && amGuesser()))) mpRender(true); }
 
 /* lavagna */
-const INKS = ["#2a2140","#ff3d72","#3d8bff","#14d494","#ffa41b"];
+const INKS = ["#1d1b2e","#ff3d72","#3d8bff","#14b886","#ffa41b"];
+const PAPER = "#fffaf0";
+const TICONS = (() => { const w = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  return { undo: w('<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
+           eraser: w('<path d="m7 21-4-4a2 2 0 0 1 0-3L13 4a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-9 9"/><path d="M7 21h14M9 10l6 6"/>'),
+           trash: w('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>') }; })();
 let BOARD = null;
 function boardInit(){
   const cv = $("#board"); if(!cv) return;
   const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
   cv.width = r.width * dpr; cv.height = r.height * dpr;
   const g = cv.getContext("2d"); g.scale(dpr, dpr); g.lineCap = "round"; g.lineJoin = "round";
-  BOARD = {cv, g, w:r.width, h:r.height, strokes:(BOARD && BOARD.key === mpKey) ? BOARD.strokes : [], cur:null, ink:(BOARD && BOARD.ink) || INKS[0], size:(BOARD && BOARD.size) || 6, key:mpKey};
+  BOARD = {cv, g, w:r.width, h:r.height, strokes:(BOARD && BOARD.key === mpKey) ? BOARD.strokes : [], cur:null, ink:(BOARD && BOARD.ink) || INKS[0], size:(BOARD && BOARD.size) || 5, eraser:!!(BOARD && BOARD.eraser), key:mpKey};
   boardRedraw();
-  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); BOARD.cur = {c:BOARD.ink, s:BOARD.size, p:[[e.offsetX/BOARD.w, e.offsetY/BOARD.h]]}; BOARD.strokes.push(BOARD.cur); boardRedraw(); };
+  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); BOARD.cur = {c:BOARD.eraser ? PAPER : BOARD.ink, s:BOARD.eraser ? 22 : BOARD.size, p:[[e.offsetX/BOARD.w, e.offsetY/BOARD.h]]}; BOARD.strokes.push(BOARD.cur); boardRedraw(); };
   cv.onpointermove = e => { if(!BOARD.cur) return; BOARD.cur.p.push([e.offsetX/BOARD.w, e.offsetY/BOARD.h]); boardRedraw(); };
   cv.onpointerup = cv.onpointercancel = () => { BOARD.cur = null; };
 }
 function boardPaint(g, w, h, strokes){
-  g.fillStyle = "#fff6e6"; g.fillRect(0, 0, w, h);
+  g.fillStyle = PAPER; g.fillRect(0, 0, w, h);
   strokes.forEach(st => {
     g.strokeStyle = st.c; g.lineWidth = st.s * (w/340); g.beginPath();
     st.p.forEach(([x,y], i) => i ? g.lineTo(x*w, y*h) : g.moveTo(x*w, y*h));
@@ -1044,7 +1109,7 @@ async function mpHostStart(){
   mpClose();
   NET.role = "host"; NET.myId = myPid(); NET.code = newCode(); NET.status = "connecting";
   M = {game:"scarabocchi", phase:"lobby", host:NET.myId, players:[{id:NET.myId, name:cleanName(savedName() || "Host"), color:COLORS[0], on:true}],
-       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:2, seconds:90, word:null, cat:null, last:null};
+       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:1, seconds:90, level:"medium", word:null, cat:null, last:null};
   prevPhase = "lobby";
   go("mp");
   for(let i = 0; i < 3; i++){
@@ -1094,7 +1159,12 @@ function mpView(){
           <div class="qrcard">${qr}</div>
           <div class="field"><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
-          <div class="opts"><div class="opt"><label>Secondi per turno</label>${seg("seconds",[60,90,120],v=>v+"s")}</div><div class="opt"><label>Giri a testa</label>${seg("rounds",[1,2,3],v=>v)}</div></div>
+          <div class="opts">
+            <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
+            <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,90,120],v=>v===60?"1 min":v===90?"1 min 30":"2 min")}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
+            <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => Math.round(n * r * (M.seconds + 30) / 60), rec = [3,2,1].find(r => est(r) <= 25) || 1;
+              return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r}<small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
+          </div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
             <li>A turno uno di voi indovina. Gli altri vedono la parola e la disegnano sul loro telefono, in silenzio. Niente lettere né numeri.</li>
             <li>Chi ha finito preme Invia. I disegni arrivano a chi indovina uno alla volta, nell'ordine di invio, e non si torna indietro.</li>
@@ -1141,8 +1211,14 @@ function mpView(){
       return `<section class="screen drawscreen">
           <div class="drawhead"><div><span class="eyebrow">Disegna per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}</div>
           <canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
-          <div class="tools">${INKS.map(c => `<button class="ink" data-ink="${c}" style="background:${c}" aria-label="Colore" aria-pressed="${BOARD && BOARD.ink===c}"></button>`).join("")}
-            <button class="iconbtn" id="b-undo">Annulla</button><button class="iconbtn" id="b-clear">Pulisci</button></div>
+          <div class="toolbar" role="toolbar" aria-label="Strumenti">
+            <div class="inks">${INKS.map(c => `<button class="ink" data-ink="${c}" style="--ink:${c}" aria-label="Colore" aria-pressed="${(!BOARD && c===INKS[0]) || (BOARD && !BOARD.eraser && BOARD.ink===c)}"></button>`).join("")}</div>
+            <span class="tsep"></span>
+            <button class="tbtn" id="b-size" aria-label="Spessore" title="Spessore"><span class="sz ${BOARD && BOARD.size > 6 ? "thick" : ""}"></span></button>
+            <button class="tbtn" id="b-eraser" aria-label="Gomma" title="Gomma" aria-pressed="${!!(BOARD && BOARD.eraser)}">${TICONS.eraser}</button>
+            <button class="tbtn" id="b-undo" aria-label="Annulla l'ultimo tratto" title="Annulla">${TICONS.undo}</button>
+            <button class="tbtn" id="b-clear" aria-label="Cancella tutto" title="Cancella tutto">${TICONS.trash}</button>
+          </div>
           <button class="btn pink" id="b-send">Invia il disegno${M.queue.length ? ` (già ${M.queue.length} inviati)` : " per primo"}</button>
         </section>`;
     }
@@ -1159,10 +1235,22 @@ function mpView(){
         ${canNext ? `<button class="btn" id="mp-next">${lastTurn ? "Classifica finale" : "Prossimo turno"}</button>` : `<p class="hint" style="text-align:center">Aspettiamo il prossimo turno…</p>`}</section>`;
     }
     case "final": {
-      const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id]);
-      return `<section class="screen"><div style="text-align:center"><span class="eyebrow">Fine partita</span><h1>${(() => { const top = ranked.filter(p => M.scores[p.id] === M.scores[ranked[0].id]); return top.length > 1 ? `Pareggio tra ${top.map(p => esc(p.name)).join(" e ")}!` : `Vince ${esc(ranked[0].name)}!`; })()}</h1></div>
-        ${mpScoreList()}
-        ${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</section>`;
+      const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
+      const pos = p => 1 + ranked.filter(x => M.scores[x.id] > M.scores[p.id]).length;
+      const top = ranked.filter(p => pos(p) === 1);
+      const podium = ranked.slice(0, 3), middle = ranked.slice(3, ranked.length > 3 ? -1 : 3), last = ranked.length > 3 ? ranked[ranked.length-1] : null;
+      const line = last ? LAST_LINES[(M.lineSeed || 0) % LAST_LINES.length].replace("{n}", `<b>${esc(last.name)}</b>`) : "";
+      const medal = ["oro","argento","bronzo"];
+      let t = .4;
+      const step = d => { const v = t; t += d; return v; };
+      return `<section class="screen finale">
+        <div style="text-align:center"><span class="eyebrow">Fine partita</span><h1 class="rv" style="animation-delay:${step(.5)}s">${top.length > 1 ? `Pareggio tra ${top.map(p => esc(p.name)).join(" e ")}!` : `Vince ${esc(top[0].name)}!`}</h1></div>
+        <ol class="podium-list">${podium.map((p,i) => `<li class="rv pod-${medal[pos(p)-1] || ""}" style="animation-delay:${step(.8)}s">
+          <span class="pnum">${pos(p)}°</span>${av(p)}<span class="pname">${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span><span class="ppts">${M.scores[p.id]} pt</span></li>`).join("")}</ol>
+        ${middle.length ? `<ol class="mid-list">${middle.map(p => `<li class="rv" style="animation-delay:${step(.25)}s"><span class="pnum">${pos(p)}°</span>${av(p)}<span class="pname">${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span><span class="ppts">${M.scores[p.id]}</span></li>`).join("")}</ol>` : ""}
+        ${last ? `<div class="last rv" style="animation-delay:${step(.6)+.4}s"><span class="eyebrow">Ultimo posto</span><div class="lastrow">${av(last)}<span class="pname">${esc(last.name)}</span><span class="ppts">${M.scores[last.id]} pt</span></div><p class="quip">${line}</p></div>` : ""}
+        <div class="rv" style="animation-delay:${step(.3)+.4}s">${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</div>
+      </section>`;
     }
   }
   return "";
@@ -1218,7 +1306,7 @@ view.addEventListener("click", e => {
   if(S.screen !== "mp") return;
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
-  if(d.mpset){ M[d.mpset] = +d.v; publish(); }
+  if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
   else if(id === "mp-start"){ M.order = shuffle(M.players.filter(p => p.on).map(p => p.id)); M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ beep(440,.05); act({t:"start"}); }
   else if(id === "mp-guessed"){ act({t:"guessed"}); }
@@ -1232,7 +1320,9 @@ view.addEventListener("click", e => {
   else if(id === "mp-retry"){ mpHostStart(); }
   else if(id === "g-retry"){ location.reload(); }
   else if(id === "copy-link"){ const u = joinUrl(); navigator.clipboard?.writeText(u).then(() => { b.textContent = "Link copiato"; }, () => { b.textContent = u; }); }
-  else if(d.ink){ BOARD.ink = d.ink; view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", x === b)); }
+  else if(d.ink){ BOARD.ink = d.ink; BOARD.eraser = false; $("#b-eraser").setAttribute("aria-pressed", false); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", x === b)); }
+  else if(id === "b-eraser"){ BOARD.eraser = !BOARD.eraser; b.setAttribute("aria-pressed", BOARD.eraser); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", !BOARD.eraser && x.dataset.ink === BOARD.ink)); }
+  else if(id === "b-size"){ BOARD.size = BOARD.size > 6 ? 5 : 11; b.querySelector(".sz").classList.toggle("thick", BOARD.size > 6); }
   else if(id === "b-undo"){ BOARD && BOARD.strokes.pop(); boardRedraw(); }
   else if(id === "b-clear"){ if(BOARD){ BOARD.strokes = []; boardRedraw(); } }
 });
