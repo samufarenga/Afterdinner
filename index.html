@@ -731,13 +731,18 @@ function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
 async function grabWake(){ if(!ST().awake) return; try{ wake = await navigator.wakeLock?.request("screen"); }catch(e){ wake=null; } }
 function releaseWake(){ try{ wake?.release(); }catch(e){} wake=null; }
 function ctx(){ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); if(audio.state!=="running") audio.resume().catch(()=>{}); return audio; }
-/* iPhone: l'audio parte solo dopo un tocco, e la levetta del silenzioso lo zittisce a meno di chiedere la modalità "riproduzione" */
+/* iPhone: l'audio parte solo dopo un tocco */
 function unlockAudio(){
-  try{ if(navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){}
+  try{ if(navigator.audioSession) navigator.audioSession.type = "ambient"; }catch(e){} // "ambient": niente lettore sulla Dynamic Island, rispetta il silenzioso
   try{ const a = ctx(); const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); }catch(e){}
 }
 ["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
-document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && audio) audio.resume().catch(()=>{}); });
+/* app in background o schermo spento: tutto zitto; al ritorno riparte */
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} }
+  else { if(audio) audio.resume().catch(()=>{}); if(ST().music) startMusic(); }
+});
+window.addEventListener("pagehide", () => { stopMusic(); try{ audio && audio.suspend(); }catch(e){} });
 /* effetti sonori sintetizzati: niente file da scaricare */
 function tone(f, at, dur, o = {}){
   const a = audio, t = a.currentTime + at, osc = a.createOscillator(), g = a.createGain();
