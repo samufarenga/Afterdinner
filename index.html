@@ -206,6 +206,13 @@ h2{font-size:1.6rem}
 .viewsw{display:flex;align-self:center;flex:none;background:radial-gradient(120% 160% at 50% 50%,var(--night) 55%,color-mix(in srgb,var(--night-3) 55%,var(--night)) 100%);border:2px solid color-mix(in srgb,var(--paper) 38%,var(--night-3));border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
 .viewsw button{font:600 .85rem var(--body);padding:7px 16px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .viewsw button[aria-pressed="true"]{background:color-mix(in srgb,var(--paper) 14%,transparent);color:var(--paper)}
+/* ruota: la home sta tutta in una schermata, ferma */
+html.wheelmode,html.wheelmode body{height:100%;overflow:hidden}
+html.wheelmode .app{height:100dvh;min-height:0;box-sizing:border-box;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+html.wheelmode #view{flex:1;min-height:0;display:flex;flex-direction:column}
+html.wheelmode #view>.screen{flex:1;min-height:0;gap:12px}
+.wheelzone{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;container-type:size}
+.wheelzone .wheelwrap{flex:none;width:min(100cqw,calc(100cqh - 3.6em),420px);height:auto;max-width:none;aspect-ratio:1}
 .wheelwrap{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
 .wheel{position:absolute;inset:0}
 .wheel::before{content:"";position:absolute;inset:14%;border-radius:50%;border:2px dashed var(--night-3)}
@@ -216,7 +223,7 @@ h2{font-size:1.6rem}
 .whub svg{width:42%;height:42%}
 .whub b{font:700 clamp(1rem,4.6vw,1.35rem)/1.05 var(--display);text-align:center}
 .whub small{font:700 .62rem var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.75}
-.wdesc{text-align:center;margin:0;min-height:3em;color:var(--muted)}
+.wdesc{text-align:center;margin:0;min-height:2.6em;color:var(--muted);flex:none}
 .ggrid{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
 .gtile{width:100%;aspect-ratio:1;max-width:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;text-align:center;background:var(--c);color:var(--ink);border:0;border-radius:32px;padding:26px 22px 24px;font:inherit;cursor:pointer;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.28);-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:transform .15s}
 .gtile.pressing{transform:scale(.96)}
@@ -490,7 +497,7 @@ const CATALOG = [
   {id:"porcellino", name:"Il Porcellino", icon:"pig", color:"#e8233f", adult:true, players:"4-10", mins:"20-30", phones:"one", desc:"Domande e sfide per adulti, per quando la serata si scalda."},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
-const DEFAULT_SETTINGS = {wheel:false, sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
+const DEFAULT_SETTINGS = {wheel:false, keysound:true, sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
 const $ = (s, r=document) => r.querySelector(s);
@@ -808,21 +815,8 @@ function sfx(name, ...a){ return; // effetti sonori tolti (scelta di Rob: niente
   if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
 window.__sfxTest = () => Object.keys(SFX).map(k => { try{ ctx(); SFX[k](k === "drumroll" ? .5 : undefined); return k + ":ok"; }catch(e){ return k + ":" + e.message; } });
 function vol(){ return ST().volume/100; }
-/* vibrazione: su Android navigator.vibrate; su iPhone (iOS 18+) il "tic" aptico di un interruttore nascosto */
-let hapticEl = null;
-function buzz(ms){
-  if(!ST().vibration) return;
-  try{
-    if(navigator.vibrate){ navigator.vibrate(ms); return; }
-    if(!hapticEl){
-      hapticEl = document.createElement("label"); hapticEl.setAttribute("aria-hidden","true");
-      hapticEl.style.cssText = "position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden";
-      hapticEl.innerHTML = '<input type="checkbox" switch tabindex="-1">';
-      document.body.appendChild(hapticEl);
-    }
-    hapticEl.click();
-  }catch(e){}
-}
+/* vibrazione: solo Android (iPhone non la permette alle app web) */
+function buzz(ms){ if(ST().vibration){ try{ navigator.vibrate?.(ms); }catch(e){} } }
 function beep(freq, dur){
   return;
   try{
@@ -852,7 +846,19 @@ function musicTick(){
 function startMusic(){ return; if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
 function stopMusic(){ clearInterval(musicT); musicT = null; audioIdle(300); }
 document.addEventListener("pointerdown", () => { if(ST().music && !musicT) startMusic(); });
-document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]):not(#b-send):not(#mp-go):not(.gtile)")) sfx("tap"); }, true);
+/* prova: solo un "tic" brevissimo sui tasti. Ogni volta apro l'audio, suono 25 millisecondi e lo chiudo del tutto */
+function keyClick(){
+  if(!ST().keysound) return;
+  try{
+    if(navigator.audioSession) navigator.audioSession.type = "ambient";
+    const a = new (window.AudioContext||window.webkitAudioContext)(), t = a.currentTime, o = a.createOscillator(), g = a.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(1300, t); o.frequency.exponentialRampToValueAtTime(700, t + .025);
+    g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.0001, t + .03);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + .035);
+    setTimeout(() => a.close().catch(()=>{}), 120);
+  }catch(e){}
+}
+document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]),.gtile,label.set-row")) keyClick(); }, true);
 
 function confetti(n=90){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -874,6 +880,7 @@ function render(){
   if(S.screen==="mp" && !NET.role) S.screen="home";
   if(LOCK_ON && !isUnlocked() && S.screen!=="mp") S.screen="locked";
   view.innerHTML = screens[S.screen]();
+  document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
   if($("#wheel")) wheelInit();
   $("#back-btn").hidden = S.screen==="home";
   $("#menu-btn").hidden = S.screen!=="home";
@@ -938,7 +945,8 @@ function openSettings(){
     <div class="set-list">
       <div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
         <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>
-      ${sw("vibration","Vibrazione","Un tic quando giri la ruota e nei momenti chiave")}
+      ${sw("keysound","Suono dei tasti","Un tic brevissimo quando tocchi un pulsante")}
+      ${sw("vibration","Vibrazione","Solo Android: un tic quando giri la ruota")}
       ${sw("awake","Schermo sempre acceso","Durante i turni a tempo")}
       ${sw("splash","Animazione iniziale","All'apertura dell'app")}
       <div class="set-row"><span class="lbl"><b>Cancella dati</b><span>Nomi dei giocatori e partita in corso</span></span><button class="iconbtn" id="set-reset">Cancella</button></div>
@@ -1110,7 +1118,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:45";
+const APP_VERSION = "22.11 · 19:55";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1684,9 +1692,9 @@ function meBar(){
 /* ---------- home a ruota: i giochi girano su una circonferenza ---------- */
 let WHEEL = null;
 function wheelHTML(list){
-  return `<div class="wheelwrap" id="wheelwrap"><div class="wheel" id="wheel">${list.map((g,i) => `<button class="wtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-wi="${i}" aria-label="${g.name}">${ICONS[g.icon]}</button>`).join("")}</div>
+  return `<div class="wheelzone"><div class="wheelwrap" id="wheelwrap"><div class="wheel" id="wheel">${list.map((g,i) => `<button class="wtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-wi="${i}" aria-label="${g.name}">${ICONS[g.icon]}</button>`).join("")}</div>
     <button class="whub" id="whub" aria-live="polite"></button></div>
-    <p class="wdesc" id="wdesc"></p>`;
+    <p class="wdesc" id="wdesc"></p></div>`;
 }
 function wheelInit(){
   const list = [...document.querySelectorAll(".wtile")].map(b => CATALOG.find(g => g.name === b.getAttribute("aria-label")));
@@ -1732,7 +1740,7 @@ function wheelInit(){
     goTo(Math.round(rot));
   };
   draw();
-  addEventListener("resize", draw, {once:true});
+  if(window.ResizeObserver){ const ro = new ResizeObserver(() => { if(!document.body.contains(wrap)) ro.disconnect(); else draw(); }); ro.observe(wrap); }
 }
 function guessInfo(){
   const cur = M.queue[M.view], cp = mpPlayer(cur), waiting = M.queue.length - M.view - (cur ? 1 : 0), drawing = stillDrawing().length;
