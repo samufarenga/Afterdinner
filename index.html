@@ -176,6 +176,13 @@ h2{font-size:1.6rem}
 @media (prefers-reduced-motion:reduce){#splash{animation:splashOut .3s ease-in 1s forwards!important}#splash *{opacity:1!important;transform:none!important}}
 /* home: elenco giochi */
 .chips{display:flex;gap:8px;flex-wrap:wrap}
+.people{display:flex;align-items:center;gap:10px;background:var(--night-2);border:2px solid var(--night-3);border-radius:20px;padding:10px 10px 10px 16px}
+.people .plabel{flex:1;font:600 1rem var(--body)}
+.stepper{display:flex;align-items:center;gap:4px;background:var(--night);border-radius:999px;padding:4px}
+.stepper button{width:38px;height:38px;border-radius:50%;border:0;background:var(--night-3);color:var(--paper);font:700 1.3rem var(--display);cursor:pointer;display:grid;place-items:center}
+.stepper button:disabled{opacity:.35}
+.stepper output{min-width:54px;text-align:center;font:700 1.15rem var(--display)}
+.pclear{width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer}
 .chips button{font:600 .9rem var(--body);padding:8px 14px;border-radius:999px;border:2px solid var(--night-3);background:transparent;color:var(--paper);cursor:pointer}
 .chips button[aria-pressed="true"]{background:var(--paper);border-color:var(--paper);color:var(--ink)}
 .glist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -477,7 +484,9 @@ function av(p, cls="av"){ return `<span class="${cls}" style="background:${p.col
 const screens = {
   home(){
     const f = S.filter || "all";
-    const list = CATALOG.filter(g => f==="all" || (f==="one" ? g.phones!=="all" : g.phones!=="one"));
+    const n = S.people || null;
+    const fits = g => { if(!n) return true; const [a,b] = String(g.players).split("-").map(Number); return n >= a && n <= (b || a); };
+    const list = CATALOG.filter(g => (f==="all" || (f==="one" ? g.phones!=="all" : g.phones!=="one")) && fits(g));
     const chip = (k,l) => `<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`;
     return `
     <section class="screen">
@@ -486,6 +495,11 @@ const screens = {
         <h1>A cosa <span>giochiamo?</span></h1>
       </div>
       ${S.game && !S.game.over ? `<button class="btn mint" id="resume">Riprendi la partita di Lampo</button>` : ""}
+      <div class="people" role="group" aria-label="Quanti siete stasera">
+        <span class="plabel">Quanti siete stasera?</span>
+        <div class="stepper"><button data-people="-1" aria-label="Uno in meno" ${n && n <= 2 ? "disabled" : ""}>−</button><output aria-live="polite">${n ? n : "Tutti"}</output><button data-people="1" aria-label="Uno in più" ${n >= 16 ? "disabled" : ""}>+</button></div>
+        ${n ? `<button class="pclear" data-people="0" aria-label="Mostra tutti i giochi">✕</button>` : ""}
+      </div>
       <div class="chips" role="group" aria-label="Filtra i giochi">${chip("all","Tutti")}${chip("one","Un telefono")}${chip("many","Più telefoni")}</div>
       <ul class="ggrid">${list.map(g => `
         <li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-game="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
@@ -495,6 +509,7 @@ const screens = {
           <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span>
         </button></li>`).join("")}
       </ul>
+      ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o tocca ✕.</p>`}
       <p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>
     </section>`;
   },
@@ -784,6 +799,7 @@ view.addEventListener("click", e => {
   const id = b.id, d = b.dataset;
   if(d.game){ if(suppressClick){ suppressClick=false; return; } const g=CATALOG.find(x=>x.id===d.game); if(g.ready) openGame(g.id); else showPreview(g); }
   else if(d.filter){ S.filter=d.filter; save(); render(); }
+  else if(d.people){ const k = +d.people; S.people = k === 0 ? null : Math.min(16, Math.max(2, (S.people || (k > 0 ? 3 : 5)) + k)); save(); render(); }
   else if(id==="resume"){ go(S.game.endsAt && S.game.endsAt>Date.now() ? "play" : (S.screen==="play"?"result":"pass")); }
   else if(d.del){ S.players = S.players.filter(p=>p.id!==d.del); save(); render(); }
   else if(d.rounds){ S.rounds=+d.rounds; save(); render(); }
