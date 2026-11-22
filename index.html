@@ -322,6 +322,16 @@ html.mpmode header.top{min-height:44px}
 .lock::after{content:"";position:absolute;left:6px;top:8px;width:6px;height:5px;border-radius:1px;background:var(--muted);box-shadow:0 -3px 0 -1px transparent}
 .lock::before{content:"";position:absolute;left:6.5px;top:4px;width:3px;height:4px;border:1.5px solid var(--muted);border-bottom:0;border-radius:3px 3px 0 0}
 .preview .sheet{align-items:center;text-align:center}
+#showcase{position:fixed;inset:0;z-index:70;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--night);animation:in .25s ease-out}
+#showcase::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(120% 60% at 50% 0%,rgba(143,99,255,.25),transparent 70%)}
+#showcase.out{opacity:0;transition:opacity .25s}
+#showcase .sc-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 12px;background:linear-gradient(to bottom,var(--night) 75%,transparent)}
+#showcase .sc-logo{display:flex;align-items:center;gap:8px;font:700 1.05rem var(--display);color:var(--paper)}
+#showcase .sc-back{padding:10px 16px;font-size:.95rem}
+#showcase .sc-in{max-width:520px;margin:0 auto;padding:0 16px calc(28px + env(safe-area-inset-bottom,0px));animation:none}
+html.showcasing,html.showcasing body{overflow:hidden}
+#showcase .dots{display:flex;gap:5px}#showcase .dots i{width:10px;height:10px;border-radius:50%;display:block}
+#showcase .dots i:nth-child(1){background:var(--mango)}#showcase .dots i:nth-child(2){background:var(--pink)}#showcase .dots i:nth-child(3){background:var(--mint)}
 .preview .gicon{width:96px;height:96px;border-radius:28px}
 .preview .gicon svg{width:48px;height:48px}
 .preview .pmeta{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
@@ -615,6 +625,8 @@ img.mine{width:min(100%,280px);border-radius:18px;display:block;margin:0 auto}
 .w-body .field{width:100%}
 .g-game{font-size:2.6rem;color:var(--sky)}
 body.guest #back-btn,body.guest #menu-btn,body.guest #board-btn{display:none!important}
+body.guest header.top{position:relative;z-index:5}
+body.guest header.top .logo{cursor:pointer}
 body.guest:has(.welcome) #info-btn{display:none!important}
 canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
 </style>
@@ -1214,16 +1226,41 @@ function openGame(id){
   sfx("open");
   setTimeout(()=>{ dest(); z.classList.add("fade"); setTimeout(()=>z.remove(),320); }, 520);
 }
-function showPreview(g){
+function showPreview(g, ro){
   if($("#preview")) return;
   const ph = g.phones==="one"?"1 telefono":g.phones==="all"?"Tutti i telefoni":"1 o più telefoni";
   const m = document.createElement("div");
   m.id="preview"; m.className="modal preview"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
   m.innerHTML = `<div class="sheet"><span class="gicon" style="--c:${g.color}">${ICONS[g.icon]}</span><h2>${g.name}</h2><p class="lead" style="margin:0">${g.desc}</p>
     <div class="pmeta"><span>${g.players} giocatori</span><span>${g.mins} min</span><span>${ph}</span></div>
-    <div class="row">${g.ready?`<button class="btn ghost" data-close>Chiudi</button><button class="btn" data-play="${g.id}">Gioca</button>`:`<button class="btn ghost" data-close>In arrivo, chiudi</button>`}</div></div>`;
+    ${ro ? `<p class="hint" style="margin:0">${g.ready ? "Gioco pronto. Lo avvia solo chi organizza la serata." : "In arrivo: questo gioco è ancora in fase di sviluppo."}</p>` : ""}
+    ${RULES[g.id] ? `<button class="linkbtn" data-rules="${g.id}">Leggi le regole</button>` : ""}
+    <div class="row">${ro ? `<button class="btn ghost" data-close>Chiudi</button>` : g.ready?`<button class="btn ghost" data-close>Chiudi</button><button class="btn" data-play="${g.id}">Gioca</button>`:`<button class="btn ghost" data-close>In arrivo, chiudi</button>`}</div></div>`;
   document.body.appendChild(m);
-  m.addEventListener("click", e => { if(e.target===m || e.target.closest("[data-close]")) m.remove(); const pl=e.target.closest("[data-play]"); if(pl) openGame(pl.dataset.play); });
+  m.addEventListener("click", e => { if(e.target===m || e.target.closest("[data-close]")) m.remove(); const r=e.target.closest("[data-rules]"); if(r){ openRules(r.dataset.rules); return; } const pl=e.target.closest("[data-play]"); if(pl && !ro && NET.role !== "guest") openGame(pl.dataset.play); });
+}
+/* gli amici entrati col QR possono sfogliare i giochi, senza poterli avviare: tocca il titolo in alto */
+function openShowcase(){
+  if($("#showcase")) return;
+  const m = document.createElement("div"); m.id = "showcase"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","I giochi di AfterDinner");
+  m.innerHTML = `<div class="sc-bar"><span class="sc-logo"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>AfterDinner</span><button class="btn mint sc-back" id="sc-back">${M && mpPlayer(NET.myId) ? "Torna alla partita" : "Torna all'invito"}</button></div>
+    <section class="screen sc-in"><div class="hero"><h1>I giochi di <span>stasera</span></h1></div>
+    <p class="lead" style="text-align:center;margin:0">Puoi curiosare tra i giochi. A sceglierli e farli partire è chi organizza.</p>
+    <ul class="ggrid">${CATALOG.map(g => `<li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-sgame="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
+      <span class="gname">${g.name}</span><span class="gicon">${ICONS[g.icon]}</span><span class="gdesc">${g.desc}</span>
+      <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span></button></li>`).join("")}</ul>
+    <p class="hint" style="text-align:center">Tocca o tieni premuto un gioco per i dettagli e le regole</p></section>`;
+  document.body.appendChild(m); document.documentElement.classList.add("showcasing");
+  m.addEventListener("click", e => {
+    if(e.target.closest("#sc-back")) return closeShowcase();
+    const t = e.target.closest("[data-sgame]"); if(t) showPreview(CATALOG.find(x => x.id === t.dataset.sgame), true);
+  });
+  m.addEventListener("contextmenu", e => e.preventDefault());
+  let lp = null; // tenendo premuto si aprono i dettagli, come nella home dell'host
+  m.addEventListener("pointerdown", e => { const t = e.target.closest("[data-sgame]"); if(!t) return; clearTimeout(lp); lp = setTimeout(() => { buzz(15); showPreview(CATALOG.find(x => x.id === t.dataset.sgame), true); }, 450); });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev => m.addEventListener(ev, () => clearTimeout(lp)));
+}
+function closeShowcase(){ const m = $("#showcase"); if(!m) return; m.classList.add("out"); document.documentElement.classList.remove("showcasing"); setTimeout(() => m.remove(), 250);
 }
 view.addEventListener("pointerdown", e => {
   const t = e.target.closest(".gtile"); if(!t) return;
@@ -1236,7 +1273,7 @@ view.addEventListener("contextmenu", e => { if(e.target.closest(".gtile")) e.pre
 
 $("#home-btn").addEventListener("click", () => {
   if(S.screen==="mp"){
-    if(NET.role!=="host") return;
+    if(NET.role!=="host"){ if(NET.role === "guest") openShowcase(); return; }
     if(!M || M.phase==="lobby" || M.phase==="final"){ mpEndRoom(); go("home"); return; } // partita non iniziata o già finita: niente conferma
     mpLeaveConfirm(); return;
   }
@@ -1328,8 +1365,8 @@ const RULES = {
       <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
     <h3>Fine partita</h3><ul><li>Dopo il decimo turno vince chi ha più punti. A pari punti è pareggio.</li></ul>`
 };
-function openRules(){
-  const id = currentRulesGame(); if(!id || $("#rules-sheet")) return;
+function openRules(forId){
+  const id = typeof forId === "string" ? forId : currentRulesGame(); if(!id || !RULES[id] || $("#rules-sheet")) return;
   const m = document.createElement("div");
   m.id = "rules-sheet"; m.className = "modal rulesheet"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","Regole");
   m.innerHTML = `<div class="sheet">${RULES[id]()}<button class="btn" id="rules-ok">Ho capito</button></div>`;
@@ -1410,7 +1447,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 01:20";
+const APP_VERSION = "23.11 · 01:45";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1929,6 +1966,7 @@ function onState(s){
   if(s.phase === "turn" && prevPhase !== "turn") sfx("go");
   if(s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal")){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); sfx("correct"); } else if(s.last && s.last.reason === "pass") sfx("pass"); else sfx("timeUp"); }
   if(s.phase === "ready" && prevPhase !== "ready" && amGuesser()){ buzz([20,40,20]); sfx("join"); }
+  if(s.phase !== prevPhase && $("#showcase") && (["ready","turn"].includes(s.phase) || (s.phase === "reveal" && amGuesser()))) closeShowcase(); // si torna alla partita quando c'è da fare
   const enteringFinal = s.phase === "final" && prevPhase !== "final";
   prevPhase = s.phase;
   if(enteringFinal) setTimeout(() => { sfx("drumroll", .9); setTimeout(() => sfx("fanfare"), 950); if(NET.finalLastAt) setTimeout(() => sfx("sad"), NET.finalLastAt * 1000 + 150); }, 300);
