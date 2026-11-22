@@ -1410,7 +1410,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 01:00";
+const APP_VERSION = "23.11 · 01:20";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1577,7 +1577,7 @@ function beat(){
       const seen = (NET.seen || {})[p.id] || 0;
       if(seen && now - seen > SILENCE){
         const c = NET.conns.get(p.id); NET.conns.delete(p.id); try{ c && c.close(); }catch(e){}
-        p.on = false; p.offAt = now; changed = true;
+        p.on = false; p.offAt = now; changed = true; duoPause();
       }
     });
     if(M.phase === "turn" && turnCheck()) changed = true; // chi è sparito da un po' non si aspetta più
@@ -1691,7 +1691,11 @@ function toReveal(){
   M.phase = "reveal"; M.revealed = false; M.view = 0;
 }
 /* disegni finiti: nessuno ha indovinato */
+/* coppia: se uno dei due sparisce a metà turno il tempo si ferma, e riparte quando rientra */
+function duoPause(){ if(isDuo() && M.phase === "turn" && M.paused == null){ M.paused = Math.max(0, M.endsAt - Date.now()); clearTimeout(NET.turnT); } }
+const duoElapsed = () => M.seconds*1000 - (M.paused != null ? M.paused : M.endsAt - Date.now());
 function turnCheck(){
+  if(isDuo()) return false;
   if(M.phase === "turn" && !stillDrawing().length){ toReveal(); return true; }
   if(M.phase === "reveal" && M.view >= M.queue.length){ mpEndTurn({reason:"none"}); return true; }
   return false;
@@ -1719,7 +1723,7 @@ function mpRemove(id){
 }
 function playerBack(p){
   p.on = true; delete p.offAt;
-  if(M.phase === "turn" && M.paused != null && p.id === guesserId()){ M.endsAt = Date.now() + Math.max(M.paused, 10000); M.paused = null; armTurnTimer(); }
+  if(M.phase === "turn" && M.paused != null && (isDuo() ? M.players.every(x => x.on) : p.id === guesserId())){ M.endsAt = Date.now() + Math.max(M.paused, 10000); M.paused = null; armTurnTimer(); }
 }
 const DRAW_WORDS = {
   beginner: ["Casa", "Sole", "Albero", "Gatto", "Pesce", "Mela", "Banana", "Ombrello", "Occhiali", "Chiave", "Barca", "Fiore", "Luna", "Pizza", "Gelato", "Cappello", "Scarpa", "Bicicletta", "Automobile", "Treno", "Aereo", "Pallone", "Nuvola", "Fungo", "Uovo", "Candela", "Forbici", "Tazza", "Libro", "Orologio", "Lampadina", "Torta", "Ragno", "Serpente", "Lumaca", "Farfalla", "Cane", "Montagna", "Pennello", "Matita", "Bottiglia", "Sedia", "Finestra", "Chitarra", "Cactus", "Ciambella", "Anguria", "Carota", "Martello", "Aquilone", "Stella", "Cuore", "Pera", "Ciliegia", "Fragola", "Limone", "Uva", "Ananas", "Pomodoro", "Patata", "Cipolla", "Formaggio", "Panino", "Hamburger", "Biscotto", "Caramella", "Lecca-lecca", "Cucchiaio", "Forchetta", "Coltello", "Piatto", "Pentola", "Bicchiere", "Letto", "Tavolo", "Lampada", "Porta", "Scala", "Divano", "Televisore", "Telefono", "Computer", "Cuffie", "Fuoco", "Pioggia", "Neve", "Fulmine", "Onda", "Isola", "Spiaggia", "Conchiglia", "Granchio", "Balena", "Squalo", "Tartaruga", "Rana", "Uccello", "Gallina", "Mucca", "Maiale", "Pecora", "Cavallo", "Coniglio", "Topo", "Elefante", "Leone", "Scimmia", "Orso", "Ape", "Formica", "Coccodrillo", "Gufo", "Anatra", "Dente", "Occhio", "Naso", "Mano", "Piede", "Orecchio", "Calzino", "Guanto", "Sciarpa", "Maglietta", "Pantaloni", "Borsa", "Anello", "Collana", "Regalo", "Palloncino", "Campana", "Tamburo", "Razzo", "Nave", "Autobus", "Moto", "Camion", "Ruota", "Ancora", "Bandiera", "Freccia", "Lucchetto", "Specchio", "Spazzolino", "Pettine", "Doccia", "Cravatta", "Pinguino", "Ghiacciolo", "Ciuccio", "Bambola", "Orsacchiotto", "Trottola", "Dado", "Cubo", "Secchiello", "Paletta", "Scivolo", "Noce", "Castagna", "Pigna", "Foglia", "Erba", "Sasso", "Roccia", "Collina", "Fiume", "Lago", "Mare", "Strada", "Sentiero", "Recinto", "Cancello", "Muro", "Tetto", "Camino", "Fumo", "Pozzanghera", "Goccia", "Vento", "Ghiaccio", "Fiocco di neve", "Sole che tramonta", "Astronave", "Mostro", "Regina", "Torre", "Scudo", "Arco", "Freccia nel bersaglio", "Bersaglio", "Moneta", "Portafoglio", "Chiave inglese", "Cacciavite", "Chiodo", "Vite", "Sega", "Ascia", "Pala", "Rastrello", "Annaffiatoio", "Vaso di fiori", "Girasole", "Rosa", "Tulipano", "Margherita", "Palma", "Abete", "Quercia", "Tronco", "Ramo", "Nido", "Uovo di Pasqua", "Pulcino", "Gallo", "Oca", "Cigno", "Pappagallo", "Aquila", "Corvo", "Passerotto", "Gabbiano", "Volpe", "Lupo", "Cervo", "Scoiattolo", "Talpa", "Criceto", "Osso", "Cuccia", "Guinzaglio", "Ciotola", "Pesce rosso", "Stella marina", "Cavalluccio marino", "Polipo", "Delfino", "Foca", "Tricheco", "Orca", "Rinoceronte", "Tigre", "Ghepardo", "Panda", "Cammello", "Lama", "Gorilla", "Bruco", "Coccinella", "Zanzara", "Mosca", "Libellula", "Lucciola", "Verme", "Serpente a sonagli", "Lucertola", "Mammut", "Ombrellino", "Impermeabile", "Stivali", "Cappotto", "Giacca", "Gonna", "Vestito", "Felpa", "Pigiama", "Costume da bagno", "Pantofole", "Sandali", "Cintura", "Bottone", "Cerniera", "Corona di fiori", "Orecchini", "Braccialetto", "Rossetto", "Profumo", "Saponetta", "Asciugamano", "Vasca da bagno", "Water", "Lavandino", "Rubinetto", "Spazzola", "Phon", "Rasoio", "Dentifricio", "Carta igienica", "Cestino", "Scopa", "Secchio", "Mocio", "Spugna", "Molletta", "Gruccia", "Armadio", "Cassetto", "Comodino", "Sveglia", "Cuscino", "Coperta", "Materasso", "Tenda", "Tappeto", "Quadro", "Cornice", "Vaso", "Candelabro", "Lampadario", "Interruttore", "Presa elettrica", "Batteria", "Penna", "Gomma", "Righello", "Temperino", "Quaderno", "Astuccio", "Pastelli", "Colla", "Scotch", "Graffetta", "Busta", "Francobollo", "Cartolina", "Giornale", "Lettera", "Pacco", "Calendario", "Globo", "Lente", "Radio", "Altoparlante", "Tastiera", "Mouse", "Tablet", "Videogioco", "Forno", "Microonde", "Frullatore", "Teiera", "Padella", "Mestolo", "Grattugia", "Scolapasta", "Tagliere", "Mattarello", "Barattolo", "Lattina", "Cannuccia", "Tovagliolo", "Tovaglia", "Vassoio", "Brocca", "Uovo fritto", "Pane", "Grissino", "Cornetto", "Brioche", "Pancake", "Waffle", "Muffin", "Cioccolato", "Panna", "Budino", "Marmellata", "Miele", "Burro", "Prosciutto", "Salame", "Salsiccia", "Pollo arrosto", "Bistecca", "Hot dog", "Lasagna", "Riso", "Insalata", "Zuppa", "Peperoncino", "Peperone", "Melanzana", "Zucchina", "Zucca", "Broccolo", "Cavolfiore", "Aglio", "Funghi porcini", "Mais", "Piselli", "Fagioli", "Cocco", "Kiwi", "Pesca", "Arancia", "Mandarino", "Mirtillo", "Lampone", "Melone", "Avocado", "Nocciola", "Arachide", "Bibita", "Succo di frutta", "Latte", "Tè", "Caffè", "Medaglia", "Trofeo", "Fischietto", "Cronometro", "Racchetta da tennis", "Pallina da tennis", "Mazza da baseball", "Guantone", "Porta da calcio", "Rete", "Slittino", "Canoa", "Remo", "Camion dei pompieri", "Auto della polizia", "Taxi", "Tram", "Metropolitana", "Strisce pedonali", "Cartello stradale", "Benzinaio", "Parcheggio", "Garage", "Sacco a pelo", "Torcia", "Falò", "Lanterna", "Fiammifero", "Accendino", "Renna", "Calza della Befana", "Maschera", "Cappello da strega", "Scopa volante", "Bacchetta magica", "Coniglio nel cilindro", "Coriandoli", "Marionetta", "Giostra", "Tendone del circo"],
@@ -1799,9 +1803,11 @@ function hostReceive(pid, msg){
       } break;
     case "hello": {
       // stesso nome di un giocatore scollegato: è lui che rientra da un altro "telefono"
-      const ghost = !p && M.players.find(x => !x.on && x.id !== M.host && x.name.toLowerCase() === cleanName(msg.name).toLowerCase());
+      const ghost = !p && M.players.find(x => (!x.on || Date.now() - ((NET.seen || {})[x.id] || 0) > 5000) && x.id !== M.host && x.name.toLowerCase() === cleanName(msg.name).toLowerCase()); // anche se il vecchio telefono non risulta ancora offline
       if(ghost){
         const old = ghost.id; ghost.id = pid; playerBack(ghost);
+        const oc = NET.conns && NET.conns.get(old); if(oc){ NET.conns.delete(old); try{ oc.close(); }catch(e){} }
+        if(isDuo() && M.phase === "turn" && LIVE.key === liveKey()) setTimeout(() => NET.sendTo(pid, {t:"live", key:LIVE.key, k:0, st:LIVE.s, a:LIVE.a}), 300);
         M.scores[pid] = M.scores[old]; delete M.scores[old];
         M.order = M.order.map(x => x === old ? pid : x);
         if(M.queue) M.queue = M.queue.map(x => x === old ? pid : x);
@@ -1825,7 +1831,7 @@ function hostReceive(pid, msg){
     }
     case "bye":
       if(p && p.on){
-        p.on = false; p.offAt = Date.now();
+        p.on = false; p.offAt = Date.now(); duoPause();
         if(M.phase === "turn" || M.phase === "reveal") turnCheck(); // il turno va avanti: chi si scollega può rientrare
         publish();
       } break;
@@ -1860,7 +1866,7 @@ function hostReceive(pid, msg){
     case "dguess": { // coppia: risposte libere finché c'è tempo
       if(!isDuo() || M.phase !== "turn" || pid !== guesserId() || typeof msg.text !== "string") break;
       const text = msg.text.trim().slice(0, 40); if(!text) break;
-      const el = Math.max(0, M.seconds*1000 - (M.endsAt - Date.now())), secs = Math.max(1, Math.ceil(el/1000));
+      const el = Math.max(0, duoElapsed()), secs = Math.max(1, Math.ceil(el/1000));
       if(guessOk(text, M.word)){
         const pts = el <= 20000 ? 3 : el <= 40000 ? 2 : 1, d = drawerId();
         M.scores[pid] += pts; if(d) M.scores[d] = (M.scores[d] || 0) + 1;
@@ -1897,7 +1903,8 @@ function guestReceive(msg){
   if(msg.t === "hb") return;
   if(msg.t === "info"){ NET.info = msg; mpRender(true); }
   else if(msg.t === "full"){ NET.status = "full"; NET.fullMax = msg.max || 16; mpRender(true); }
-  else if(msg.t === "live"){ if(M && msg.key === liveKey() && liveApply(msg)) liveDraw(); }
+  else if(msg.t === "live"){ if(M && msg.key === liveKey() && liveApply(msg)){ liveDraw();
+    if(!amGuesser() && BOARD && !BOARD.strokes.length && LIVE.s.length){ BOARD.strokes = LIVE.s.map(x => ({c:x.c, s:x.s, p:x.p.map(q => [...q])})); NET.liveSent = null; boardRedraw(); boardSave(); } } } // rientro da un altro telefono: ritrovi il tuo disegno
   else if(msg.t === "state"){ M = msg.s; if(M.phase === "turn") mpEndsLocal = Date.now() + M.left; onState(M); }
   else if(msg.t === "drawings"){ MD = msg.imgs || {}; onDrawings(); }
   else if(msg.t === "draw1"){ MD[msg.id] = msg.img; onDrawings(); }
@@ -1964,7 +1971,7 @@ function mpNotes(){
     const host = mpPlayer(M.host);
     if(NET.role === "guest" && NET.status === "reconnecting") items.push(`<div class="note"><i class="spin" aria-hidden="true"></i><span>Collegamento con ${esc(host ? host.name : "l'host")} perso. Mi ricollego da solo, tu resta qui.</span></div>`);
     if(NET.role === "guest" && NET.status === "lost") items.push(`<div class="note"><span>Non riesco più a collegarmi con ${esc(host ? host.name : "l'host")}.</span><div class="nbtns"><button id="g-retry">Riprova</button></div></div>`);
-    if(M.phase === "turn" && M.paused != null){ const g = mpPlayer(guesserId()); if(g && g.id !== NET.myId) items.push(`<div class="note"><span><b>Pausa.</b> ${esc(g.name)} è offline: il tempo riparte quando rientra.</span></div>`); }
+    if(M.phase === "turn" && M.paused != null){ const g = isDuo() ? M.players.find(x => !x.on) : mpPlayer(guesserId()); if(g && g.id !== NET.myId) items.push(`<div class="note"><span><b>Pausa.</b> ${esc(g.name)} è offline: il tempo riparte quando rientra.</span></div>`); }
     if(NET.role === "host" && M.phase !== "final"){
       M.players.filter(p => !p.on && p.id !== NET.myId && p.offAt && Date.now() - p.offAt > GRACE).forEach(p => {
         const min = Math.max(1, Math.round((Date.now() - p.offAt) / 60000));
@@ -2089,7 +2096,7 @@ function duoTry(text, who){
   x.innerHTML = who ? `<span>${esc(who.name)} ha scritto</span><b>${esc(text)}</b>` : `<b>«${esc(text)}»</b><span>no, riprova</span>`;
   document.body.appendChild(x); setTimeout(() => x.remove(), who ? 2200 : 1300);
 }
-function duoPts(){ if(!M || M.phase !== "turn") return 3; const el = M.seconds*1000 - (mpEndsLocal - Date.now()); return el <= 20000 ? 3 : el <= 40000 ? 2 : 1; }
+function duoPts(){ if(!M || M.phase !== "turn") return 3; const el = M.seconds*1000 - (M.paused != null ? M.paused : mpEndsLocal - Date.now()); return el <= 20000 ? 3 : el <= 40000 ? 2 : 1; }
 /* il disegno resta salvato sul telefono: se la pagina si ricarica a metà turno non si perde */
 function boardSave(){ try{ sessionStorage.setItem("ad.board", JSON.stringify({k:NET.code + "|" + BOARD.key, s:BOARD.strokes})); }catch(_){} }
 function boardZoomUI(){ const b = $("#b-fit"); if(b) b.hidden = !BOARD || BOARD.view.z <= 1.01; }
@@ -2137,6 +2144,7 @@ async function mpHostResume(sv){
   if(M.host !== NET.myId){ const h = mpPlayer(M.host); if(h) h.id = NET.myId; M.scores[NET.myId] = M.scores[M.host]; M.order = M.order.map(x => x === M.host ? NET.myId : x); M.host = NET.myId; }
   M.players.forEach(p => { if(p.id !== NET.myId && p.on){ p.on = false; p.offAt = Date.now(); } });
   if(M.phase === "turn" && M.paused == null) M.endsAt = Date.now() + Math.max(15000, sv.M.endsAt - sv.at); // il tempo era fermo mentre l'app era chiusa
+  if(isDuo()) duoPause();
   prevPhase = M.phase;
   go("mp");
   for(let i = 0; i < 20; i++){
@@ -2240,7 +2248,7 @@ function animateLB(){
 /* avatar grande in sala d'attesa con il tasto per il selfie (mai obbligatorio) */
 const CAM_ICON = `<svg class="camic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5 10 4h4l1.5 2.5" fill="var(--mango)"/><rect x="2.5" y="6.5" width="19" height="14" rx="4" fill="var(--pink)"/><circle cx="12" cy="13.5" r="4.6" fill="var(--night)" stroke="var(--mint)" stroke-width="2.2"/><circle cx="18" cy="9.6" r="1.1" fill="var(--mango)"/></svg>`;
 function selfieAv(me){
-  return `<div class="selfiewrap">${av(me, "big-av")}<button class="btn ghost selfie-cta" data-selfie="1">${PH[me.id] ? "${CAM_ICON} Rifai il selfie" : "${CAM_ICON} Aggiungi un selfie"}</button>
+  return `<div class="selfiewrap">${av(me, "big-av")}<button class="btn ghost selfie-cta" data-selfie="1">${PH[me.id] ? `${CAM_ICON} Rifai il selfie` : `${CAM_ICON} Aggiungi un selfie`}</button>
     ${PH[me.id] ? `<button class="linkbtn" data-selfie-del="1">Togli la foto</button>` : `<p class="hint" style="margin:0">Facoltativo: lo vedono solo i giocatori di stasera.</p>`}</div>`;
 }
 /* scatto: fotocamera frontale, ritaglio quadrato 96 px, jpeg leggero. Non viene salvato da nessuna parte */
@@ -2404,8 +2412,8 @@ function mpView(){
         ${av(amGuesser() ? me : d, "big-av")}<div><h1>${amGuesser() ? "Tocca a te indovinare" : "Tocca a te disegnare"}</h1>
         <p class="lead">${amGuesser() ? `${esc(d ? d.name : "")} disegna, tu lo vedi in diretta. Scrivi la parola appena la riconosci: più sei veloce, più punti prendi.` : `${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi.`}</p></div>
         <div class="duoscale"><span><b>3</b> entro 20 s</span><span><b>2</b> entro 40 s</span><span><b>1</b> entro 60 s</span></div>
-        <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button>
-        <p class="hint" style="text-align:center;margin:0">Può premere Via chiunque dei due.</p></section>`; }
+        <p class="hint" style="text-align:center;margin:0">Può premere Via chiunque dei due.</p>
+        <div class="spacer"></div><button class="btn stickybtn" id="mp-go" style="width:100%">Via!</button></section>`; }
       if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(me, "big-av")}<div><h1>Tocca a te!</h1>
         <p class="lead">Gli altri disegnano, tu aspetti. Poi scopri i disegni e indovini.</p></div>
