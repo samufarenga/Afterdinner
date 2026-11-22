@@ -152,7 +152,7 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 .wt{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:var(--glass);font-size:.85rem;font-family:var(--display);transition:all .3s}
 .wt .av{width:22px;height:22px;font-size:.7rem}
 .wt.ok{background:rgba(255,79,109,.25);box-shadow:inset 0 0 0 1.5px var(--red2)}
-.wt.ok::after{content:"✓";color:var(--gold);font-weight:700}
+.wt.ok::after{content:"";width:13px;height:13px;margin-right:2px;background:var(--gold);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
 .dots::after{content:"";animation:dots 1.4s steps(4) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 .rev{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -243,6 +243,41 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 .sheet ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .sheet b{color:var(--paper)}
 
+/* ---------- icone ---------- */
+.ic{width:1.15em;height:1.15em;vertical-align:-.22em;display:inline-block;flex:none;overflow:visible}
+.ic.i-pig,.ic.i-snout{color:#ff9fb6}
+.ic.i-flame{color:#ff7a45}
+.ic.i-chili{color:#ff3b5c}
+.ic.i-heart{color:#ff4f8b}
+.ic.i-crown{color:var(--gold)}
+.ic.i-halo{color:#ffe7a3}
+.ic.i-zip{color:#ffb3c0}
+.ic.i-check{color:var(--gold)}
+.ic.i-x{color:#ff8197}
+.ic.i-lips{color:#ff3b6b}
+.chilis{display:inline-flex;gap:0;vertical-align:-.2em}
+.chilis .ic{margin-right:-.25em}
+.btn .ic,.front .ic,.bulb .ic{color:#fff}
+.btn.gold .ic{color:#3a0800}
+.btn.ghost .ic.i-pig,.btn.ghost .ic.i-snout{color:#ff9fb6}
+.btn.ghost .ic.i-halo{color:#ffe7a3}
+.front .tag .ic{width:1.05em;height:1.05em}
+.snouts{display:inline-flex;gap:1px;vertical-align:-.22em}
+.snouts .ic{width:1.05em;height:1.05em}
+.emblem .ic{width:58%;height:58%;color:#ffe3e8}
+.opt .em{display:flex;gap:2px;justify-content:center;height:1.5rem}
+.opt .em .ic{width:1.5rem;height:1.5rem;color:var(--paper)}
+.opt .em .chilis .ic{color:#ff3b5c}
+.rules li span .ic{color:var(--pink)}
+.rules li span .ic.i-snout{color:#ff9fb6}
+.discard .ic{width:18px;height:18px;vertical-align:middle}
+.ib .ic{width:20px;height:20px}
+.nrow .x .ic{width:16px;height:16px;color:var(--muted)}
+.cd b .ic{width:1em;height:1em;color:#fff}
+.heart .ic,.confetti .ic,.snout .ic{width:1em;height:1em}
+.bulb .ic{width:16px;height:16px}
+.overlay .ic{width:1em;height:1em}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}
 }
@@ -270,9 +305,41 @@ const PEER_PREFIX = "afterdinner-porc-v1-";
 const PIN_HASH = "318aee3fed8c9d040d35a7fc1fa776fb31303833aa2de885354ddf3d44d8fb69"; // come in index.html
 const LOCK_ON = !!PIN_HASH && /github\.io$/.test(location.hostname);
 const SAVE_KEY = "ad.porc", SAVE_TTL = 3 * 3600e3;
-const LV = {1:{n:"Tiepido", c:"🌶", d:"Flirt e imbarazzi"}, 2:{n:"Bollente", c:"🌶🌶", d:"Si parla di sesso"}, 3:{n:"Senza vergogna", c:"🌶🌶🌶", d:"Niente filtri"}};
+/* ---------- icone disegnate (niente emoji della tastiera) ---------- */
+const sv = (cls, body) => `<svg class="ic i-${cls}" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+const STK = 'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+const I = {
+  pig: sv("pig", `<path d="M5.2 8.6 4 3.2l5.2 2.6zM18.8 8.6 20 3.2l-5.2 2.6z" fill="currentColor"/><circle cx="12" cy="13" r="8" fill="currentColor"/><ellipse cx="12" cy="15.4" rx="4.2" ry="3" fill="#c2185b" opacity=".5"/><circle cx="10.5" cy="15.4" r=".95" fill="#5a0a1f"/><circle cx="13.5" cy="15.4" r=".95" fill="#5a0a1f"/><circle cx="8.8" cy="10.8" r="1.1" fill="#5a0a1f"/><circle cx="15.2" cy="10.8" r="1.1" fill="#5a0a1f"/>`),
+  snout: sv("snout", `<ellipse cx="12" cy="12" rx="9.5" ry="7" fill="currentColor"/><ellipse cx="12" cy="11" rx="7" ry="4.6" fill="#fff" opacity=".18"/><ellipse cx="8.8" cy="12.2" rx="1.7" ry="2.6" fill="#5a0a1f"/><ellipse cx="15.2" cy="12.2" rx="1.7" ry="2.6" fill="#5a0a1f"/>`),
+  flame: sv("flame", `<path d="M12 2.3c.9 3.3 3.8 4.9 5.1 7.7 1.6 3.4.5 7.8-2.8 9.6-3.5 1.9-8.2.4-9.6-3.4-1-2.7-.1-5.5 1.7-7.4.2 1.7 1 2.9 2.3 3.5-.4-3.8.9-7.4 3.3-10z" fill="currentColor"/><path d="M12.4 12.3c1.7 1.5 2.5 3.2 2 4.8-.5 1.6-2.3 2.4-3.8 1.7-1.4-.7-1.8-2.3-1.1-3.7.4.8 1 1.3 1.7 1.3-.4-1.5 0-3 1.2-4.1z" fill="#ffe2a8"/>`),
+  chili: sv("chili", `<path d="M5.6 20.6c6.8 1.2 13-4.8 12.8-11.6-.1-1.8-1.3-2.7-2.6-2.7-1.7 0-2.7 1.4-3.3 3.5-1 3.5-3.8 6.6-7.7 7.9-1.5.5-1.3 2.6.8 2.9z" fill="currentColor"/><path d="M15.9 6.4c-.2-2 .7-3.5 2.7-4.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M13.6 10.8c-.8 2.4-2.6 4.5-5 5.6" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".45"/>`),
+  heart: sv("heart", `<path d="M12 20.6S3.4 15.4 3.4 9.3C3.4 6.6 5.5 4.4 8.2 4.4c1.6 0 3 .8 3.8 2.1.8-1.3 2.2-2.1 3.8-2.1 2.7 0 4.8 2.2 4.8 4.9 0 6.1-8.6 11.3-8.6 11.3z" fill="currentColor"/><path d="M7 7.6c-1.1.4-1.7 1.4-1.7 2.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>`),
+  match: sv("heart", `<path d="M12 20.6S3.4 15.4 3.4 9.3C3.4 6.6 5.5 4.4 8.2 4.4c1.6 0 3 .8 3.8 2.1.8-1.3 2.2-2.1 3.8-2.1 2.7 0 4.8 2.2 4.8 4.9 0 6.1-8.6 11.3-8.6 11.3z" fill="currentColor"/><path d="M1.8 20.2 21.6 3.6M17 3.4h4.8v4.8M1.8 20.2l2.6-.3-.2-2.4" fill="none" stroke="#ffd86b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>`),
+  broken: sv("heart", `<path d="M12 20.6S3.4 15.4 3.4 9.3C3.4 6.6 5.5 4.4 8.2 4.4c1.6 0 3 .8 3.8 2.1.8-1.3 2.2-2.1 3.8-2.1 2.7 0 4.8 2.2 4.8 4.9 0 6.1-8.6 11.3-8.6 11.3z" fill="currentColor"/><path d="M12 6.5 10.3 10.2l2.9 2.1-2.1 3.9" fill="none" stroke="#12020a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`),
+  target: sv("target", `<circle cx="12" cy="12" r="8.6" ${STK}/><circle cx="12" cy="12" r="4.6" ${STK}/><circle cx="12" cy="12" r="1.8" fill="currentColor"/>`),
+  point: sv("point", `<circle cx="17.5" cy="6.5" r="3" fill="currentColor"/><path d="M12.5 20c.4-4 2.3-6.3 5-6.3s4.6 2.3 5 6.3" fill="currentColor"/><path d="M2 12.5h8.5M7.5 9.5l3 3-3 3" ${STK}/>`),
+  lips: sv("lips", `<path d="M2.5 12c2.6-3.6 5.2-5.1 6.8-4.3.9.5 1.7.9 2.7.9s1.8-.4 2.7-.9c1.6-.8 4.2.7 6.8 4.3-2.6 4.1-5.7 6.1-9.5 6.1S5.1 16.1 2.5 12z" fill="currentColor"/><path d="M2.5 12c3.2 1 6.3 1.4 9.5 1.4s6.3-.4 9.5-1.4" fill="none" stroke="#5a0a1f" stroke-width="1.4" stroke-linecap="round"/>`),
+  flag: sv("flag", `<path d="M5.5 21.5V3" ${STK}/><path d="M5.5 4.2c3-1.6 5.2 1.4 8.2-.1s4.6-.8 4.6-.8v8.3s-1.6-.7-4.6.8-5.2-1.5-8.2.1z" fill="currentColor"/>`),
+  lock: sv("lock", `<rect x="4.8" y="10.2" width="14.4" height="10.6" rx="2.8" fill="currentColor"/><path d="M8 10.2V7.8a4 4 0 0 1 8 0v2.4" ${STK}/><circle cx="12" cy="15.4" r="1.5" fill="#5a0a1f"/>`),
+  phone: sv("phone", `<rect x="6.5" y="2.5" width="11" height="19" rx="3" ${STK}/><path d="M10.5 18.2h3" ${STK}/>`),
+  phones: sv("phone", `<rect x="1.8" y="6" width="8" height="14" rx="2.2" ${STK}/><rect x="14.2" y="6" width="8" height="14" rx="2.2" ${STK}/><rect x="8" y="3" width="8" height="15" rx="2.2" fill="currentColor" stroke="currentColor" stroke-width="2.2"/><path d="M10.8 15.4h2.4" fill="none" stroke="#5a0a1f" stroke-width="1.8" stroke-linecap="round"/>`),
+  halo: sv("halo", `<ellipse cx="12" cy="4.6" rx="6" ry="2.1" ${STK}/><circle cx="12" cy="14.6" r="6.4" fill="currentColor"/><path d="M9.3 15.6c1.5 1.4 3.9 1.4 5.4 0" fill="none" stroke="#5a0a1f" stroke-width="1.5" stroke-linecap="round"/><circle cx="9.6" cy="12.8" r=".9" fill="#5a0a1f"/><circle cx="14.4" cy="12.8" r=".9" fill="#5a0a1f"/>`),
+  crown: sv("crown", `<path d="M3 8.2l4.6 4L12 4.8l4.4 7.4L21 8.2l-1.9 10.6H4.9z" fill="currentColor"/><path d="M5 21h14" ${STK}/>`),
+  zip: sv("zip", `<circle cx="12" cy="12" r="9" fill="currentColor"/><path d="M7 14.4h10" fill="none" stroke="#5a0a1f" stroke-width="1.8" stroke-linecap="round"/><path d="M8.6 12.9v3M11 12.9v3M13.4 12.9v3M15.8 12.9v3" fill="none" stroke="#5a0a1f" stroke-width="1.2" stroke-linecap="round"/><circle cx="9" cy="9" r="1" fill="#5a0a1f"/><circle cx="15" cy="9" r="1" fill="#5a0a1f"/>`),
+  eyeoff: sv("eye", `<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z" ${STK}/><circle cx="12" cy="12" r="2.8" fill="currentColor"/><path d="M4 20 20 4" ${STK}/>`),
+  eye: sv("eye", `<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z" ${STK}/><circle cx="12" cy="12" r="2.8" fill="currentColor"/>`),
+  question: sv("question", `<circle cx="12" cy="12" r="9.2" ${STK}/><path d="M9.4 9.5a2.7 2.7 0 1 1 3.8 2.5c-.8.4-1.2 1-1.2 1.8v.5" ${STK}/><circle cx="12" cy="17.2" r="1.2" fill="currentColor"/>`),
+  hand: sv("hand", `<path d="M8 21v-5.8L5.3 11.6a1.6 1.6 0 0 1 2.5-2L9 11V4.6a1.5 1.5 0 0 1 3 0V10V3.6a1.5 1.5 0 0 1 3 0V10V5.2a1.5 1.5 0 0 1 3 0v8.6c0 4.4-2.6 7.2-6.2 7.2z" fill="currentColor"/>`),
+  check: sv("check", `<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`),
+  x: sv("x", `<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>`),
+  arrow: sv("arrow", `<path d="M4 12h15M13.5 6.5 19 12l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
+  refresh: sv("refresh", `<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M19.8 3.8v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`),
+  more: sv("more", `<circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/>`)
+};
+const chilis = n => `<span class="chilis">${I.chili.repeat(n)}</span>`;
+const LV = {1:{n:"Tiepido", d:"Flirt e imbarazzi"}, 2:{n:"Bollente", d:"Si parla di sesso"}, 3:{n:"Senza vergogna", d:"Niente filtri"}};
 const TY = {v:"Verità", p:"Chi è più probabile", n:"Io non ho mai", i:"Indovina", m:"Match"};
-const TYI = {v:"🔥", p:"👉", n:"🙊", i:"🎯", m:"💘"};
+const TYI = {v:I.flame, p:I.point, n:I.lips, i:I.target, m:I.match};
 const LENS = [[15,"Breve"],[25,"Media"],[40,"Lunga"]];
 const COLORS = ["#ff8a8a","#ffb86b","#ffe07a","#ff9ecf","#d9a3ff","#ff9d7a","#ff6fa8","#ffc4b0","#ff7b7b","#ffd28a","#e79bff","#ffadc6"];
 const PIG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 7.2 4.5 2.8 9.6 5.2z M17.8 7.2l1.7-4.4-5.1 2.4z" fill="currentColor" stroke-width="1.4"/><circle cx="12" cy="13.2" r="7.6"/><ellipse cx="12" cy="15.8" rx="4" ry="2.8" stroke-width="1.8"/><circle cx="10.6" cy="15.8" r=".8" fill="currentColor" stroke="none"/><circle cx="13.4" cy="15.8" r=".8" fill="currentColor" stroke="none"/><circle cx="9" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10.5" r="1" fill="currentColor" stroke="none"/></svg>`;
@@ -537,7 +604,7 @@ function hostReceive(pid, msg){
         else {
           if(G.players.length >= 12){ NET.sendTo(pid, {t:"full"}); return; }
           G.players.push(newPlayer(pid, uniqueName(name, pid), G.players.length));
-          G.fxq = G.fxq || []; G.fxq.push({k:"toast", txt:`${uniqueName(name, pid)} è entrato 🔥`});
+          G.fxq = G.fxq || []; G.fxq.push({k:"toast", txt:`${uniqueName(name, pid)} è entrato`, ic:"flame"});
         }
       } else { p.on = true; if(name && G.phase === "lobby") p.name = uniqueName(name, pid); }
       commit(); break;
@@ -648,29 +715,29 @@ function topbar(){
   const lv = G && G.card ? G.card.lvl : (G && G.phase === "end" ? 3 : 1);
   const host = amHost() && G && G.phase === "play";
   return `<header class="top"><div class="brand">${PIG}<span>Porcellino</span></div>
-    <div class="thermo" style="--p:${(prog * 100).toFixed(1)}%" title="Temperatura"><span class="bulb">${LV[lv].c.slice(0, 2)}</span><div class="tube"><b></b></div></div>
-    <div class="tools"><button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">⋯</button>` : ""}</div></header>`;
+    <div class="thermo" style="--p:${(prog * 100).toFixed(1)}%" title="Temperatura"><span class="bulb">${I.chili}</span><div class="tube"><b></b></div></div>
+    <div class="tools"><button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">${I.more}</button>` : ""}</div></header>`;
 }
 function chips(){
   const c = G.card;
   return `<div class="chips in" style="--d:1">${G.players.map(p => `<div class="chip ${p.out ? "out" : ""} ${p.on === false ? "off" : ""} ${c && c.target === p.id ? "turn" : ""}" data-chip="${p.id}" style="--c:${p.color}">
-    <i>${esc(initial(p.name))}</i><span><b>${esc(p.name)}${p.id === NET.me && G.mode === "all" ? " (tu)" : ""}</b><small>🐷 ${p.pts} · ${p.out ? "fuori" : p.passes ? "🐽".repeat(p.passes) : "niente passi"}</small></span></div>`).join("")}</div>`;
+    <i>${esc(initial(p.name))}</i><span><b>${esc(p.name)}${p.id === NET.me && G.mode === "all" ? " (tu)" : ""}</b><small>${I.pig} ${p.pts} · ${p.out ? "fuori" : p.passes ? `<span class="snouts">${I.snout.repeat(p.passes)}</span>` : "niente passi"}</small></span></div>`).join("")}</div>`;
 }
 function cardHTML(c, small){
   const t = c.target && P(c.target);
   return `<div class="stage in" style="--d:2"><div class="card ${small ? "small" : ""}"><div class="inner">
     <div class="face back">${PIG}</div>
     <div class="face front">
-      <div class="ctop"><span class="tag">${TYI[c.t]} ${TY[c.t]}</span><span class="lv" title="${LV[c.lvl].n}">${LV[c.lvl].c}</span></div>
+      <div class="ctop"><span class="tag">${TYI[c.t]} ${TY[c.t]}</span><span class="lv" title="${LV[c.lvl].n}">${chilis(c.lvl)}</span></div>
       <p class="q">${esc(qText(c))}</p>
       <div class="cbot">${t ? `<span class="who">${av(t)}Tocca a <b>${esc(t.name)}</b></span>` : `<span class="who" style="padding:6px 14px">${c.t === "m" || c.t === "p" ? "Tutti scelgono" : "Tutti rispondono"}</span>`}</div>
-      ${amHost() ? `<button class="discard" data-a="discard" aria-label="Scarta carta" title="Scarta carta">↻</button>` : ""}
+      ${amHost() ? `<button class="discard" data-a="discard" aria-label="Scarta carta" title="Scarta carta">${I.refresh}</button>` : ""}
     </div></div></div></div>`;
 }
 function passBtn(who, mine){
   if(!who) return "";
-  if(who.passes > 0) return `<button class="btn ghost" data-a="pass">${mine ? "Passo" : "Passa"} 🐽<small>· ${who.passes}</small></button>`;
-  return `<button class="btn ghost danger" data-a="refuse-ask">${mine ? "Mi rifiuto" : "Si rifiuta"} 🏳️</button>`;
+  if(who.passes > 0) return `<button class="btn ghost" data-a="pass">${mine ? "Passo" : "Passa"} ${I.snout}<small>· ${who.passes}</small></button>`;
+  return `<button class="btn ghost danger" data-a="refuse-ask">${mine ? "Mi rifiuto" : "Si rifiuta"} ${I.flag}</button>`;
 }
 function pickGrid(list, multi){
   return `<div class="pick in" style="--d:4">${list.map(p => `<button class="pk ${UI.sel.includes(p.id) ? "on" : ""}" data-pick="${p.id}" data-multi="${multi ? 1 : 0}">${av(p)}<span>${esc(p.name)}</span></button>`).join("")}</div>`;
@@ -681,7 +748,7 @@ function waits(){
 }
 function numOrYn(c, idNum, act){
   if(c.k === "yn") return `<div class="row in" style="--d:4"><button class="btn ghost" data-a="${act}" data-v="n">No</button><button class="btn" data-a="${act}" data-v="y">Sì</button></div>`;
-  return `<div class="in" style="--d:4;display:flex;flex-direction:column;gap:12px"><input class="field" id="${idNum}" type="number" inputmode="numeric" min="0" max="9999" placeholder="Un numero" autocomplete="off"><button class="btn" data-a="${act}" data-num="${idNum}">Conferma 🔒</button></div>`;
+  return `<div class="in" style="--d:4;display:flex;flex-direction:column;gap:12px"><input class="field" id="${idNum}" type="number" inputmode="numeric" min="0" max="9999" placeholder="Un numero" autocomplete="off"><button class="btn" data-a="${act}" data-num="${idNum}">Conferma ${I.lock}</button></div>`;
 }
 const ynTxt = v => v === "y" ? "Sì" : v === "n" ? "No" : v;
 
@@ -694,12 +761,12 @@ const VIEWS = {
     <div class="in" style="--d:1"><span class="eyebrow">Solo per maggiorenni</span><h1 class="big" style="margin-top:8px">Porcellino</h1></div>
     <p class="lead in" style="--d:2">Domande spinte e verità scomode sul sesso, tra adulti consenzienti. Si gioca solo se tutti hanno almeno 18 anni e hanno voglia di esserci.</p>
     <ul class="rules in" style="--d:3">
-      <li><span>🐽</span><div>Ognuno ha <b>3 passi</b> per tutta la partita, senza dare spiegazioni.</div></li>
-      <li><span>🏳️</span><div>Finiti i passi, chi si rifiuta di rispondere <b>perde ed esce</b>.</div></li>
-      <li><span>↻</span><div>Se qualcuno è davvero a disagio, l'host scarta la carta e nessuno perde niente.</div></li>
+      <li><span>${I.snout}</span><div>Ognuno ha <b>3 passi</b> per tutta la partita, senza dare spiegazioni.</div></li>
+      <li><span>${I.flag}</span><div>Finiti i passi, chi si rifiuta di rispondere <b>perde ed esce</b>.</div></li>
+      <li><span>${I.refresh}</span><div>Se qualcuno è davvero a disagio, l'host scarta la carta e nessuno perde niente.</div></li>
     </ul>
     <div class="grow"></div>
-    <button class="btn pulse in" style="--d:4" data-a="adult">Siamo tutti maggiorenni 🔥</button>
+    <button class="btn pulse in" style="--d:4" data-a="adult">Siamo tutti maggiorenni ${I.flame}</button>
     <button class="link in" style="--d:5" data-a="exit">Torna ad AfterDinner</button>
   </div>`,
   resume: () => { const sv = ls.get(SAVE_KEY, null), g = sv && sv.G;
@@ -712,10 +779,10 @@ const VIEWS = {
     <div class="in"><span class="eyebrow">Porcellino · 18+</span><h1 class="big" style="margin-top:6px">Come giochiamo?</h1></div>
     ${UI.err ? `<p class="hint in" style="color:#ffb3c0">${esc(UI.err)}</p>` : ""}
     <div class="in" style="--d:1"><p class="lbl">Telefoni</p><div class="seg">
-      <button class="opt ${UI.mode === "one" ? "on" : ""}" data-set="mode" data-v="one"><span class="em">📱</span><b>Uno che gira</b><small>Si risponde ad alta voce</small></button>
-      <button class="opt ${UI.mode === "all" ? "on" : ""}" data-set="mode" data-v="all"><span class="em">📱📱📱</span><b>Ognuno il suo</b><small>Risposte segrete, poi si scopre tutto</small></button></div></div>
+      <button class="opt ${UI.mode === "one" ? "on" : ""}" data-set="mode" data-v="one"><span class="em">${I.phone}</span><b>Uno che gira</b><small>Si risponde ad alta voce</small></button>
+      <button class="opt ${UI.mode === "all" ? "on" : ""}" data-set="mode" data-v="all"><span class="em">${I.phones}</span><b>Ognuno il suo</b><small>Risposte segrete, poi si scopre tutto</small></button></div></div>
     <div class="in" style="--d:2"><p class="lbl">Fin dove arriviamo?</p><div class="seg three">
-      ${[1,2,3].map(l => `<button class="opt ${UI.max === l ? "on" : ""}" data-set="max" data-v="${l}"><span class="em">${LV[l].c}</span><b>${LV[l].n}</b><small>${LV[l].d}</small></button>`).join("")}</div>
+      ${[1,2,3].map(l => `<button class="opt ${UI.max === l ? "on" : ""}" data-set="max" data-v="${l}"><span class="em">${chilis(l)}</span><b>${LV[l].n}</b><small>${LV[l].d}</small></button>`).join("")}</div>
       <p class="hint" style="margin-top:8px">Si parte tiepidi e la temperatura sale carta dopo carta.</p></div>
     <div class="in" style="--d:3"><p class="lbl">Durata</p><div class="seg three">
       ${LENS.map(([n, l]) => `<button class="opt ${UI.total === n ? "on" : ""}" data-set="total" data-v="${n}"><b>${l}</b><small>${n} carte</small></button>`).join("")}</div></div>
@@ -727,16 +794,16 @@ const VIEWS = {
     <div class="in"><span class="eyebrow">Un telefono che gira</span><h1 class="big" style="margin-top:6px">Chi gioca?</h1></div>
     <div class="names in" style="--d:1">${UI.names.map((n, i) => `<div class="nrow"><span class="av" style="--c:${COLORS[i % COLORS.length]}">${esc(initial(n || String(i + 1)))}</span>
       <input class="field l" data-name="${i}" value="${esc(n)}" placeholder="Giocatore ${i + 1}" maxlength="16" autocomplete="off" enterkeyhint="next">
-      ${UI.names.length > 3 ? `<button class="x" data-del="${i}" aria-label="Togli">✕</button>` : ""}</div>`).join("")}</div>
+      ${UI.names.length > 3 ? `<button class="x" data-del="${i}" aria-label="Togli">${I.x}</button>` : ""}</div>`).join("")}</div>
     ${UI.names.length < 12 ? `<button class="btn ghost in" style="--d:2" data-a="addname">+ Aggiungi giocatore</button>` : ""}
     <div class="grow"></div>
     <p class="hint">Da 3 a 12 giocatori.</p>
-    <div class="row in" style="--d:3"><button class="btn ghost" data-a="back-setup">Indietro</button><button class="btn" data-a="names-go" ${ok >= 3 ? "" : "disabled"}>Si comincia 🔥</button></div>
+    <div class="row in" style="--d:3"><button class="btn ghost" data-a="back-setup">Indietro</button><button class="btn" data-a="names-go" ${ok >= 3 ? "" : "disabled"}>Si comincia ${I.flame}</button></div>
   </div>`; },
   lobby: () => { const n = G.players.length, me = P(NET.me);
     return `<div class="screen">
     ${topbar()}
-    <div class="in" style="text-align:center"><span class="eyebrow">${LV[G.max].c} ${LV[G.max].n} · ${G.total} carte</span><h1 class="big" style="margin-top:6px">Entrate, se avete il coraggio</h1></div>
+    <div class="in" style="text-align:center"><span class="eyebrow">${chilis(G.max)} ${LV[G.max].n} · ${G.total} carte</span><h1 class="big" style="margin-top:6px">Entrate, se avete il coraggio</h1></div>
     <div class="qr in" style="--d:1" id="qrbox"></div>
     <div class="code in" style="--d:1">${NET.code}</div>
     <div class="row in" style="--d:2"><button class="btn ghost" data-a="copy">Copia link</button><button class="btn ghost" data-a="share">Condividi</button></div>
@@ -744,7 +811,7 @@ const VIEWS = {
     <div class="in" style="--d:4"><p class="lbl">Dentro (${n})</p><div class="waits" style="justify-content:flex-start">${G.players.map(p => `<span class="wt ok">${av(p)}${esc(p.name)}</span>`).join("")}</div></div>
     <div class="grow"></div>
     <p class="hint">${n < 3 ? `Servono almeno 3 giocatori, ne mancano ${3 - n}.` : "Quando ci siete tutti, si parte."}</p>
-    <div class="row in" style="--d:5"><button class="btn ghost" data-a="lobby-back">Indietro</button><button class="btn" data-a="lobby-go" ${n >= 3 ? "" : "disabled"}>Si comincia 🔥</button></div>
+    <div class="row in" style="--d:5"><button class="btn ghost" data-a="lobby-back">Indietro</button><button class="btn" data-a="lobby-go" ${n >= 3 ? "" : "disabled"}>Si comincia ${I.flame}</button></div>
   </div>`; },
   join: () => `<div class="screen center">
     <div class="grow"></div>
@@ -753,19 +820,19 @@ const VIEWS = {
     <p class="lead in" style="--d:2">Porcellino è un gioco per adulti: domande spinte sul sesso. Entra solo se hai almeno 18 anni e ti va di giocare.</p>
     <input class="field in" style="--d:3" id="jname" value="${esc(rawName())}" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" enterkeyhint="go">
     <div class="grow"></div>
-    <button class="btn pulse in" style="--d:4" data-a="join">Ho almeno 18 anni, entro 🔥</button>
+    <button class="btn pulse in" style="--d:4" data-a="join">Ho almeno 18 anni, entro ${I.flame}</button>
   </div>`,
   connecting: () => `<div class="screen center"><div class="grow"></div><div class="emblem in">${PIG}</div>
     <h2 class="in" style="--d:1">${NET.status === "reconnecting" ? "Mi ricollego" : "Entro nella stanza"}<span class="dots"></span></h2>
     <p class="lead in" style="--d:2">Tieni il telefono acceso e l'app aperta.</p><div class="grow"></div></div>`,
-  netmsg: () => { const M = {noroom:["Stanza non trovata","Il QR è vecchio o l'host ha chiuso l'app. Chiedi di mostrarti quello nuovo."], full:["Stanza piena","Siete già in 12, il massimo."], closed:["Partita chiusa","L'host ha chiuso la stanza. Grazie di aver giocato 🐷"], lost:["Connessione persa","Non riesco più a raggiungere l'host."]}[NET.status];
+  netmsg: () => { const M = {noroom:["Stanza non trovata","Il QR è vecchio o l'host ha chiuso l'app. Chiedi di mostrarti quello nuovo."], full:["Stanza piena","Siete già in 12, il massimo."], closed:["Partita chiusa",`L'host ha chiuso la stanza. Grazie di aver giocato ${I.pig}`], lost:["Connessione persa","Non riesco più a raggiungere l'host."]}[NET.status];
     return `<div class="screen center"><div class="grow"></div><div class="emblem in">${PIG}</div><h2 class="in" style="--d:1">${M[0]}</h2><p class="lead in" style="--d:2">${M[1]}</p><div class="grow"></div>
     ${NET.status === "closed" || NET.status === "full" ? "" : `<button class="btn in" style="--d:3" data-a="retry">Riprova</button>`}</div>`; },
   wait: () => `<div class="screen">
     ${topbar()}
     <div class="grow"></div>
     <div class="emblem in">${PIG}</div>
-    <div class="in" style="--d:1;text-align:center"><span class="eyebrow">${LV[G.max].c} ${LV[G.max].n} · ${G.total} carte</span><h1 class="big" style="margin-top:6px">Sei dentro, ${esc(P(NET.me).name)}</h1></div>
+    <div class="in" style="--d:1;text-align:center"><span class="eyebrow">${chilis(G.max)} ${LV[G.max].n} · ${G.total} carte</span><h1 class="big" style="margin-top:6px">Sei dentro, ${esc(P(NET.me).name)}</h1></div>
     <p class="hint in" style="--d:2">Aspettiamo che ${esc(P(G.host).name)} dia il via<span class="dots"></span></p>
     <div class="waits in" style="--d:3">${G.players.map(p => `<span class="wt ok">${av(p)}${esc(p.name)}</span>`).join("")}</div>
     <div class="grow"></div>
@@ -783,53 +850,53 @@ function playBody(){
   switch(c.ph){
     case "ask":
       h = cardHTML(c);
-      if(one || iAmT || host) h += `<div class="grow"></div><div class="row in" style="--d:4">${passBtn(t, iAmT && !one)}<button class="btn" data-a="done">${iAmT && !one ? "Ho risposto" : "Ha risposto"} ✓</button></div>`;
+      if(one || iAmT || host) h += `<div class="grow"></div><div class="row in" style="--d:4">${passBtn(t, iAmT && !one)}<button class="btn" data-a="done">${iAmT && !one ? "Ho risposto" : "Ha risposto"} ${I.check}</button></div>`;
       else h += `<div class="grow"></div><p class="hint in" style="--d:4">Ascoltate bene: tocca a ${esc(t.name)}.</p>`;
       break;
     case "vote":
       h = cardHTML(c, true);
-      if(out) h += `<p class="hint in" style="--d:3">Sei fuori dal gioco: goditi lo spettacolo 🍿</p>`;
-      else if(done) h += `<p class="hint in" style="--d:3">${c.ans[NET.me] === "pass" ? "Hai passato." : "Risposta bloccata 🔒"} Aspettiamo gli altri<span class="dots"></span></p>`;
-      else if(c.t === "n") h += `<div class="row in" style="--d:3"><button class="btn ghost" data-a="vote" data-v="n">Mai 😇</button><button class="btn" data-a="vote" data-v="y">L'ho fatto 🐷</button></div>`;
+      if(out) h += `<p class="hint in" style="--d:3">Sei fuori dal gioco: goditi lo spettacolo ${I.eye}</p>`;
+      else if(done) h += `<p class="hint in" style="--d:3">${c.ans[NET.me] === "pass" ? "Hai passato." : `Risposta bloccata ${I.lock}`} Aspettiamo gli altri<span class="dots"></span></p>`;
+      else if(c.t === "n") h += `<div class="row in" style="--d:3"><button class="btn ghost" data-a="vote" data-v="n">Mai ${I.halo}</button><button class="btn" data-a="vote" data-v="y">L'ho fatto ${I.pig}</button></div>`;
       else {
         h += `<p class="lbl in" style="--d:3;text-align:center">${c.t === "m" ? "Chi scegli?" : "Chi è il più probabile?"}</p>`;
         h += pickGrid(active().filter(p => p.id !== NET.me), false);
-        h += `<button class="btn in" style="--d:5" data-a="vote-pick" ${UI.sel.length ? "" : "disabled"}>Conferma 🔒</button>`;
+        h += `<button class="btn in" style="--d:5" data-a="vote-pick" ${UI.sel.length ? "" : "disabled"}>Conferma ${I.lock}</button>`;
       }
       h += `<div class="grow"></div>` + waits();
-      if(!out && !done) h += `<div style="text-align:center">${me.passes ? `<button class="link" data-a="pass">Passo 🐽 (${me.passes})</button>` : `<button class="link" data-a="refuse-ask">Mi rifiuto 🏳️</button>`} ${revealNow}</div>`;
+      if(!out && !done) h += `<div style="text-align:center">${me.passes ? `<button class="link" data-a="pass">Passo ${I.snout} (${me.passes})</button>` : `<button class="link" data-a="refuse-ask">Mi rifiuto ${I.flag}</button>`} ${revealNow}</div>`;
       else if(revealNow) h += `<div style="text-align:center">${revealNow}</div>`;
       break;
     case "secret":
       h = cardHTML(c, true);
       if(iAmT) h += `<p class="hint in" style="--d:3">Rispondi in segreto: gli altri dovranno indovinare.</p>` + numOrYn(c, "snum", "secret") + `<div class="grow"></div><div class="row one">${passBtn(me, true)}</div>`;
-      else h += `<div class="grow"></div><p class="hint in" style="--d:3">${esc(t.name)} risponde in segreto<span class="dots"></span></p>` + (host ? `<div class="row one"><button class="link" data-a="pass">${esc(t.name)} passa 🐽</button></div>` : "");
+      else h += `<div class="grow"></div><p class="hint in" style="--d:3">${esc(t.name)} risponde in segreto<span class="dots"></span></p>` + (host ? `<div class="row one"><button class="link" data-a="pass">${esc(t.name)} passa ${I.snout}</button></div>` : "");
       break;
     case "guess":
       h = cardHTML(c, true);
       if(iAmT) h += `<p class="hint in" style="--d:3">Hai risposto <b>${esc(ynTxt(c.secret))}</b>. Ora gli altri provano a indovinare<span class="dots"></span></p>`;
-      else if(out) h += `<p class="hint in" style="--d:3">Sei fuori dal gioco: goditi lo spettacolo 🍿</p>`;
-      else if(done) h += `<p class="hint in" style="--d:3">Ipotesi bloccata 🔒 Aspettiamo gli altri<span class="dots"></span></p>`;
+      else if(out) h += `<p class="hint in" style="--d:3">Sei fuori dal gioco: goditi lo spettacolo ${I.eye}</p>`;
+      else if(done) h += `<p class="hint in" style="--d:3">Ipotesi bloccata ${I.lock} Aspettiamo gli altri<span class="dots"></span></p>`;
       else h += `<p class="lbl in" style="--d:3;text-align:center">Cosa ha risposto ${esc(t.name)}?</p>` + numOrYn(c, "gnum", "guess");
       h += `<div class="grow"></div>` + waits() + (revealNow ? `<div style="text-align:center">${revealNow}</div>` : "");
       break;
     case "reveal":
       h = cardHTML(c, true) + revealBody(c);
-      h += `<div class="grow"></div>` + (host ? `<button class="btn in" style="--d:6" data-a="next">Prossima carta →</button>` : `<p class="hint">Aspettiamo ${esc(P(G.host).name)} per la prossima carta<span class="dots"></span></p>`);
+      h += `<div class="grow"></div>` + (host ? `<button class="btn in" style="--d:6" data-a="next">Prossima carta ${I.arrow}</button>` : `<p class="hint">Aspettiamo ${esc(P(G.host).name)} per la prossima carta<span class="dots"></span></p>`);
       break;
     /* ---- un telefono che gira ---- */
     case "point":
       h = cardHTML(c);
-      if(!UI.cdDone[c.key]) h += `<div class="grow"></div><button class="btn pulse in" style="--d:4" data-a="cd">Al mio tre… indicate! 👉</button>`;
-      else if(c.t === "p") h += `<p class="lbl in" style="--d:3;text-align:center">Chi è stato indicato di più?</p>${pickGrid(active(), true)}<div class="grow"></div><div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessuno</button><button class="btn" data-a="pick">Porcellino a ${UI.sel.length || "…"} 🐷</button></div>`;
-      else h += `<p class="lbl in" style="--d:3;text-align:center">Due si sono scelti a vicenda? Toccate la coppia.</p>${pickGrid(active(), true)}<div class="grow"></div><div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessun match</button><button class="btn" data-a="pick" ${UI.sel.length === 2 ? "" : "disabled"}>Match! 💘</button></div>`;
+      if(!UI.cdDone[c.key]) h += `<div class="grow"></div><button class="btn pulse in" style="--d:4" data-a="cd">Al mio tre… indicate! ${I.point}</button>`;
+      else if(c.t === "p") h += `<p class="lbl in" style="--d:3;text-align:center">Chi è stato indicato di più?</p>${pickGrid(active(), true)}<div class="grow"></div><div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessuno</button><button class="btn" data-a="pick">Porcellino a ${UI.sel.length || "…"} ${I.pig}</button></div>`;
+      else h += `<p class="lbl in" style="--d:3;text-align:center">Due si sono scelti a vicenda? Toccate la coppia.</p>${pickGrid(active(), true)}<div class="grow"></div><div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessun match</button><button class="btn" data-a="pick" ${UI.sel.length === 2 ? "" : "disabled"}>Match! ${I.match}</button></div>`;
       break;
     case "hands":
-      h = cardHTML(c) + `<p class="lbl in" style="--d:3;text-align:center">Chi l'ha fatto alzi la mano 🙋</p>${pickGrid(active(), true)}<div class="grow"></div>
-        <div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessuno 😇</button><button class="btn" data-a="pick" ${UI.sel.length ? "" : "disabled"}>L'hanno fatto in ${UI.sel.length || "…"} 🐷</button></div>`;
+      h = cardHTML(c) + `<p class="lbl in" style="--d:3;text-align:center">Chi l'ha fatto alzi la mano ${I.hand}</p>${pickGrid(active(), true)}<div class="grow"></div>
+        <div class="row in" style="--d:5"><button class="btn ghost" data-a="pick-none">Nessuno ${I.halo}</button><button class="btn" data-a="pick" ${UI.sel.length ? "" : "disabled"}>L'hanno fatto in ${UI.sel.length || "…"} ${I.pig}</button></div>`;
       break;
     case "handoff":
-      h = `<div class="grow"></div><div class="emblem in">🙈</div><div class="in" style="--d:1;text-align:center"><span class="eyebrow">🎯 Indovina</span><h1 class="big" style="margin-top:6px">Passa il telefono a ${esc(t.name)}</h1></div>
+      h = `<div class="grow"></div><div class="emblem in">${I.eyeoff}</div><div class="in" style="--d:1;text-align:center"><span class="eyebrow">${I.target} Indovina</span><h1 class="big" style="margin-top:6px">Passa il telefono a ${esc(t.name)}</h1></div>
         <p class="hint in" style="--d:2">Gli altri non guardano!</p><div class="grow"></div>
         <button class="btn in" style="--d:3" data-a="show">Sono ${esc(t.name)}, mostra</button>`;
       break;
@@ -837,14 +904,14 @@ function playBody(){
       h = cardHTML(c, true) + `<p class="hint in" style="--d:3">${esc(t.name)}, rispondi in segreto.</p>` + numOrYn(c, "snum", "secret") + `<div class="grow"></div><div class="row one">${passBtn(t, true)}</div>`;
       break;
     case "guessOne":
-      h = `<div class="grow"></div><div class="emblem in">🤔</div><div class="in" style="--d:1;text-align:center"><span class="eyebrow">Ridate il telefono al gruppo</span><h1 class="big" style="margin-top:6px">Cosa ha risposto ${esc(t.name)}?</h1></div>
+      h = `<div class="grow"></div><div class="emblem in">${I.question}</div><div class="in" style="--d:1;text-align:center"><span class="eyebrow">Ridate il telefono al gruppo</span><h1 class="big" style="margin-top:6px">Cosa ha risposto ${esc(t.name)}?</h1></div>
         <p class="hint in" style="--d:2">${esc(c.q)}<br>Ditelo tutti ad alta voce, poi scoprite la risposta.</p><div class="grow"></div>
         <button class="btn pulse in" style="--d:3" data-a="show">Scopri la risposta</button>`;
       break;
     case "revealOne":
       h = cardHTML(c, true) + `<div class="panel in" style="--d:3;text-align:center"><p class="hint">${esc(t.name)} ha risposto</p><div class="answer">${esc(ynTxt(c.secret))}</div></div>
         <p class="lbl in" style="--d:4;text-align:center">Chi ha indovinato?</p>${pickGrid(active().filter(p => p.id !== c.target), true)}<div class="grow"></div>
-        <button class="btn in" style="--d:6" data-a="pick">Assegna i porcellini 🐷</button>`;
+        <button class="btn in" style="--d:6" data-a="pick">Assegna i porcellini ${I.pig}</button>`;
       break;
   }
   return h;
@@ -853,38 +920,38 @@ function revealBody(c){
   const r = c.res || {}, name = id => P(id) ? esc(P(id).name) : "?";
   const passed = Object.keys(c.ans).filter(k => c.ans[k] === "pass" && P(k) && !P(k).out).map(name);
   const quit = Object.keys(c.ans).filter(k => c.ans[k] === "pass" && P(k) && P(k).out).map(name);
-  const passTxt = (passed.length ? `<p class="hint">${passed.length > 1 ? "Hanno" : "Ha"} passato: ${passed.join(", ")} 🐽</p>` : "") + (quit.length ? `<p class="hint">Fuori dal gioco: ${quit.join(", ")} 🏳️</p>` : "");
+  const passTxt = (passed.length ? `<p class="hint">${passed.length > 1 ? "Hanno" : "Ha"} passato: ${passed.join(", ")} ${I.snout}</p>` : "") + (quit.length ? `<p class="hint">Fuori dal gioco: ${quit.join(", ")} ${I.flag}</p>` : "");
   let h = "";
   if(c.t === "p"){
     const ids = Object.keys(r.tally || {}).sort((a, b) => r.tally[b] - r.tally[a]);
     const max = Math.max(1, ...Object.values(r.tally || {}));
     h = `<ul class="rev">${ids.map((id, i) => { const by = Object.keys(c.ans).filter(k => c.ans[k] === id).map(name).join(", ");
-      return `<li class="pop ${r.win.includes(id) ? "win" : ""}" style="--d:${i}">${av(P(id))}<div class="nm">${name(id)}<small>da ${by}</small><div class="bar"><b style="--w:${r.tally[id] / max * 100}%;--d:${i}"></b></div></div><span class="sc">${r.tally[id]} ${r.win.includes(id) ? "👑" : ""}</span></li>`; }).join("") || `<li>Nessun voto</li>`}</ul>`;
+      return `<li class="pop ${r.win.includes(id) ? "win" : ""}" style="--d:${i}">${av(P(id))}<div class="nm">${name(id)}<small>da ${by}</small><div class="bar"><b style="--w:${r.tally[id] / max * 100}%;--d:${i}"></b></div></div><span class="sc">${r.tally[id]} ${r.win.includes(id) ? I.crown : ""}</span></li>`; }).join("") || `<li>Nessun voto</li>`}</ul>`;
   } else if(c.t === "n"){
     const did = r.did || [], never = Object.keys(c.ans).filter(k => c.ans[k] === "n");
-    h = `<div class="cols"><div><h3 class="pop">L'hanno fatto 🐷</h3><ul class="rev">${did.map((id, i) => `<li class="pop win" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span><span class="sc">+1</span></li>`).join("") || `<li class="pop" style="--d:1"><span class="nm">Nessuno!</span></li>`}</ul></div>
-      <div><h3 class="pop">Mai 😇</h3><ul class="rev">${never.map((id, i) => `<li class="pop" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span></li>`).join("") || `<li class="pop" style="--d:1"><span class="nm">Nessuno</span></li>`}</ul></div></div>`;
+    h = `<div class="cols"><div><h3 class="pop">L'hanno fatto ${I.pig}</h3><ul class="rev">${did.map((id, i) => `<li class="pop win" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span><span class="sc">+1</span></li>`).join("") || `<li class="pop" style="--d:1"><span class="nm">Nessuno!</span></li>`}</ul></div>
+      <div><h3 class="pop">Mai ${I.halo}</h3><ul class="rev">${never.map((id, i) => `<li class="pop" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span></li>`).join("") || `<li class="pop" style="--d:1"><span class="nm">Nessuno</span></li>`}</ul></div></div>`;
   } else if(c.t === "i"){
     const gs = Object.keys(c.ans).filter(k => c.ans[k] !== "pass");
     h = `<div class="panel pop" style="text-align:center"><p class="hint">${name(c.target)} ha risposto</p><div class="answer">${esc(ynTxt(c.secret))}</div></div>
-      <ul class="rev">${gs.map((id, i) => `<li class="pop ${r.win.includes(id) ? "win" : ""}" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span><span class="sc">${esc(ynTxt(c.ans[id]))} ${r.win.includes(id) ? (r.exact.includes(id) ? "🎯 +2" : "✓ +1") : "✗"}</span></li>`).join("")}</ul>`;
+      <ul class="rev">${gs.map((id, i) => `<li class="pop ${r.win.includes(id) ? "win" : ""}" style="--d:${i + 1}">${av(P(id))}<span class="nm">${name(id)}</span><span class="sc">${esc(ynTxt(c.ans[id]))} ${r.win.includes(id) ? (r.exact.includes(id) ? `${I.target} +2` : `${I.check} +1`) : I.x}</span></li>`).join("")}</ul>`;
   } else if(c.t === "m"){
     const pairs = r.pairs || [], inPair = id => pairs.some(pp => pp.includes(id));
-    h = `<ul class="rev">${pairs.map(([a, b], i) => `<li class="pop match" style="--d:${i}">${av(P(a))}${av(P(b))}<span class="nm">${name(a)} + ${name(b)}</span><span class="sc">💘 +2</span></li>`).join("")}
+    h = `<ul class="rev">${pairs.map(([a, b], i) => `<li class="pop match" style="--d:${i}">${av(P(a))}${av(P(b))}<span class="nm">${name(a)} + ${name(b)}</span><span class="sc">${I.match} +2</span></li>`).join("")}
       ${Object.keys(c.ans).filter(k => c.ans[k] !== "pass" && !inPair(k)).map((id, i) => `<li class="pop" style="--d:${pairs.length + i}">${av(P(id))}<span class="nm">${name(id)}<small>ha scelto ${name(c.ans[id])}</small></span></li>`).join("")}</ul>
-      ${pairs.length ? "" : `<p class="hint pop" style="--d:1">Nessun match stavolta 💔</p>`}`;
+      ${pairs.length ? "" : `<p class="hint pop" style="--d:1">Nessun match stavolta ${I.broken}</p>`}`;
   }
   return h + passTxt;
 }
 function titles(){
   const T = {}, ps = G.players, add = (id, t) => (T[id] = T[id] || []).push(t);
   const top = Math.max(...ps.map(p => p.pts));
-  ps.filter(p => p.pts === top && top > 0).forEach(p => add(p.id, "Re dei Porcellini 👑"));
+  ps.filter(p => p.pts === top && top > 0).forEach(p => add(p.id, `Re dei Porcellini ${I.crown}`));
   const alive = ps.filter(p => !p.out);
-  if(alive.length > 1){ const lo = Math.min(...alive.map(p => p.pts)); if(lo < top) alive.filter(p => p.pts === lo).forEach(p => add(p.id, "Santarellino 😇")); }
-  const used = Math.max(...ps.map(p => 3 - p.passes)); if(used > 0) ps.filter(p => !p.out && 3 - p.passes === used).forEach(p => add(p.id, "Bocca cucita 🤐"));
-  const mt = Math.max(...ps.map(p => p.mt || 0)); if(mt > 0) ps.filter(p => p.mt === mt).forEach(p => add(p.id, "Cupido 💘"));
-  ps.filter(p => p.out).forEach(p => add(p.id, "Porcellino codardo 🐷💨"));
+  if(alive.length > 1){ const lo = Math.min(...alive.map(p => p.pts)); if(lo < top) alive.filter(p => p.pts === lo).forEach(p => add(p.id, `Santarellino ${I.halo}`)); }
+  const used = Math.max(...ps.map(p => 3 - p.passes)); if(used > 0) ps.filter(p => !p.out && 3 - p.passes === used).forEach(p => add(p.id, `Bocca cucita ${I.zip}`));
+  const mt = Math.max(...ps.map(p => p.mt || 0)); if(mt > 0) ps.filter(p => p.mt === mt).forEach(p => add(p.id, `Cupido ${I.match}`));
+  ps.filter(p => p.out).forEach(p => add(p.id, `Porcellino codardo ${I.flag}`));
   return T;
 }
 function endView(){
@@ -892,11 +959,11 @@ function endView(){
   const T = titles(), pod = [rank[1], rank[0], rank[2]];
   return `<div class="screen">
     ${topbar()}
-    <div class="in" style="text-align:center"><span class="eyebrow">Fine dei giochi</span><h1 class="big" style="margin-top:6px">La classifica 🔥</h1></div>
-    <div class="podium in" style="--d:1">${pod.map((p, i) => p ? `<div class="pod">${i === 1 ? `<span class="crown">👑</span>` : ""}${av(p)}<b>${esc(p.name)}</b><div class="step">${p.pts}</div></div>` : `<div class="pod"></div>`).join("")}</div>
-    <ul class="rev">${rank.map((p, i) => `<li class="pop ${i === 0 && !p.out ? "win" : ""}" style="--d:${i + 3}"><span class="sc" style="width:1.6em;color:var(--muted)">${i + 1}</span>${av(p)}<div class="nm">${esc(p.name)}${(T[p.id] || []).map(t => `<br><span class="title">${t}</span>`).join("")}</div><span class="sc">🐷 ${p.pts}</span></li>`).join("")}</ul>
+    <div class="in" style="text-align:center"><span class="eyebrow">Fine dei giochi</span><h1 class="big" style="margin-top:6px">La classifica ${I.flame}</h1></div>
+    <div class="podium in" style="--d:1">${pod.map((p, i) => p ? `<div class="pod">${i === 1 ? `<span class="crown">${I.crown}</span>` : ""}${av(p)}<b>${esc(p.name)}</b><div class="step">${p.pts}</div></div>` : `<div class="pod"></div>`).join("")}</div>
+    <ul class="rev">${rank.map((p, i) => `<li class="pop ${i === 0 && !p.out ? "win" : ""}" style="--d:${i + 3}"><span class="sc" style="width:1.6em;color:var(--muted)">${i + 1}</span>${av(p)}<div class="nm">${esc(p.name)}${(T[p.id] || []).map(t => `<br><span class="title">${t}</span>`).join("")}</div><span class="sc">${I.pig} ${p.pts}</span></li>`).join("")}</ul>
     <div class="grow"></div>
-    ${amHost() ? `<div class="row in" style="--d:6"><button class="btn ghost" data-a="exit-ask">Esci</button><button class="btn" data-a="again">Rivincita 🔥</button></div>` : `<p class="hint">Grazie di aver giocato 🐷</p>`}
+    ${amHost() ? `<div class="row in" style="--d:6"><button class="btn ghost" data-a="exit-ask">Esci</button><button class="btn" data-a="again">Rivincita ${I.flame}</button></div>` : `<p class="hint">Grazie di aver giocato ${I.pig}</p>`}
   </div>`;
 }
 
@@ -939,29 +1006,29 @@ function playFx(list){
   let delay = 0;
   (list || []).forEach(f => {
     const p = P(f.id);
-    if(f.k === "pts"){ setTimeout(() => { const pos = chipPos(f.id) || {x:innerWidth / 2, y:innerHeight * .4}; fxEl("float", `+${f.n} 🐷`, {left:pos.x + "px", top:pos.y + "px"}, 1600); }, 300 + delay); delay += 120; }
-    else if(f.k === "pass"){ fxEl("snout", "🐽", null, 1500); toast(`${p ? p.name : ""} passa · ne restano ${p ? p.passes : 0}`); }
-    else if(f.k === "out"){ setTimeout(() => fxEl("overlay", `<div class="melt">${esc(p ? p.name : "")}</div><div class="stamp">Porcellino codardo 🐷💨</div><p class="hint" style="margin-top:14px">Ha rifiutato e lascia la partita</p>`, null, 2900), 100); }
+    if(f.k === "pts"){ setTimeout(() => { const pos = chipPos(f.id) || {x:innerWidth / 2, y:innerHeight * .4}; fxEl("float", `+${f.n} ${I.pig}`, {left:pos.x + "px", top:pos.y + "px"}, 1600); }, 300 + delay); delay += 120; }
+    else if(f.k === "pass"){ fxEl("snout", I.snout, null, 1500); toast(`${esc(p ? p.name : "")} passa ${I.snout} ne restano ${p ? p.passes : 0}`); }
+    else if(f.k === "out"){ setTimeout(() => fxEl("overlay", `<div class="melt">${esc(p ? p.name : "")}</div><div class="stamp">Porcellino codardo ${I.flag}</div><p class="hint" style="margin-top:14px">Ha rifiutato e lascia la partita</p>`, null, 2900), 100); }
     else if(f.k === "match"){ const a = P(f.a), b = P(f.b);
-      setTimeout(() => { fxEl("overlay", `<div class="bigw">MATCH</div><div class="sub">${esc(a ? a.name : "")} 💘 ${esc(b ? b.name : "")}</div>`, null, 2900); hearts(); }, 250 + delay); delay += 1500; }
-    else if(f.k === "toast") toast(f.txt);
+      setTimeout(() => { fxEl("overlay", `<div class="bigw">MATCH</div><div class="sub">${esc(a ? a.name : "")} ${I.match} ${esc(b ? b.name : "")}</div>`, null, 2900); hearts(); }, 250 + delay); delay += 1500; }
+    else if(f.k === "toast") toast(esc(f.txt) + (f.ic ? " " + I[f.ic] : ""));
   });
 }
-function toast(txt){ fxEl("toast", esc(txt), null, 2300); }
+function toast(html){ fxEl("toast", html, null, 2300); }
 function hearts(){
-  const em = ["💘","❤️","💖","🔥","🐷","💋"];
+  const em = [I.match, I.heart, I.heart, I.flame, I.pig, I.lips];
   for(let i = 0; i < 26; i++){
     const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 220;
     fxEl("heart", em[i % em.length], {"--x":Math.cos(a) * d + "px", "--y":Math.sin(a) * d + "px", "--r":(Math.random() * 120 - 60) + "deg", "--s":(20 + Math.random() * 22) + "px", "--t":(Math.random() * .25) + "s"}, 2100);
   }
 }
 function confetti(){
-  const em = ["🌶","🐷","🔥","💋","🍑"];
+  const em = [I.chili, I.pig, I.flame, I.lips, I.heart];
   for(let i = 0; i < 34; i++) fxEl("confetti", em[i % em.length], {left:Math.random() * 100 + "vw", "--x":(Math.random() * 120 - 60) + "px", "--r":(Math.random() * 720 - 360) + "deg", "--t":(2.4 + Math.random() * 2) + "s", "--dl":(Math.random() * 1.2) + "s"}, 5000);
 }
 function countdown(key){
   const box = document.createElement("div"); box.className = "cd"; document.body.appendChild(box);
-  const steps = ["3","2","1","Indicate! 👉"]; let i = 0;
+  const steps = ["3","2","1",`Indicate! ${I.point}`]; let i = 0;
   const tick = () => {
     if(i >= steps.length){ box.remove(); UI.cdDone[key] = true; render(); return; }
     box.innerHTML = `<b class="${i === 3 ? "go" : ""}">${steps[i]}</b>`; i++;
@@ -975,21 +1042,21 @@ function showSheet(kind){
   let h = "";
   if(kind === "rules") h = `<h2>Porcellino: le regole</h2>
     <ul>
-      <li>Solo per maggiorenni consenzienti. Si parte <b>${LV[1].c} Tiepido</b> e la temperatura sale carta dopo carta, fino al livello scelto dall'host.</li>
-      <li><b>🔥 Verità</b>: tocca a una persona, risponde ad alta voce. +1 🐷 (+2 a Senza vergogna).</li>
-      <li><b>👉 Chi è più probabile</b>: tutti votano, il più votato prende +1 🐷.</li>
-      <li><b>🙊 Io non ho mai</b>: chi l'ha fatto lo confessa e prende +1 🐷.</li>
-      <li><b>🎯 Indovina</b>: uno risponde in segreto, gli altri indovinano. +1 a chi risponde e a chi ci prende (+2 se il numero è esatto).</li>
-      <li><b>💘 Match</b>: ognuno sceglie qualcuno. Se due si scelgono a vicenda: MATCH, +2 a testa.</li>
+      <li>Solo per maggiorenni consenzienti. Si parte <b>${chilis(1)} Tiepido</b> e la temperatura sale carta dopo carta, fino al livello scelto dall'host.</li>
+      <li><b>${I.flame} Verità</b>: tocca a una persona, risponde ad alta voce. +1 ${I.pig} (+2 a Senza vergogna).</li>
+      <li><b>${I.point} Chi è più probabile</b>: tutti votano, il più votato prende +1 ${I.pig}.</li>
+      <li><b>${I.lips} Io non ho mai</b>: chi l'ha fatto lo confessa e prende +1 ${I.pig}.</li>
+      <li><b>${I.target} Indovina</b>: uno risponde in segreto, gli altri indovinano. +1 a chi risponde e a chi ci prende (+2 se il numero è esatto).</li>
+      <li><b>${I.match} Match</b>: ognuno sceglie qualcuno. Se due si scelgono a vicenda: MATCH, +2 a testa.</li>
       <li>Coi telefoni di tutti le risposte restano segrete finché non hanno risposto tutti, poi si scopre tutto, con i nomi.</li>
-      <li><b>🐽 3 passi</b> a testa per tutta la partita, senza spiegazioni. Finiti i passi, chi si rifiuta <b>perde ed esce</b>.</li>
-      <li><b>↻ Scarta carta</b>: se qualcuno è davvero a disagio, l'host cambia la carta e nessuno perde niente.</li>
+      <li><b>${I.snout} 3 passi</b> a testa per tutta la partita, senza spiegazioni. Finiti i passi, chi si rifiuta <b>perde ed esce</b>.</li>
+      <li><b>${I.refresh} Scarta carta</b>: se qualcuno è davvero a disagio, l'host cambia la carta e nessuno perde niente.</li>
       <li>Vince chi ha più porcellini. A fine partita: Re dei Porcellini, Santarellino, Bocca cucita, Cupido e Porcellino codardo.</li>
     </ul><button class="btn" data-close>Ho capito</button>`;
-  else if(kind === "menu") h = `<h2>Menu dell'host</h2><p>Per cambiare una carta che mette davvero a disagio qualcuno c'è anche il tasto ↻ in basso a destra sulla carta.</p>
-    <button class="btn ghost" data-a="discard" data-close>↻ Scarta questa carta</button><button class="btn ghost danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
+  else if(kind === "menu") h = `<h2>Menu dell'host</h2><p>Per cambiare una carta che mette davvero a disagio qualcuno c'è anche il tasto ${I.refresh} in basso a destra sulla carta.</p>
+    <button class="btn ghost" data-a="discard" data-close>${I.refresh} Scarta questa carta</button><button class="btn ghost danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
   else if(kind === "refuse"){ const c = G && G.card, who = c && c.target && (c.ph === "ask" || c.ph === "secret" || c.ph === "secretOne") ? P(c.target) : P(NET.me);
-    h = `<h2>${amHost() && G.mode === "one" ? `${esc(who ? who.name : "")} si rifiuta?` : "Ti rifiuti?"}</h2><p>I passi sono finiti: chi si rifiuta di rispondere <b>perde ed esce dalla partita</b> come Porcellino codardo 🐷💨.</p>
+    h = `<h2>${amHost() && G.mode === "one" ? `${esc(who ? who.name : "")} si rifiuta?` : "Ti rifiuti?"}</h2><p>I passi sono finiti: chi si rifiuta di rispondere <b>perde ed esce dalla partita</b> come Porcellino codardo ${I.flag}.</p>
     <div class="row"><button class="btn ghost" data-close>No, rispondo</button><button class="btn danger" data-a="refuse" data-close>Sì, esco</button></div>`; }
   else if(kind === "exit") h = `<h2>Uscire dalla partita?</h2><p>${G && G.mode === "all" ? "La stanza si chiude per tutti." : "La partita finisce qui."}</p>
     <div class="row"><button class="btn ghost" data-close>Resto</button><button class="btn" data-a="exit" data-close>Esci</button></div>`;
@@ -1038,8 +1105,8 @@ document.addEventListener("click", async e => {
     }
     case "lobby-back": closeRoom(); ls.del(SAVE_KEY); G = null; UI.scr = "setup"; render(); break;
     case "lobby-go": if(G.players.length >= 3) startGame(); break;
-    case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(joinUrl()); } break;
-    case "share": if(navigator.share) navigator.share({title:"Porcellino", text:"Vieni a giocare a Porcellino 🐷🔥 (solo maggiorenni)", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;
+    case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(esc(joinUrl())); } break;
+    case "share": if(navigator.share) navigator.share({title:"Porcellino", text:"Vieni a giocare a Porcellino (solo maggiorenni)", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;
     case "newgame": ls.del(SAVE_KEY); UI.scr = "gate"; render(); break;
     case "resume": {
       const sv = ls.get(SAVE_KEY, null); if(!sv){ UI.scr = "gate"; render(); break; }
