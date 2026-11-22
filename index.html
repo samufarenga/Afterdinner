@@ -20,7 +20,7 @@
 /* Layout: una colonna da telefono, schermate a "carte" su un tavolo notturno; una sola cosa grande per volta */
 :root{
   --night:#14173f; --night-2:#21266a; --night-3:#30378c;
-  --paper:#fff6e6; --ink:#2a2140;
+  --paper:#fff6e6; --ink:#2a2140; --board:#e9ebf7;
   --mango:#ffa41b; --pink:#ff3d72; --mint:#14d494; --sky:#3d8bff; --lilac:#8f63ff;
   --muted:#b3b8ea;
   --display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
@@ -31,8 +31,10 @@
 html,body{height:100%}
 [hidden]{display:none!important}
 body{background:var(--night);color:var(--paper);font-family:var(--body);font-size:16px;line-height:1.45;
-  background-image:radial-gradient(circle at 15% 10%,rgba(255,181,71,.10),transparent 40%),radial-gradient(circle at 90% 85%,rgba(255,111,145,.10),transparent 45%);
-  background-attachment:fixed}
+}
+/* sfondo su un livello fisso: background-attachment:fixed su iPhone lasciava riquadri chiari dopo le transizioni */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(circle at 15% 10%,rgba(255,181,71,.10),transparent 40%),radial-gradient(circle at 90% 85%,rgba(255,111,145,.10),transparent 45%)}
 .app{max-width:520px;margin:0 auto;min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 28px}
 header.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding-block:6px 16px}
@@ -49,7 +51,7 @@ h2{font-size:1.6rem}
 .lead{color:var(--muted);margin:6px 0 0}
 .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--muted)}
 .screen{display:flex;flex-direction:column;gap:18px;flex:1;animation:in .28s ease-out}
-@keyframes in{from{transform:translateY(8px)}to{transform:none}}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* bottoni */
@@ -324,10 +326,11 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .quip{font:600 1.15rem var(--display);margin:0;color:var(--paper);text-wrap:balance}
 .quip b{color:var(--pink)}
 @media (prefers-reduced-motion:reduce){.rv{opacity:1!important}}
-.viewer{background:var(--paper);border-radius:22px;aspect-ratio:1/1.1;max-height:58vh;width:100%;display:grid;place-items:center;overflow:hidden}
+.viewer{background:var(--board);box-shadow:0 0 0 3px var(--night-3);border-radius:22px;aspect-ratio:1/1.1;max-height:58vh;width:100%;display:grid;place-items:center;overflow:hidden}
 .viewer img{width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
 .guessview{gap:12px}
+.guessview .viewer{aspect-ratio:1/1.3;max-height:56dvh}
 /* esito e classifica */
 .resultview{gap:10px}
 .rhead{text-align:center;background:var(--night-2);border-radius:20px;padding:12px 14px;animation:popin .45s cubic-bezier(.3,1.4,.5,1)}
@@ -424,11 +427,27 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .pchips li.off{opacity:.45}
 .mptime{font:700 2rem var(--display);font-variant-numeric:tabular-nums;min-width:2.4em;text-align:center;background:var(--night-2);border-radius:16px;padding:4px 10px}
 .mptime.low{color:var(--pink)}
-.drawscreen{gap:12px}
+.drawscreen{gap:8px;min-height:0}
+/* lavagna a tutto schermo: niente intestazione, timer piccolo, strumenti in una pillola sopra la lavagna */
+html.drawmode,html.drawmode body{overflow:hidden}
+html.drawmode header.top{display:none}
+html.drawmode #view{flex:1;display:flex;flex-direction:column;min-height:0}
+html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-bottom,0px))}
+.dtop{display:flex;align-items:center;gap:10px}
+.dtw{flex:1;min-width:0}
+.dtw .eyebrow{font-size:.65rem}
+.dtop .dword{font-size:1.45rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dtop .mptime{font-size:1.25rem;padding:6px 10px;border-radius:12px;min-width:2.2em}
+.btn.dsend{width:auto;flex:none;padding:11px 20px;margin:0}
+.boardwrap{flex:1;position:relative;min-height:0}
+.boardwrap .toolbar .ink{width:26px;height:26px;border:0;transform:none}
+.boardwrap .toolbar .ink[aria-pressed="true"]{transform:scale(1.1)}
+.boardwrap .boardcv{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;max-height:none;border-radius:20px}
+.boardwrap .toolbar{position:absolute;left:0;right:0;margin:0 auto;width:max-content;bottom:10px;max-width:calc(100% - 16px);gap:6px;padding:6px 10px;box-sizing:border-box;background:rgba(27,30,58,.92);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .drawhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .drawhead>div:first-child{min-width:0}
 .dword{font:700 1.8rem var(--display);line-height:1.1;overflow-wrap:anywhere}
-.boardcv{width:100%;aspect-ratio:1/1.1;max-height:62vh;background:var(--paper);border-radius:22px;touch-action:none;display:block;cursor:crosshair}
+.boardcv{width:100%;aspect-ratio:1/1.1;max-height:62vh;background:var(--board);box-shadow:0 0 0 3px var(--night-3);border-radius:22px;touch-action:none;display:block;cursor:crosshair}
 .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .ink{width:36px;height:36px;border-radius:50%;border:3px solid var(--night-3);cursor:pointer;padding:0}
 .ink[aria-pressed="true"]{border-color:var(--paper);transform:scale(1.12)}
@@ -438,7 +457,7 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .gallery.small{grid-template-columns:repeat(3,minmax(0,1fr))}
 .dcard{margin:0;background:var(--night-2);border:2px solid transparent;border-radius:18px;padding:6px;display:flex;flex-direction:column;gap:6px;cursor:pointer;color:var(--paper);font:inherit;min-width:0}
 .dcard:hover{border-color:var(--mint)}
-.dcard img{width:100%;border-radius:12px;display:block;background:var(--paper)}
+.dcard img{width:100%;border-radius:12px;display:block;background:var(--board)}
 .dwait{aspect-ratio:1/1.1;display:grid;place-items:center;color:var(--muted);font-size:.85rem;background:var(--night-3);border-radius:12px}
 .dname{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.9rem;min-width:0;overflow-wrap:anywhere}
 .dname .av{width:24px;height:24px;font-size:.75rem}
@@ -545,6 +564,7 @@ const CATALOG = [
   {id:"porcellino", name:"Il Porcellino", icon:"pig", color:"#e8233f", adult:true, players:"4-10", mins:"20-30", phones:"one", desc:"Domande e sfide per adulti, per quando la serata si scalda."},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
+const WHEEL_ON = false; // vista a ruota messa da parte: true per riattivarla
 const DEFAULT_SETTINGS = {wheel:false, sfx:false, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
@@ -588,7 +608,7 @@ const screens = {
       </div>
       <div class="chips" role="group" aria-label="Filtra i giochi">${chip("all","Tutti")}${chip("one","Un telefono")}${chip("many","Più telefoni")}</div>
 
-      ${ST().wheel && list.length ? wheelHTML(list) : `<ul class="ggrid">${list.map(g => `
+      ${WHEEL_ON && ST().wheel && list.length ? wheelHTML(list) : `<ul class="ggrid">${list.map(g => `
         <li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-game="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
           <span class="gname">${g.name}</span>
           <span class="gicon">${ICONS[g.icon]}</span>
@@ -597,7 +617,7 @@ const screens = {
         </button></li>`).join("")}
       </ul>`}
       ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o tocca ✕.</p>`}
-      ${ST().wheel ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
+      ${WHEEL_ON && ST().wheel ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
 
     </section>`;
   },
@@ -918,6 +938,7 @@ function render(){
   if(LOCK_ON && !isUnlocked() && S.screen!=="mp") S.screen="locked";
   view.innerHTML = screens[S.screen]();
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
+  document.documentElement.classList.toggle("drawmode", !!$(".drawscreen"));
   if($("#wheel")) wheelInit();
   $("#back-btn").hidden = S.screen==="home";
   $("#menu-btn").hidden = S.screen!=="home";
@@ -980,8 +1001,8 @@ function openSettings(){
   m.id="settings"; m.className="modal settings"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
     <div class="set-list">
-      <div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
-        <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>
+      ${WHEEL_ON ? `<div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
+        <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>` : ""}
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
       ${sw("music","Musica","Sottofondo leggero mentre giocate")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
@@ -1158,7 +1179,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 20:10";
+const APP_VERSION = "22.11 · 20:50";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1423,18 +1444,32 @@ const DRAW_WORDS = {
   extreme: ["Imbianchino", "Equilibrista", "Giocoliere", "Domatore di leoni", "Ventriloquo", "Sommelier", "Apicoltore", "Spazzacamino", "Torre di Pisa", "Colosseo", "Gondola", "Partita a scacchi", "Ingorgo stradale", "Eclissi", "Terremoto", "Effetto domino", "Montagne russe", "Ruota panoramica", "Acquario", "Ragnatela", "Formicaio", "Alveare", "Camaleonte", "Ornitorinco", "Medusa", "Bastone per selfie", "Karaoke", "Matrimonio", "Trasloco", "Picnic", "Sauna", "Tatuaggio", "Barbiere", "Naufragio", "Isola deserta", "Caccia al tesoro", "Tiro alla fune", "Corsa nei sacchi", "Lottatore di sumo", "Ballerina classica", "Mimo", "Fachiro", "Lupo mannaro", "Labirinto", "Cavallo a dondolo", "Serenata", "Ombra cinese", "Prestigiatore", "Fila alla posta", "Pesca subacquea", "Torre Eiffel", "Statua della Libertà", "Muraglia cinese", "Sfinge", "Funambolo", "Sommozzatore", "Archeologo", "Detective", "Giudice", "Chirurgo", "Dentista", "Parrucchiere", "Sarto", "Falegname", "Idraulico", "Giardiniere", "Postino", "Cameriere", "Pasticciere", "Gelataio", "Fioraio", "Vigile urbano", "Arbitro", "Portiere", "Fotografo", "Regista", "Scienziato pazzo", "Esploratore", "Alpinista", "Paracadutista", "Pilota di Formula 1", "Tifoso allo stadio", "Direttore d'orchestra", "Uomo cannone", "Sposa in fuga", "Festa a sorpresa", "Coda al casello", "Saldi", "Colloquio di lavoro", "Sciopero", "Applauso", "Inchino", "Selfie", "Sbadiglio", "Starnuto", "Solletico", "Incubo", "Sonnambulo", "Russare", "Dieta", "Mal di denti", "Gamba ingessata", "Pronto soccorso", "Gemelli", "Neonato", "Primo appuntamento", "Colpo di fulmine", "Cuore spezzato", "Litigio", "Rapina in banca", "Evasione dal carcere", "Manette", "Impronte digitali", "Casa stregata", "Seduta spiritica", "Sfera di cristallo", "Lampada di Aladino", "Tappeto volante", "Cavallo di Troia", "Arca di Noè", "Nave in bottiglia", "Buco nero", "Pala eolica", "Pannello solare", "Blackout", "Batteria scarica", "Videochiamata", "Ascensore bloccato", "Torta in faccia", "Bolla di sapone", "Messaggio in bottiglia", "Uomo delle caverne", "Pigiama party", "Mangiafuoco", "Statua vivente", "Gara di ballo", "Pallone gonfiabile", "Baciamano", "Tiro con l'arco", "Corsa a ostacoli", "Fuochi d'artificio"]
 };
 const LAST_LINES = [
-  "Ultimo {n}. Non abbiamo scoperto niente di nuovo.",
-  "Ultimo {n}. Avevate aspettative diverse?",
-  "{n} chiude la classifica. Qualcuno doveva pur farlo.",
-  "Ultimo {n}. L'importante è partecipare, dicono.",
-  "{n}, la matita non era la tua arma.",
-  "Ultimo {n}. Il talento c'è, è solo molto timido.",
-  "{n} in fondo alla classifica. Si accettano lezioni private.",
-  "Ultimo {n}. Il pubblico chiede il rimborso.",
-  "{n}: stasera l'arte contemporanea ha perso.",
-  "Ultimo {n}. Ci hai provato. Più o meno.",
-  "{n} ultimo. Alla prossima andrà meglio. Forse.",
-  "Ultimo {n}. Anche i grandi artisti sono stati incompresi."
+  "Ultimo {n}. Il tuo talento è come il Wi-Fi in montagna: si dice che esista.",
+  "{n} ultimo. Ti abbiamo invitato per fare numero, e hai fatto proprio quello.",
+  "Ultimo {n}. I tuoi disegni li useremo come prova in tribunale.",
+  "{n}, stasera hai disegnato come chi ha appena perso una scommessa.",
+  "Ultimo {n}. Nessuno si aspettava niente, e ci hai deluso lo stesso.",
+  "{n} ultimo. Se l'impegno desse punti, saresti comunque ultimo.",
+  "Ultimo {n}. Abbiamo visto bambini dell'asilo con più visione artistica.",
+  "{n}: la matita ha chiesto di cambiare proprietario.",
+  "Ultimo {n}. Alla prossima serata ti mandiamo l'invito sbagliato, apposta.",
+  "{n} ultimo. Questa classifica verrà ricordata, purtroppo per te.",
+  "Ultimo {n}. Il tuo disegno migliore era la linea che hai fatto per sbaglio.",
+  "{n}, hai il senso artistico di un parcheggio vuoto.",
+  "Ultimo {n}. Gli altri giocavano a Scarabocchi, tu a nascondino col talento.",
+  "{n} ultimo. È stato bello finché hai preso in mano il telefono.",
+  "Ultimo {n}. Picasso si è girato nella tomba. Due volte.",
+  "{n}: ogni tuo disegno è un mistero che nessuno vuole risolvere.",
+  "Ultimo {n}. Vuoi che il prossimo giro lo saltiamo per te?",
+  "{n} ultimo. Grazie a te stasera gli altri si sono sentiti bravi.",
+  "Ultimo {n}. Il premio di consolazione è che stasera lavi i piatti.",
+  "{n}, i tuoi scarabocchi sono arte. Arte di arrangiarsi male.",
+  "Ultimo {n}. Abbiamo deciso di non parlarne più. Da domani.",
+  "{n} ultimo. Puoi sempre dire che hai lasciato vincere gli altri. Nessuno ci crederà.",
+  "Ultimo {n}. Persino il cane avrebbe indovinato di più.",
+  "{n}: la serata è stata bellissima, la tua partita molto meno.",
+  "Ultimo {n}. Lo screenshot di questa classifica è già nel gruppo.",
+  "{n} ultimo. Il tuo posto è garantito anche alla prossima partita."
 ];
 const LEVELS = [["beginner","Beginner"],["medium","Medium"],["extreme","Extreme"]];
 /* parole già uscite nelle ultime 5 partite: non tornano finché ce ne sono di nuove */
@@ -1623,7 +1658,7 @@ setInterval(() => { if(NET.role === "host") mpNotes(); }, 4000);
 
 /* lavagna */
 const INKS = ["#1d1b2e","#ff3d72","#3d8bff","#14b886","#ffa41b"];
-const PAPER = "#fffaf0";
+const PAPER = "#e9ebf7"; /* lavagna: lavanda chiarissimo, non falsa i colori */
 const TICONS = (() => { const w = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   return { undo: w('<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
            eraser: w('<path d="m7 21-4-4a2 2 0 0 1 0-3L13 4a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-9 9"/><path d="M7 21h14M9 10l6 6"/>'),
@@ -1763,6 +1798,7 @@ function meBar(){
 }
 /* ---------- home a ruota: i giochi girano su una circonferenza ---------- */
 let WHEEL = null;
+/* vista a ruota messa da parte (richiesta di Rob): per riattivarla basta WHEEL_ON = true */
 function wheelHTML(list){
   return `<div class="wheelzone"><div class="wheelwrap" id="wheelwrap"><div class="wheel" id="wheel">${list.map((g,i) => `<button class="wtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-wi="${i}" aria-label="${g.name}">${ICONS[g.icon]}</button>`).join("")}</div>
     <button class="whub" id="whub" aria-live="polite"></button></div>
@@ -1896,9 +1932,9 @@ function mpView(){
           <div class="mptime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           ${MD[NET.myId] ? `<img class="mine" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}
           <p class="lead" style="margin:0">Aspetta la fine del tempo.</p></section>`;
-      return `<section class="screen drawscreen">${meBar()}
-          <div class="drawhead"><div><span class="eyebrow">Disegna per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}</div>
-          <canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
+      return `<section class="screen drawscreen">
+          <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
+          <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
           <div class="toolbar" role="toolbar" aria-label="Strumenti">
             <div class="inks">${INKS.map(c => `<button class="ink" data-ink="${c}" style="--ink:${c}" aria-label="Colore" aria-pressed="${(!BOARD && c===INKS[0]) || (BOARD && !BOARD.eraser && BOARD.ink===c)}"></button>`).join("")}</div>
             <span class="tsep"></span>
@@ -1906,8 +1942,7 @@ function mpView(){
             <button class="tbtn" id="b-eraser" aria-label="Gomma" title="Gomma" aria-pressed="${!!(BOARD && BOARD.eraser)}">${TICONS.eraser}</button>
             <button class="tbtn" id="b-undo" aria-label="Annulla l'ultimo tratto" title="Annulla">${TICONS.undo}</button>
             <button class="tbtn" id="b-clear" aria-label="Cancella tutto" title="Cancella tutto">${TICONS.trash}</button>
-          </div>
-          <button class="btn pink" id="b-send">${M.queue.length ? `Invia (${M.queue.length} già inviati)` : "Invia per primo"}</button>
+          </div></div>
         </section>`;
     }
     case "reveal": {
@@ -2026,7 +2061,7 @@ view.addEventListener("click", e => {
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
   else if(id === "mp-adv"){ b.disabled = true; act({t:"advance", view:M.view}); }
-  else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna qualcosa prima di inviare"; return; } if(NET.role === "guest" && NET.status !== "open"){ b.textContent = "Lo invio appena torna la connessione"; b.disabled = true; } sfx("send"); buzz(15); act({t:"send", img}); }
+  else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna prima"; return; } if(NET.role === "guest" && NET.status !== "open"){ b.textContent = "In attesa…"; b.disabled = true; } sfx("send"); buzz(15); act({t:"send", img}); }
   else if(id === "mp-pass"){ act({t:"pass"}); }
   else if(id === "mp-next"){ act({t:"next"}); }
   else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
