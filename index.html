@@ -334,6 +334,15 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .viewer img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
 .guessview{gap:12px}
+.gstrip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 8px;margin:0 -2px;scrollbar-width:none;flex:none}
+.gstrip::-webkit-scrollbar{display:none}
+.gcard{flex:none;scroll-snap-align:start;position:relative;width:96px;height:132px;padding:0;border:0;border-radius:14px;background:var(--board);box-shadow:0 0 0 2px var(--night-3);overflow:hidden;cursor:pointer;animation:cardin .45s both cubic-bezier(.2,1.1,.4,1)}
+.gcard img{width:100%;height:100%;object-fit:contain;display:block}
+.gcard .gname{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;background:rgba(27,30,58,.88);color:var(--paper);font:600 .75rem var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard.win{box-shadow:0 0 0 3px var(--mint)}
+.gcard.win .gname{background:var(--mint);color:var(--ink)}
+.outcome.zoomd img{width:auto;max-width:86vw;max-height:66vh;border-radius:18px}
+.still,.still .watchhead,.still .rhead,.still .sentok,.still .big-av,.still .dword,.still .viewer img,.still .sentlist li,.still .gcard,.still .lb li,.still .ldelta{animation:none!important}
 /* chi ha già disegnato: countdown, chi sta guardando, esito */
 .sentok{font:700 .95rem var(--display);color:var(--ink);background:var(--mint);border-radius:999px;padding:6px 14px;animation:popin .45s cubic-bezier(.3,1.6,.5,1)}
 img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rotate(-3deg);box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -512,7 +521,8 @@ html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px
 .dname{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.9rem;min-width:0;overflow-wrap:anywhere}
 .dname .av{width:24px;height:24px;font-size:.75rem}
 img.mine{width:min(100%,280px);border-radius:18px;display:block;margin:0 auto}
-.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:22px;padding-block:24px}
+#view:has(> .welcome){flex:1;display:flex;flex-direction:column}
+.welcome{flex:1;margin-top:-40px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:22px;padding-block:24px}
 .w-intro .dots{display:flex;gap:12px;justify-content:center}
 .w-intro .dots i{width:20px;height:20px;border-radius:50%;display:block;animation:hop 1.1s ease-in-out infinite}
 .w-intro .dots i:nth-child(1){background:var(--mango)}
@@ -988,7 +998,11 @@ function render(){
   if(!screens[S.screen] || (["pass","play","who","result","board","final"].includes(S.screen) && !S.game)) S.screen="home";
   if(S.screen==="mp" && !NET.role) S.screen="home";
   if(LOCK_ON && !isUnlocked() && S.screen!=="mp") S.screen="locked";
-  view.innerHTML = screens[S.screen]();
+  const html = screens[S.screen](), k = S.screen + "|" + (S.screen === "mp" ? mpKey : "");
+  if(html !== view._html){ // stessa schermata aggiornata: niente animazione di entrata, niente scatti
+    const same = view._k === k; view.innerHTML = html; view._html = html; view._k = k;
+    if(same && view.firstElementChild) view.firstElementChild.classList.add("still");
+  }
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
   document.documentElement.classList.toggle("drawmode", !!$(".drawscreen"));
   if(typeof sndBtn === "function") sndBtn();
@@ -1237,7 +1251,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 22:00";
+const APP_VERSION = "22.11 · 22:20";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1429,6 +1443,7 @@ function act(msg){ if(NET.role === "host") hostReceive(NET.myId, {...msg, pid:NE
 function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== NET.myId) NET.sendTo(p.id, msg); }); }
 function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
 function publish(){
+  if(M.phase === "result") armAutoFinal(); else { clearTimeout(NET.autoT); M.autoAt = null; }
   if(M.phase === "lobby" && !M.roundsManual) M.rounds = recRounds(); // finché l'host non sceglie, uso i giri consigliati
   M.left = M.phase === "turn" ? (M.paused != null ? M.paused : Math.max(0, M.endsAt - Date.now())) : null;
   mpBroadcast({t:"state", s:M});
@@ -1455,6 +1470,12 @@ function armTurnTimer(){
   clearTimeout(NET.turnT);
   if(!M || M.phase !== "turn" || M.paused != null) return;
   NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ toReveal(); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
+}
+function armAutoFinal(){
+  clearTimeout(NET.autoT);
+  if(NET.role !== "host" || !M || M.phase !== "result" || peekNext()) return;
+  if(!M.autoAt) M.autoAt = Date.now() + 12000;
+  NET.autoT = setTimeout(() => { if(M && M.phase === "result" && !peekNext()){ M.autoAt = null; M.turn++; toNextTurn(); publish(); } }, Math.max(0, M.autoAt - Date.now()));
 }
 function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
 // chi perde la connessione durante il turno conta ancora: non si scopre prima della fine del tempo
@@ -1503,32 +1524,34 @@ const DRAW_WORDS = {
   extreme: ["Imbianchino", "Equilibrista", "Giocoliere", "Domatore di leoni", "Ventriloquo", "Sommelier", "Apicoltore", "Spazzacamino", "Torre di Pisa", "Colosseo", "Gondola", "Partita a scacchi", "Ingorgo stradale", "Eclissi", "Terremoto", "Effetto domino", "Montagne russe", "Ruota panoramica", "Acquario", "Ragnatela", "Formicaio", "Alveare", "Camaleonte", "Ornitorinco", "Medusa", "Bastone per selfie", "Karaoke", "Matrimonio", "Trasloco", "Picnic", "Sauna", "Tatuaggio", "Barbiere", "Naufragio", "Isola deserta", "Caccia al tesoro", "Tiro alla fune", "Corsa nei sacchi", "Lottatore di sumo", "Ballerina classica", "Mimo", "Fachiro", "Lupo mannaro", "Labirinto", "Cavallo a dondolo", "Serenata", "Ombra cinese", "Prestigiatore", "Fila alla posta", "Pesca subacquea", "Torre Eiffel", "Statua della Libertà", "Muraglia cinese", "Sfinge", "Funambolo", "Sommozzatore", "Archeologo", "Detective", "Giudice", "Chirurgo", "Dentista", "Parrucchiere", "Sarto", "Falegname", "Idraulico", "Giardiniere", "Postino", "Cameriere", "Pasticciere", "Gelataio", "Fioraio", "Vigile urbano", "Arbitro", "Portiere", "Fotografo", "Regista", "Scienziato pazzo", "Esploratore", "Alpinista", "Paracadutista", "Pilota di Formula 1", "Tifoso allo stadio", "Direttore d'orchestra", "Uomo cannone", "Sposa in fuga", "Festa a sorpresa", "Coda al casello", "Saldi", "Colloquio di lavoro", "Sciopero", "Applauso", "Inchino", "Selfie", "Sbadiglio", "Starnuto", "Solletico", "Incubo", "Sonnambulo", "Russare", "Dieta", "Mal di denti", "Gamba ingessata", "Pronto soccorso", "Gemelli", "Neonato", "Primo appuntamento", "Colpo di fulmine", "Cuore spezzato", "Litigio", "Rapina in banca", "Evasione dal carcere", "Manette", "Impronte digitali", "Casa stregata", "Seduta spiritica", "Sfera di cristallo", "Lampada di Aladino", "Tappeto volante", "Cavallo di Troia", "Arca di Noè", "Nave in bottiglia", "Buco nero", "Pala eolica", "Pannello solare", "Blackout", "Batteria scarica", "Videochiamata", "Ascensore bloccato", "Torta in faccia", "Bolla di sapone", "Messaggio in bottiglia", "Uomo delle caverne", "Pigiama party", "Mangiafuoco", "Statua vivente", "Gara di ballo", "Pallone gonfiabile", "Baciamano", "Tiro con l'arco", "Corsa a ostacoli", "Fuochi d'artificio"]
 };
 const LAST_LINES = [
-  "Ultimo {n}. Il tuo talento è come il Wi-Fi in montagna: si dice che esista.",
-  "{n} ultimo. Ti abbiamo invitato per fare numero, e hai fatto proprio quello.",
-  "Ultimo {n}. I tuoi disegni li useremo come prova in tribunale.",
-  "{n}, stasera hai disegnato come chi ha appena perso una scommessa.",
-  "Ultimo {n}. Nessuno si aspettava niente, e ci hai deluso lo stesso.",
-  "{n} ultimo. Se l'impegno desse punti, saresti comunque ultimo.",
-  "Ultimo {n}. Abbiamo visto bambini dell'asilo con più visione artistica.",
-  "{n}: la matita ha chiesto di cambiare proprietario.",
-  "Ultimo {n}. Alla prossima serata ti mandiamo l'invito sbagliato, apposta.",
-  "{n} ultimo. Questa classifica verrà ricordata, purtroppo per te.",
-  "Ultimo {n}. Il tuo disegno migliore era la linea che hai fatto per sbaglio.",
-  "{n}, hai il senso artistico di un parcheggio vuoto.",
-  "Ultimo {n}. Gli altri giocavano a Scarabocchi, tu a nascondino col talento.",
-  "{n} ultimo. È stato bello finché hai preso in mano il telefono.",
-  "Ultimo {n}. Picasso si è girato nella tomba. Due volte.",
-  "{n}: ogni tuo disegno è un mistero che nessuno vuole risolvere.",
-  "Ultimo {n}. Vuoi che il prossimo giro lo saltiamo per te?",
-  "{n} ultimo. Grazie a te stasera gli altri si sono sentiti bravi.",
-  "Ultimo {n}. Il premio di consolazione è che stasera lavi i piatti.",
-  "{n}, i tuoi scarabocchi sono arte. Arte di arrangiarsi male.",
-  "Ultimo {n}. Abbiamo deciso di non parlarne più. Da domani.",
-  "{n} ultimo. Puoi sempre dire che hai lasciato vincere gli altri. Nessuno ci crederà.",
-  "Ultimo {n}. Persino il cane avrebbe indovinato di più.",
-  "{n}: la serata è stata bellissima, la tua partita molto meno.",
-  "Ultimo {n}. Lo screenshot di questa classifica è già nel gruppo.",
-  "{n} ultimo. Il tuo posto è garantito anche alla prossima partita."
+  "Ultimo {n}. Abbiamo fatto una colletta per comprarti una matita. Non è bastata.",
+  "{n} ultimo. Ai tuoi disegni servirebbe un esorcista, non qualcuno che indovina.",
+  "Ultimo {n}. Il tuo talento è stato dichiarato disperso. Le ricerche sono sospese.",
+  "{n}: stasera hai disegnato come se la mano fosse di un altro, e quell'altro ti odiasse.",
+  "Ultimo {n}. Al tuo funerale artistico verranno in pochi. Tutti presenti stasera, però.",
+  "{n} ultimo. Gli scienziati studieranno i tuoi scarabocchi per capire cosa è andato storto.",
+  "Ultimo {n}. Abbiamo chiesto all'intelligenza artificiale cosa avevi disegnato. Si è spenta.",
+  "{n}: hai trasformato ogni parola in un reperto della scientifica.",
+  "Ultimo {n}. Non è che hai perso: è che gli altri hanno smesso di sperare in te molto prima.",
+  "{n} ultimo. Il tuo disegno migliore lo stiamo ancora girando per capire il verso.",
+  "Ultimo {n}. Se l'arte salva il mondo, stasera il mondo è spacciato.",
+  "{n}: complimenti, hai reso difficile anche la parola facile.",
+  "Ultimo {n}. La lavagna ha chiesto un'ordinanza restrittiva nei tuoi confronti.",
+  "{n} ultimo. Ti lasciamo i piatti da lavare: lì almeno non serve talento.",
+  "Ultimo {n}. Il prossimo invito arriverà per posta. Ordinaria. Senza francobollo.",
+  "{n}: i tuoi disegni sono la prova che il caos ha un autore.",
+  "Ultimo {n}. Abbiamo incorniciato il tuo disegno. Per ricordarci di non chiederti mai più niente.",
+  "{n} ultimo. Ti volevamo bene. Lo diciamo al passato per sicurezza.",
+  "Ultimo {n}. Il testamento è pronto: lasci i tuoi pennarelli a chi ne farà un uso migliore. Chiunque.",
+  "{n}: Picasso ha avuto un periodo blu, tu un periodo buio. Lungo tutta la serata.",
+  "Ultimo {n}. Hai perso con una dignità che, purtroppo, non si vedeva nei disegni.",
+  "{n} ultimo. Il gruppo ha votato: da domani giochi solo come spettatore.",
+  "Ultimo {n}. Se esistesse un girone per chi disegna così, avresti il posto prenotato.",
+  "{n}: i tuoi scarabocchi verranno usati per spaventare i bambini che non vanno a letto.",
+  "Ultimo {n}. Abbiamo controllato: non era colpa del telefono.",
+  "{n} ultimo. Stasera hai unito il gruppo: tutti contro di te.",
+  "Ultimo {n}. Lo screenshot di questa classifica sopravviverà a tutti noi.",
+  "{n}: la prossima volta disegna a occhi chiusi, magari va meglio."
 ];
 const LEVELS = [["beginner","Beginner"],["medium","Medium"],["extreme","Extreme"]];
 /* parole già uscite nelle ultime 5 partite: non tornano finché ce ne sono di nuove */
@@ -1630,10 +1653,11 @@ function hostReceive(pid, msg){
     }
     case "pass":
       if((M.phase === "turn" || M.phase === "reveal") && pid === guesserId()){ mpEndTurn({reason:"pass"}); publish(); } break;
-    case "next":
-      if(M.phase === "result" && (pid === guesserId() || pid === M.host)){
-        M.turn++; toNextTurn(); publish();
-      } break;
+    case "next": {
+      const nx = peekNext(), np = mpPlayer(nx);
+      if(M.phase === "result" && (nx ? (pid === nx || (pid === M.host && !(np && np.on)) || pid === M.host && msg.force) : (pid === guesserId() || pid === M.host))){
+        clearTimeout(NET.autoT); M.autoAt = null; M.turn++; toNextTurn(); publish();
+      } break; }
   }
 }
 
@@ -1862,6 +1886,29 @@ function mpPlayersChips(){
 }
 const INVITE_LINES = ["Tutti dentro, si gioca!","Telefoni fuori, matite pronte!","Inquadra e si parte","Chi entra, disegna","Stasera si scarabocchia","Prendete posto: si comincia"];
 /* classifica compatta: entra in una schermata; le posizioni si animano dal turno prima */
+setInterval(() => { const el = $("#autofin"); if(el && M && M.autoAt){ const v = String(Math.max(0, Math.ceil((M.autoAt - Date.now())/1000))); if(el.textContent !== v) el.textContent = v; } }, 400);
+/* chi indovina al prossimo turno (senza cambiare lo stato): null se la partita è finita */
+function peekNext(){
+  let t = M.turn, r = M.round;
+  for(let i = 0; i < M.order.length * 2; i++){
+    t++; if(t >= M.order.length){ t = 0; r++; if(r > M.rounds) return null; }
+    const p = mpPlayer(M.order[t]); if(p && p.on) return p.id;
+  }
+  return null;
+}
+/* i disegni del turno, da scorrere, con il nome di chi li ha fatti */
+function galleryHTML(){
+  const ids = Object.keys(MD).filter(id => MD[id]); if(!ids.length) return "";
+  const order = [...M.queue.filter(id => MD[id]), ...ids.filter(id => !M.queue.includes(id))];
+  return `<div class="gstrip" role="list">${order.map((id, i) => { const p = mpPlayer(id), win = M.last && M.last.helper === id;
+    return `<button class="gcard ${win ? "win" : ""}" data-zoom="${id}" role="listitem" style="animation-delay:${2.4 + i*.12}s"><img src="${MD[id]}" alt="Disegno di ${esc(p ? p.name : "")}"><span class="gname">${win ? "★ " : ""}${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span></button>`; }).join("")}</div>`;
+}
+function zoomDrawing(id){
+  const p = mpPlayer(id); if(!MD[id]) return;
+  const o = document.createElement("div"); o.className = "outcome zoomd";
+  o.innerHTML = `<div class="oc-in"><div class="oc-title">${id === NET.myId ? "Il tuo disegno" : `Disegno di ${esc(p ? p.name : "")}`}</div><img src="${MD[id]}" alt=""><div class="oc-sub">Tocca per chiudere</div></div>`;
+  o.addEventListener("click", () => { o.classList.add("out"); setTimeout(() => o.remove(), 300); }); document.body.appendChild(o);
+}
 function lbHTML(){
   const sc = id => M.scores[id] || 0, prev = NET.prevScores || {};
   const ranked = [...M.players].sort((a,b) => sc(b.id) - sc(a.id) || a.name.localeCompare(b.name));
@@ -1882,7 +1929,7 @@ function showOutcome(s){
   o.addEventListener("click", close); setTimeout(close, L.reason === "guess" ? 2300 : 1700);
 }
 function animateLB(){
-  const lb = $("#lb"); if(!lb || lb.dataset.done) return; lb.dataset.done = 1;
+  const lb = $("#lb"); if(!lb || lb.dataset.done || lb.closest(".still")) return; lb.dataset.done = 1;
   const rows = [...lb.children], h = rows[0] ? rows[0].offsetHeight + 6 : 0, prevOrder = NET.prevOrder || [];
   rows.forEach((li, i) => {
     const old = prevOrder.indexOf(li.dataset.id), sc = li.querySelector(".lsc"), from = +sc.dataset.from, to = +sc.dataset.to;
@@ -2092,14 +2139,16 @@ function mpView(){
       const L = M.last || {}, helper = mpPlayer(L.helper);
       const line = L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato${helper ? ` col disegno di <b>${esc(helper.name)}</b>` : ""}`
         : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
-      const canNext = amGuesser() || NET.role === "host";
-      const lastTurn = M.turn + 1 >= M.order.length && M.round >= M.rounds;
+      const nx = mpPlayer(peekNext()), lastTurn = !nx;
+      const canNext = lastTurn ? (amGuesser() || NET.role === "host") : (nx.id === NET.myId || (NET.role === "host" && !nx.on));
       return `<section class="screen resultview">${meBar()}
         <div class="rhead ${L.reason === "guess" ? "ok" : "ko"}"><span class="eyebrow">La parola era</span><div class="rword">${esc(L.word)}</div><p class="rline">${line}</p></div>
+        ${galleryHTML()}
         <span class="eyebrow" style="text-align:center">Classifica</span>
         ${lbHTML()}
         <div class="spacer"></div>
-        ${canNext ? `<button class="btn" id="mp-next">${lastTurn ? "Classifica finale" : "Prossimo turno"}</button>` : `<p class="hint" style="text-align:center;margin:0">Tra poco il prossimo turno</p>`}</section>`;
+        ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost" id="mp-next">Vai subito</button>` : ""}`
+          : canNext ? `<button class="btn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno</p>`}</section>`;
     }
     case "final": {
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
@@ -2136,7 +2185,7 @@ function guestWelcome(){
       <form class="field" id="g-form" autocomplete="off"><input id="g-name" maxlength="18" placeholder="Come ti chiami?" aria-label="Il tuo nome" value="${esc(savedName())}"><button class="btn" type="submit">Entra</button></form>`;
   return `<section class="welcome">
     <div class="w-intro" aria-hidden="true"><div class="dots"><i></i><i></i><i></i></div></div>
-    <p class="w-line">Stai entrando in un<br><span>fantastico mondo</span></p>
+    <p class="w-line">Stai entrando in un<br><span>mondo fantastico</span></p>
     <div class="w-body">${body}</div></section>`;
 }
 
@@ -2187,6 +2236,7 @@ view.addEventListener("click", e => {
   else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna prima"; return; } if(NET.role === "guest" && NET.status !== "open"){ b.textContent = "In attesa…"; b.disabled = true; } sfx("send"); buzz(15); act({t:"send", img}); }
   else if(id === "mp-pass"){ act({t:"pass"}); }
   else if(id === "mp-next"){ act({t:"next"}); }
+  else if(d.zoom){ zoomDrawing(d.zoom); }
   else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
   else if(id === "mp-exit"){ mpEndRoom(); go("home"); }
   else if(id === "mp-retry"){ mpHostStart(); }
