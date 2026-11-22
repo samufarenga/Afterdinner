@@ -991,31 +991,31 @@ const RULES = {
     <h3>I modi</h3><div class="modes">${MODES.map(m=>`<div style="background:${m.color}"><b>${m.name} · ${m.pts} pt</b>${m.rule}</div>`).join("")}</div>
     <h3>Fine partita</h3><ul><li>Dopo i giri scelti all'inizio vince chi ha più punti.</li></ul>`,
   scarabocchi: () => `<h2>Scarabocchi: le regole</h2>
-    <p class="hint" style="margin:0">Ognuno usa il proprio telefono. Consigliato da 4 a 8 giocatori.</p>
+    <p class="hint" style="margin:0">Ognuno gioca con il proprio telefono. Consigliato da 4 a 8 giocatori.</p>
     <h3>Prima di iniziare</h3><ol>
-      <li>Chi organizza apre Scarabocchi e mostra il QR (o manda il link). Gli altri lo inquadrano, scrivono il nome ed entrano: niente app da installare.</li>
-      <li>L'host sceglie difficoltà delle parole, tempo per disegnare (1, 2 o 3 minuti), modalità Sprint e numero di giri.</li></ol>
+      <li>Chi organizza apre Scarabocchi e mostra il QR, oppure manda il link. Gli altri lo inquadrano, scrivono il nome ed entrano. Non serve installare niente.</li>
+      <li>L'host sceglie la difficoltà delle parole, il tempo per disegnare (1, 2 o 3 minuti), la modalità Sprint e il numero di giri.</li></ol>
     <h3>Il turno</h3><ol>
-      <li>A turno uno di voi <b>indovina</b>: preme Via e non vede la parola.</li>
+      <li>A turno, uno di voi <b>indovina</b>. Preme Via e non vede la parola.</li>
       <li>Tutti gli altri vedono la parola e la <b>disegnano</b> sul proprio telefono, in silenzio. Niente lettere, numeri, gesti o suoni.</li>
       <li>Chi ha finito preme <b>Invia</b>. Un disegno non inviato entro il tempo non vale.</li>
-      <li>I disegni arrivano a chi indovina <b>uno alla volta, nell'ordine di invio</b>, con il nome di chi l'ha fatto.</li>
-      <li>Chi indovina guarda un disegno e <b>scrive una sola risposta</b>. Se è giusta prende i punti e il turno finisce. Se è sbagliata compare una X e arriva il disegno successivo. I disegni già visti non tornano.</li>
-      <li>Si può anche saltare un disegno senza provare, oppure passare il turno.</li></ol>
+      <li>I disegni arrivano a chi indovina <b>uno alla volta</b>, nell'ordine in cui sono stati inviati. Su ognuno c'è il nome di chi l'ha fatto.</li>
+      <li>Chi indovina guarda un disegno e <b>scrive una sola risposta</b>. Se è giusta, prende i punti e il turno finisce. Se è sbagliata, compare una X e arriva il disegno successivo. I disegni già visti non tornano.</li>
+      <li>Si può anche saltare un disegno senza rispondere, oppure passare il turno.</li></ol>
     <h3>Punti</h3><ul>
-      <li>Indovinata sul <b>primo disegno</b> arrivato: <b>2 punti</b> a chi indovina e <b>2</b> a chi l'ha disegnato.</li>
+      <li>Indovinata sul <b>primo disegno</b> arrivato: <b>2 punti</b> a chi indovina e <b>2 punti</b> a chi l'ha disegnato.</li>
       <li>Indovinata su un disegno successivo: <b>1 punto</b> a testa.</li>
       <li>Tempo scaduto, disegni finiti o turno passato: nessun punto.</li>
-      <li>Inviare per primi conviene, ma uno scarabocchio frettoloso rischia di bruciare il tentativo.</li></ul>
+      <li>Inviare per primi conviene, ma uno scarabocchio frettoloso rischia di sprecare il tentativo.</li></ul>
     <h3>Modalità Sprint</h3><ul>
-      <li>Se attiva, quando arriva il primo disegno a chi sta ancora disegnando restano <b>30 secondi</b> (se ne aveva di più). Non si può cambiare.</li>
-      <li>Senza Sprint, il tempo resta quello scelto per tutti.</li></ul>
+      <li>Con Sprint attivo, quando arriva il primo disegno, chi sta ancora disegnando ha <b>30 secondi</b> per finire.</li>
+      <li>Se mancavano già meno di 30 secondi, il tempo non cambia.</li>
+      <li>Senza Sprint, tutti hanno il tempo scelto all'inizio.</li></ul>
     <h3>Se qualcuno si scollega</h3><ul>
-      <li>La partita continua e chi si scollega rientra da solo appena torna la connessione.</li>
-      <li>Se si scollega chi deve indovinare, il turno va in pausa.</li>
-      <li>Dopo 1 minuto l'host può toglierlo dalla partita.</li>
-      <li>Se l'host chiude l'app, riaprendola riprende la partita da dove era.</li></ul>
-    <h3>Fine partita</h3><ul><li>Dopo i giri scelti compare la classifica animata su tutti i telefoni. Per l'ultimo c'è sempre una frase speciale.</li></ul>`
+      <li>La partita va avanti. Chi si scollega rientra da solo appena torna la connessione.</li>
+      <li>Dopo 1 minuto, l'host può toglierlo dalla partita.</li>
+      <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
+    <h3>Fine partita</h3><ul><li>Dopo l'ultimo giro compare la classifica.</li></ul>`
 };
 function openRules(){
   const id = currentRulesGame(); if(!id || $("#rules-sheet")) return;
@@ -1352,8 +1352,8 @@ function hostReceive(pid, msg){
       if(p && p.on){
         p.on = false; p.offAt = Date.now();
         if(M.phase === "turn"){
-          if(pid === guesserId() && M.paused == null){ M.paused = Math.max(0, M.endsAt - Date.now()); clearTimeout(NET.turnT); } // si ferma il tempo finché non rientra
-          else turnCheck();
+          turnCheck(); // il turno va avanti: chi si scollega può rientrare
+
         }
         publish();
       } break;
@@ -1617,7 +1617,7 @@ function mpView(){
           <div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
-            <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Col primo disegno inviato, a chi sta ancora disegnando restano 30 secondi." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
+            <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Quando arriva il primo disegno, chi sta ancora disegnando ha 30 secondi per finire." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
             <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => Math.round(n * r * (M.seconds + 30) / 60), rec = [3,2,1].find(r => est(r) <= 25) || 1;
               return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r}<small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
           </div>
