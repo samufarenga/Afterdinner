@@ -225,8 +225,9 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .xclose{position:sticky;top:0;align-self:flex-end;flex:none;margin:0 -4px -40px 0;box-shadow:0 4px 14px rgba(0,0,0,.35);width:40px;height:40px;border-radius:50%;border:0;background:var(--night-3);color:var(--paper);display:grid;place-items:center;cursor:pointer;z-index:2}
 .xclose svg{width:20px;height:20px}
 .preview .xclose{background:rgba(20,23,63,.55)}
-#ptr{position:fixed;left:50%;top:0;z-index:95;width:44px;height:44px;margin-left:-22px;border-radius:50%;background:var(--night-2);border:2px solid var(--night-3);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(-60px);pointer-events:none}
+#ptr{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:95;width:44px;height:44px;margin-left:-22px;border-radius:50%;background:var(--night-2);border:2px solid var(--night-3);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(-60px);pointer-events:none}
 #ptr svg{width:22px;height:22px;color:var(--mango)}
+#ptr.armed{border-color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
 #info-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
@@ -900,7 +901,11 @@ const cancelPress = () => { if(pressT){ clearTimeout(pressT); pressT=null; } doc
 view.addEventListener("contextmenu", e => { if(e.target.closest(".gtile")) e.preventDefault(); });
 
 $("#home-btn").addEventListener("click", () => {
-  if(S.screen==="mp"){ if(NET.role==="host") mpLeaveConfirm(); return; }
+  if(S.screen==="mp"){
+    if(NET.role!=="host") return;
+    if(!M || M.phase==="lobby" || M.phase==="final"){ mpEndRoom(); go("home"); return; } // partita non iniziata o già finita: niente conferma
+    mpLeaveConfirm(); return;
+  }
   const inGame = S.game && !S.game.over && ["pass","play","who","result","board"].includes(S.screen);
   if(!inGame){ go("home"); return; }
   if($("#quit")) return;
@@ -1012,12 +1017,13 @@ document.addEventListener("touchend", e => { const now = Date.now(); if(now - la
     if(y0 == null) return;
     dy = Math.max(0, e.touches[0].clientY - y0);
     if(window.scrollY > 0){ y0 = null; set(-60, true); return; }
-    set(Math.min(dy * .5, 90) - 60 + 16, false);
+    set(Math.min(dy * .75, 230) - 60, false);
     el.style.opacity = Math.min(1, dy / 120);
+    el.classList.toggle("armed", dy > 200);
   }, {passive:true});
   document.addEventListener("touchend", () => {
     if(y0 == null) return; y0 = null;
-    if(dy > 150){ set(40, true); el.classList.add("go"); buzz(15);
+    if(dy > 200){ set(110, true); el.classList.add("go"); buzz(15);
       const done = () => location.reload();
       fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000);
     } else set(-60, true);
