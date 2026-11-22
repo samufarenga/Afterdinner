@@ -270,6 +270,7 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr.armed{border-color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
 .newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
+.newver.quiet{background:rgba(33,38,106,.92);color:var(--muted);border:1px solid var(--night-3);font-size:.8rem;padding:7px 14px;box-shadow:none;bottom:auto;top:calc(6px + env(safe-area-inset-top,0px));z-index:40}
 .hleft{grid-column:1;grid-row:1;justify-self:start;display:flex;gap:8px;align-items:center}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
 #host-btn,.dhost{font-size:1.4rem;width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center;flex:none;line-height:1;letter-spacing:-.05em}
@@ -1447,7 +1448,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 01:45";
+const APP_VERSION = "23.11 · 02:10";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1460,16 +1461,36 @@ function hardReload(){
 // tolgo il ?v=... dall'indirizzo dopo l'aggiornamento
 if(QS_V()) { try{ const q = new URLSearchParams(location.search); q.delete("v"); history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "")); }catch(e){} }
 function QS_V(){ return new URLSearchParams(location.search).has("v"); }
-setTimeout(() => {
-  if(QS.get("room")) return;
+/* a ogni riapertura (anche dalla home del telefono) controllo se c'è una versione nuova:
+   se non c'è una partita in corso ricarico da solo, altrimenti un avviso discreto e si aggiorna a fine partita */
+const busyGame = () => !!NET.role || !!(S.game && !S.game.over && ["pass","play","who","result","board"].includes(S.screen));
+let verChecking = false, hiddenAt = 0;
+function checkVersion(){
+  if(QS.get("room") || verChecking || !navigator.onLine) return;
+  verChecking = true;
   fetch(location.pathname + "?check=" + Date.now(), {cache:"no-store"}).then(r => r.text()).then(t => {
     const v = (t.match(/APP_VERSION = "([^"]+)"/) || [])[1];
-    if(!v || v === APP_VERSION || document.getElementById("newver")) return;
-    const b = document.createElement("button"); b.id = "newver"; b.className = "newver"; b.textContent = "Nuova versione disponibile · tocca per aggiornare";
-    b.onclick = () => { b.textContent = "Aggiorno…"; hardReload(); };
+    if(!v || v === APP_VERSION) return;
+    let tried = null; try{ tried = sessionStorage.getItem("ad.autoUpd"); }catch(_){}
+    if(!busyGame() && tried !== v){ // niente partita in corso: aggiorno subito (una volta sola per versione, niente giri a vuoto)
+      try{ sessionStorage.setItem("ad.autoUpd", v); }catch(_){}
+      document.getElementById("newver")?.remove();
+      const b = document.createElement("div"); b.id = "newver"; b.className = "newver"; b.textContent = "Aggiorno all'ultima versione…"; document.body.appendChild(b);
+      hardReload(); return;
+    }
+    if(document.getElementById("newver")) return;
+    const b = document.createElement("button"); b.id = "newver"; b.className = "newver" + (busyGame() ? " quiet" : "");
+    b.textContent = busyGame() ? "Nuova versione: aggiorna a fine partita" : "Nuova versione disponibile · tocca per aggiornare";
+    b.onclick = () => { if(busyGame()){ b.remove(); return; } b.textContent = "Aggiorno…"; hardReload(); };
     document.body.appendChild(b);
-  }).catch(() => {});
-}, 3500);
+  }).catch(() => {}).finally(() => { verChecking = false; });
+}
+setTimeout(checkVersion, 1500);
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "hidden"){ hiddenAt = Date.now(); return; }
+  if(hiddenAt && Date.now() - hiddenAt > 15000) checkVersion(); // riaperta dopo un po': controllo subito
+});
+setInterval(() => { const b = document.getElementById("newver"); if(b && b.classList.contains("quiet") && !busyGame()) { b.remove(); checkVersion(); } }, 5000); // partita finita: aggiorno
 /* trascina giù nella home per aggiornare l'app all'ultima versione */
 (() => {
   let y0 = null, dy = 0, el = null;
