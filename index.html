@@ -270,6 +270,10 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr.armed{border-color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
 .newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
+.gly{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none}
+.xclose .gly,.pclear .gly{width:18px;height:18px}
+#host-btn .gly,.dhost .gly{width:22px;height:22px}
+.liveview .livetag .ldot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
 .newver.quiet{background:rgba(33,38,106,.92);color:var(--muted);border:1px solid var(--night-3);font-size:.8rem;padding:7px 14px;box-shadow:none;bottom:auto;top:calc(6px + env(safe-area-inset-top,0px));z-index:40}
 .hleft{grid-column:1;grid-row:1;justify-self:start;display:flex;gap:8px;align-items:center}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
@@ -652,7 +656,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
     <div class="hleft">
     <button class="iconbtn" id="back-btn" hidden aria-label="Torna alla home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
     <button class="iconbtn" id="snd-btn" hidden aria-label="Effetti audio"></button>
-    <button class="iconbtn" id="host-btn" hidden aria-label="Comandi dell'host">⋯</button>
+    <button class="iconbtn" id="host-btn" hidden aria-label="Comandi dell'host"><svg class="gly" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg></button>
     </div>
   </header>
   <main id="view"></main>
@@ -740,6 +744,8 @@ const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite 
 
 const $ = (s, r=document) => r.querySelector(s);
 const view = $("#view");
+/* simboli disegnati nei colori dell'app (al posto dei caratteri della tastiera) */
+const GLY = {x:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`, no:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>`, ok:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, star:`<svg class="gly" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 16.7l-5.6 3.1 1.3-6.2L3 9.3l6.3-.7z" fill="currentColor"/></svg>`, list:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`, wheel:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>`, more:`<svg class="gly" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>`};
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const initial = n => esc((Array.from(n.trim())[0] || "?").toUpperCase()); // anche un'emoji intera
 
@@ -776,7 +782,7 @@ const screens = {
       <div class="people" role="group" aria-label="Quanti siete stasera">
         <span class="plabel">Quanti siete stasera?</span>
         <div class="prow"><div class="stepper"><button data-people="-1" aria-label="Uno in meno" ${n && n <= 2 ? "disabled" : ""}>−</button><output aria-live="polite">${n ? n : "?"}</output><button data-people="1" aria-label="Uno in più" ${n >= 16 ? "disabled" : ""}>+</button></div>
-        ${n ? `<button class="pclear" data-people="0" aria-label="Mostra tutti i giochi">✕</button>` : ""}</div>
+        ${n ? `<button class="pclear" data-people="0" aria-label="Mostra tutti i giochi">${GLY.x}</button>` : ""}</div>
       </div>
       <div class="chips" role="group" aria-label="Filtra i giochi">${chip("all","Tutti")}${chip("one","Un telefono")}${chip("many","Più telefoni")}</div>
 
@@ -788,7 +794,7 @@ const screens = {
           <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span>
         </button></li>`).join("")}
       </ul>`}
-      ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o tocca ✕.</p>`}
+      ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o togli il filtro.</p>`}
       ${WHEEL_ON && ST().wheel ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
 
     </section>`;
@@ -1183,7 +1189,7 @@ function openSettings(){
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
     <div class="set-list">
       ${WHEEL_ON ? `<div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
-        <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>` : ""}
+        <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">${GLY.list} Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">${GLY.wheel} Ruota</button></div></div>` : ""}
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
       ${sw("music","Musica","Sottofondo leggero mentre giocate")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
@@ -1416,9 +1422,9 @@ function hostDo(a, arg){
 function openHostMenu(){
   if($("#host-sheet")) return;
   const m = document.createElement("div"); m.id = "host-sheet"; m.className = "modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","Comandi dell'host");
-  const list = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">✕</button><h2>Comandi dell'host</h2><p class="hint" style="margin:0">Tocca una voce, poi tocca di nuovo per confermare.</p>
+  const list = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">${GLY.x}</button><h2>Comandi dell'host</h2><p class="hint" style="margin:0">Tocca una voce, poi tocca di nuovo per confermare.</p>
     <div class="hlist">${hostItems().map(([a, t, sub, cls]) => `<button class="hitem ${cls || ""}" data-ha="${a}"><b>${esc(t)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</button>`).join("")}</div></div>`;
-  const kickList = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">✕</button><h2>Chi togliamo?</h2><p class="hint" style="margin:0">Tocca un nome, poi tocca di nuovo per confermare.</p>
+  const kickList = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">${GLY.x}</button><h2>Chi togliamo?</h2><p class="hint" style="margin:0">Tocca un nome, poi tocca di nuovo per confermare.</p>
     <div class="hlist">${M.players.filter(p => p.id !== M.host).map(p => `<button class="hitem" data-kick-id="${p.id}"><b>${av(p)} ${esc(p.name)}</b><span>${p.on ? "online" : "offline"}</span></button>`).join("")}</div></div>`;
   m.innerHTML = list(); document.body.appendChild(m);
   const close = () => m.remove();
@@ -1458,7 +1464,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 02:25";
+const APP_VERSION = "23.11 · 02:40";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2276,7 +2282,7 @@ function galleryHTML(){
   const ids = Object.keys(MD).filter(id => MD[id]); if(!ids.length) return "";
   const order = [...M.queue.filter(id => MD[id]), ...ids.filter(id => !M.queue.includes(id))];
   return `<div class="gstrip" role="list">${order.map((id, i) => { const p = mpPlayer(id), win = M.last && M.last.helper === id;
-    return `<button class="gcard ${win ? "win" : ""}" data-zoom="${id}" role="listitem" style="animation-delay:${2.4 + i*.12}s"><img src="${MD[id]}" alt="Disegno di ${esc(p ? p.name : "")}"><span class="gname">${win ? "★ " : ""}${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span></button>`; }).join("")}</div>`;
+    return `<button class="gcard ${win ? "win" : ""}" data-zoom="${id}" role="listitem" style="animation-delay:${2.4 + i*.12}s"><img src="${MD[id]}" alt="Disegno di ${esc(p ? p.name : "")}"><span class="gname">${win ? GLY.star + " " : ""}${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span></button>`; }).join("")}</div>`;
 }
 function zoomDrawing(id){
   const p = mpPlayer(id); if(!MD[id]) return;
@@ -2403,17 +2409,17 @@ function guessInfo(){
 function sentListHTML(){
   const sent = M.queue.map(id => mpPlayer(id)).filter(Boolean), todo = stillDrawing();
   const name = p => p.id === NET.myId ? "Tu" : esc(p.name);
-  return `<div class="sentbox"><span class="eyebrow">Chi ha consegnato · ${sent.length} di ${sent.length + todo.length}</span><ol class="sentlist">${sent.map((p, i) => `<li class="ok"><span class="chk">✓</span>${av(p)}<span class="sn">${name(p)}</span><span class="ss">${i+1}° consegnato</span></li>`).join("")}${todo.map(p => `<li class="wait ${p.on ? "" : "off"}"><span class="chk"></span>${av(p)}<span class="sn">${name(p)}</span><span class="ss">${p.on ? `manca <span class="think"><i></i><i></i><i></i></span>` : "offline"}</span></li>`).join("")}</ol></div>`;
+  return `<div class="sentbox"><span class="eyebrow">Chi ha consegnato · ${sent.length} di ${sent.length + todo.length}</span><ol class="sentlist">${sent.map((p, i) => `<li class="ok"><span class="chk">${GLY.ok}</span>${av(p)}<span class="sn">${name(p)}</span><span class="ss">${i+1}° consegnato</span></li>`).join("")}${todo.map(p => `<li class="wait ${p.on ? "" : "off"}"><span class="chk"></span>${av(p)}<span class="sn">${name(p)}</span><span class="ss">${p.on ? `manca <span class="think"><i></i><i></i><i></i></span>` : "offline"}</span></li>`).join("")}</ol></div>`;
 }
 function qstripHTML(){
   return `<ol class="qstrip">${M.queue.map((id, i) => { const p = mpPlayer(id), t = (M.tries || []).find(x => x.on === id);
     const st = i < M.view ? (t ? "ko" : "skip") : i === M.view ? "now" : "next";
-    return `<li class="${st} ${id === NET.myId ? "me" : ""}" title="${esc(p ? p.name : "")}">${p ? av(p) : ""}<span class="qn">${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span><span class="qs">${st === "ko" ? `✗ ${esc(t.text)}` : st === "skip" ? "saltato" : st === "now" ? "ora" : ""}</span></li>`; }).join("")}</ol>`;
+    return `<li class="${st} ${id === NET.myId ? "me" : ""}" title="${esc(p ? p.name : "")}">${p ? av(p) : ""}<span class="qn">${id === NET.myId ? "Tu" : esc(p ? p.name : "")}</span><span class="qs">${st === "ko" ? `${GLY.no} ${esc(t.text)}` : st === "skip" ? "saltato" : st === "now" ? "ora" : ""}</span></li>`; }).join("")}</ol>`;
 }
 function triesHTML(){
   const t = M.tries || []; if(!t.length) return "";
   const g = mpPlayer(guesserId());
-  return `<ul class="tries" aria-label="Tentativi sbagliati">${t.map(x => `<li>✗ <b>${esc(x.text)}</b>${mpPlayer(x.on) ? ` su ${esc(mpPlayer(x.on).name)}` : ""}</li>`).join("")}</ul>`;
+  return `<ul class="tries" aria-label="Tentativi sbagliati">${t.map(x => `<li>${GLY.no} <b>${esc(x.text)}</b>${mpPlayer(x.on) ? ` su ${esc(mpPlayer(x.on).name)}` : ""}</li>`).join("")}</ul>`;
 }
 function timerHTML(){ return `<div class="mptime" id="mptime">${M.paused != null ? Math.ceil(M.paused/1000) : Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>`; }
 
@@ -2428,7 +2434,7 @@ function duoSetupHTML(online){
           <p class="hint pcount">Sfida a due: entra solo il tuo avversario.</p>
           <button class="btn pink" id="mp-start" ${online !== 2 ? "disabled" : ""}>${online < 2 ? "Aspetta il tuo avversario" : "Inizia la sfida"}</button>`;
 }
-function duoTriesHTML(){ return (M.tries || []).slice(-8).reverse().map(t => `<li>✗ <b>${esc(t.text)}</b></li>`).join(""); }
+function duoTriesHTML(){ return (M.tries || []).slice(-8).reverse().map(t => `<li>${GLY.no} <b>${esc(t.text)}</b></li>`).join(""); }
 function mpView(){
   if(NET.role === "guest" && (!M || !mpPlayer(NET.myId))) return guestWelcome();
   if(!M) return `<section class="screen"><p class="lead">Nessuna stanza aperta.</p></section>`;
@@ -2495,9 +2501,9 @@ function mpView(){
     case "turn": {
       if(isDuo() && amGuesser()){ const d = mpPlayer(drawerId());
         return `<section class="screen duoguess">
-          <div class="dtop"><div class="dtw"><span class="eyebrow">${turnLabel()} · disegna ${esc(d ? d.name : "")}</span><div class="duonow" id="duopts">Vale <b>${duoPts()}</b></div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}</div>
+          <div class="dtop"><div class="dtw"><span class="eyebrow">${turnLabel()} · disegna ${esc(d ? d.name : "")}</span><div class="duonow" id="duopts">Vale <b>${duoPts()}</b></div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">${GLY.more}</button>` : ""}${timerHTML()}</div>
           <form class="field guessform" id="g-guess" autocomplete="off"><input id="gtxt" maxlength="40" placeholder="Scrivi la parola" aria-label="La tua risposta" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"><button class="btn mint" type="submit">Prova</button></form>
-          <div class="liveview empty" id="liveview"><canvas id="livecv" aria-label="Disegno in diretta"></canvas><div class="livewait">${esc(d ? d.name : "")} sta per disegnare<span class="think"><i></i><i></i><i></i></span></div><span class="livetag">● in diretta</span></div>
+          <div class="liveview empty" id="liveview"><canvas id="livecv" aria-label="Disegno in diretta"></canvas><div class="livewait">${esc(d ? d.name : "")} sta per disegnare<span class="think"><i></i><i></i><i></i></span></div><span class="livetag"><i class="ldot"></i>in diretta</span></div>
           <ul class="tries" id="ctries">${duoTriesHTML()}</ul>
         </section>`; }
       const sent = M.queue.includes(NET.myId), drawers = M.players.filter(p => p.on && p.id !== guesserId()).length;
@@ -2506,13 +2512,13 @@ function mpView(){
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           ${sentListHTML()}</section>`;
       if(sent) return `<section class="screen pass bigwait watchwait">${meBar()}
-          <span class="sentok">✓ Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
+          <span class="sentok">${GLY.ok} Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
           <p class="lead" style="margin:0">${esc(g.name)} inizia a guardare tra</p>
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           ${sentListHTML()}</section>`;
       return `<section class="screen drawscreen">
           ${(() => { const lab = isDuo() ? `${esc(g.name)} ti guarda in diretta` : `Per ${esc(g.name)}`, wide = M.word.length > 14 || Math.max(...M.word.split(/[\s']+/).map(x => x.length)) > 10;
-            return `<div class="dtop ${wide ? "wide" : ""}">${wide ? `<span class="eyebrow dlab">${lab}</span>` : ""}<div class="dtw">${wide ? "" : `<span class="eyebrow">${lab}</span>`}<div class="dword">${esc(M.word)}</div></div>`; })()}${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}${isDuo() ? "" : `<button class="btn pink dsend" id="b-send">Invia</button>`}</div>
+            return `<div class="dtop ${wide ? "wide" : ""}">${wide ? `<span class="eyebrow dlab">${lab}</span>` : ""}<div class="dtw">${wide ? "" : `<span class="eyebrow">${lab}</span>`}<div class="dword">${esc(M.word)}</div></div>`; })()}${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">${GLY.more}</button>` : ""}${timerHTML()}${isDuo() ? "" : `<button class="btn pink dsend" id="b-send">Invia</button>`}</div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
           <button class="bfit" id="b-fit" hidden aria-label="Torna alla lavagna intera">${TICONS.fit}</button>
           <div class="toolbar" role="toolbar" aria-label="Strumenti">
