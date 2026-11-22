@@ -833,7 +833,7 @@ let MD = {};           // disegni del turno {idGiocatore: immagine}
 let mpTick = null, mpEndsLocal = 0, mpKey = "";
 
 function myPid(){
-  if(USE_LOCAL) return NET._pid || (NET._pid = "u"+Math.random().toString(36).slice(2,10)); // in prova ogni scheda è un giocatore diverso
+  if(USE_LOCAL){ try{ let id = sessionStorage.getItem("ad.pid"); if(!id){ id = "u"+Math.random().toString(36).slice(2,10); sessionStorage.setItem("ad.pid", id); } return id; }catch(e){} } // in prova ogni scheda è un giocatore diverso
   try{ let id = localStorage.getItem("ad.pid"); if(!id){ id = "u"+Math.random().toString(36).slice(2,10); localStorage.setItem("ad.pid", id); } return id; }
   catch(e){ return NET._pid || (NET._pid = "u"+Math.random().toString(36).slice(2,10)); }
 }
@@ -880,7 +880,7 @@ async function guestOpen(){
   if(USE_LOCAL){
     NET.bc = new BroadcastChannel("ad-" + NET.code);
     NET.bc.onmessage = e => { const d = e.data; if(d.to === NET.myId || d.to === "*") guestReceive(d.msg); };
-    NET.status = "open"; NET.toHost({t:"peek"}); return;
+    NET.status = "open"; NET.toHost({t:"peek"}); if(NET.name) NET.toHost({t:"hello", name:NET.name}); return;
   }
   await loadScript("lib/peerjs.min.js", "Peer");
   const peer = new Peer(); NET.peer = peer;
@@ -926,10 +926,21 @@ function hostReceive(pid, msg){
   switch(msg.t){
     case "peek": NET.sendTo(pid, {t:"info", host:mpPlayer(M.host).name, game:"Scarabocchi"}); break;
     case "hello": {
+      // stesso nome di un giocatore scollegato: è lui che rientra da un altro "telefono"
+      const ghost = !p && M.players.find(x => !x.on && x.id !== M.host && x.name.toLowerCase() === cleanName(msg.name).toLowerCase());
+      if(ghost){
+        const old = ghost.id; ghost.id = pid; ghost.on = true;
+        M.scores[pid] = M.scores[old]; delete M.scores[old];
+        M.order = M.order.map(x => x === old ? pid : x);
+        if(M.queue) M.queue = M.queue.map(x => x === old ? pid : x);
+        if(MD[old]){ MD[pid] = MD[old]; delete MD[old]; }
+        publish(); break;
+      }
       if(!p){
         if(M.players.length >= 12){ NET.sendTo(pid, {t:"full"}); return; }
         const used = new Set(M.players.map(x => x.color));
-        M.players.push({id:pid, name:cleanName(msg.name), color:COLORS.find(c => !used.has(c)) || COLORS[M.players.length % COLORS.length], on:true});
+        let nm = cleanName(msg.name), k = 2; while(M.players.some(x => x.name.toLowerCase() === nm.toLowerCase())) nm = cleanName(msg.name).slice(0,15) + " " + k++;
+        M.players.push({id:pid, name:nm, color:COLORS.find(c => !used.has(c)) || COLORS[M.players.length % COLORS.length], on:true});
         M.scores[pid] = 0;
         if(M.phase !== "lobby") M.order.push(pid);
         beep(700, .08); buzz(20);
@@ -940,7 +951,8 @@ function hostReceive(pid, msg){
     }
     case "bye": if(p){ p.on = false; publish(); } break;
     case "start":
-      if(M.phase === "ready" && pid === guesserId()){
+      if(M.phase === "ready" && (pid === guesserId() || (pid === M.host && msg.skip))){
+        if(msg.skip){ M.turn++; if(M.turn >= M.order.length){ M.turn = 0; M.round++; } M.phase = (M.round <= M.rounds && nextGuesser()) ? "ready" : "final"; publish(); break; }
         const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
         M.queue = []; M.view = -1;
         M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000;
@@ -957,7 +969,7 @@ function hostReceive(pid, msg){
     case "advance": // chi indovina passa al disegno successivo (non si torna indietro)
       if(M.phase === "turn" && pid === guesserId() && M.view < M.queue.length - 1){ M.view++; publish(); } break;
     case "guessed": // conta il disegno che chi indovina ha sullo schermo adesso
-      if(M.phase === "turn" && M.view >= 0 && (pid === guesserId() || M.queue.includes(pid) || pid === M.host)){
+      if(M.phase === "turn" && M.view >= 0 && pid === guesserId()){
         clearTimeout(NET.turnT);
         const helper = M.queue[M.view], pts = M.view === 0 ? 2 : 1, g = guesserId();
         M.scores[g] += pts; M.scores[helper] += pts;
@@ -986,9 +998,10 @@ function guestReceive(msg){
 let prevPhase = null;
 function onState(s){
   if(NET.role === "host") mpEndsLocal = s.endsAt;
-  if(s.phase === "turn" && prevPhase !== "turn"){ grabWake(); NET.lastQ = 0; }
+  if(!wake) grabWake(); // schermo acceso per tutta la serata
+  if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; }
   if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ beep(760,.07); buzz(20); } NET.lastQ = s.queue.length; }
-  if(s.phase !== "turn" && prevPhase === "turn"){ releaseWake(); if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); beep(660,.12); setTimeout(()=>beep(880,.16),120); } else beep(220,.35); }
+  if(s.phase !== "turn" && prevPhase === "turn"){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); beep(660,.12); setTimeout(()=>beep(880,.16),120); } else beep(220,.35); }
   prevPhase = s.phase;
   mpRender();
 }
@@ -1042,6 +1055,8 @@ async function mpHostStart(){
 }
 function mpGuestBoot(code){
   NET.role = "guest"; NET.myId = myPid(); NET.code = code.toUpperCase(); NET.status = "connecting"; NET.name = "";
+  // se questa scheda era già entrata nella stanza (es. dopo una ricarica), rientra da sola
+  try{ if(sessionStorage.getItem("ad.joined") === NET.code) NET.name = savedName(); }catch(_){}
   document.getElementById("splash")?.remove();
   document.body.classList.add("guest");
   S.screen = "mp";
@@ -1052,7 +1067,8 @@ function mpGuestBoot(code){
 function mpScoreList(){
   const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
   const max = Math.max(1, ...Object.values(M.scores));
-  return `<ol class="board">${ranked.map((p,i) => `<li class="${i===0 && M.scores[p.id]>0 ? "first" : ""}"><span class="pos">${i+1}</span>${av(p)}
+  const pos = p => 1 + ranked.filter(x => M.scores[x.id] > M.scores[p.id]).length;
+  return `<ol class="board">${ranked.map((p,i) => `<li class="${pos(p)===1 && M.scores[p.id]>0 ? "first" : ""}"><span class="pos">${pos(p)}</span>${av(p)}
     <span><span class="nm">${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span><span class="bar" style="display:block"><i style="width:${M.scores[p.id]/max*100}%"></i></span></span><span class="sc">${M.scores[p.id]}</span></li>`).join("")}</ol>`;
 }
 function mpPlayersChips(){
@@ -1099,14 +1115,15 @@ function mpView(){
       return `<section class="screen pass"><span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
         <div class="big-av" style="background:${g.color}">${initial(g.name)}</div>
         <div><p class="lead" style="margin:0 0 6px">Ora indovina</p><h1>${esc(g.name)}</h1></div>
-        <p class="hint">Quando preme Via compare la parola e la lavagna. Disegna e premi Invia: chi invia per primo rischia di più ma vale 2 punti.</p></section>`;
+        <p class="hint">Quando preme Via compare la parola e la lavagna. Disegna e premi Invia: chi invia per primo rischia di più ma vale 2 punti.</p>
+        ${NET.role === "host" && !g.on ? `<p class="hint">${esc(g.name)} sembra scollegato.</p><button class="btn ghost" id="mp-skip">Salta il suo turno</button>` : ""}</section>`;
     case "turn": {
       const sent = M.queue.includes(NET.myId);
       if(amGuesser()){
         const cur = M.view >= 0 ? M.queue[M.view] : null, cp = mpPlayer(cur), more = M.queue.length - 1 - M.view;
         return `<section class="screen guessview">
-          <div class="drawhead"><div><span class="eyebrow">Indovina la parola</span><div class="dword">${cur ? `Disegno ${M.view+1} · ${esc(cp.name)}` : "Aspetta i disegni…"}</div></div>${timerHTML()}</div>
-          <div class="viewer">${cur && MD[cur] ? `<img src="${MD[cur]}" alt="Disegno di ${esc(cp.name)}">` : `<div class="dwait big">I tuoi amici stanno disegnando.<br>Il primo disegno arriva qui.</div>`}</div>
+          <div class="drawhead"><div><span class="eyebrow">Indovina la parola</span><div class="dword">${cur ? `Disegno ${M.view+1}` : "Aspetta i disegni…"}</div></div>${timerHTML()}</div>
+          <div class="viewer">${cur && MD[cur] ? `<img src="${MD[cur]}" alt="Disegno ${M.view+1}">` : `<div class="dwait big">I tuoi amici stanno disegnando.<br>Il primo disegno arriva qui.</div>`}</div>
           <p class="hint" style="text-align:center">${cur ? (M.view === 0 ? "Se indovini su questo disegno: 2 punti a te e 2 a chi l'ha fatto." : "Da qui in poi: 1 punto a te e 1 a chi l'ha fatto.") : ""} Ricevuti: ${M.queue.length}</p>
           <div class="row"><button class="btn ghost" id="mp-pass">Passo</button>
             <button class="btn" id="mp-adv" ${more > 0 ? "" : "disabled"}>${more > 0 ? `Prossimo disegno (${more})` : "Prossimo disegno"}</button></div>
@@ -1114,14 +1131,12 @@ function mpView(){
         </section>`;
       }
       if(sent){
-        const pos = M.queue.indexOf(NET.myId), viewing = M.view >= 0 ? mpPlayer(M.queue[M.view]) : null;
-        return `<section class="screen pass"><span class="eyebrow">La parola è «${esc(M.word)}»</span>
-          ${MD[NET.myId] ? `<img class="mine" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}
-          <h2>Inviato! Sei arrivato ${pos+1}°</h2>
-          <p class="lead">${viewing ? `${esc(g.name)} sta guardando il disegno di <b style="color:var(--paper)">${viewing.id===NET.myId ? "te" : esc(viewing.name)}</b>` : ""}</p>
-          ${timerHTML()}
-          <button class="btn mint" id="mp-guessed">Ha indovinato!</button>
-          <p class="hint">Premilo se ${esc(g.name)} dice la parola giusta e non l'ha ancora segnato.</p></section>`;
+        const pos = M.queue.indexOf(NET.myId), curId = M.view >= 0 ? M.queue[M.view] : null, viewing = mpPlayer(curId);
+        return `<section class="screen guessview"><div class="drawhead"><div><span class="eyebrow">La parola è «${esc(M.word)}»</span>
+          <div class="dword">Il tuo è il ${pos+1}° disegno</div></div>${timerHTML()}</div>
+          <p class="lead" style="margin:0">${viewing ? `${esc(g.name)} sta guardando ${viewing.id===NET.myId ? "<b style=\"color:var(--paper)\">il tuo disegno</b>" : `il disegno di <b style="color:var(--paper)">${esc(viewing.name)}</b>`}` : ""}</p>
+          <div class="viewer">${curId && MD[curId] ? `<img src="${MD[curId]}" alt="Disegno che sta guardando">` : ""}</div>
+          <p class="hint" style="text-align:center">Niente aiutini: non si parla e non si mima!</p></section>`;
       }
       return `<section class="screen drawscreen">
           <div class="drawhead"><div><span class="eyebrow">Disegna per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}</div>
@@ -1145,7 +1160,7 @@ function mpView(){
     }
     case "final": {
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id]);
-      return `<section class="screen"><div style="text-align:center"><span class="eyebrow">Fine partita</span><h1>Vince ${esc(ranked[0].name)}!</h1></div>
+      return `<section class="screen"><div style="text-align:center"><span class="eyebrow">Fine partita</span><h1>${(() => { const top = ranked.filter(p => M.scores[p.id] === M.scores[ranked[0].id]); return top.length > 1 ? `Pareggio tra ${top.map(p => esc(p.name)).join(" e ")}!` : `Vince ${esc(ranked[0].name)}!`; })()}</h1></div>
         ${mpScoreList()}
         ${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</section>`;
     }
@@ -1207,6 +1222,7 @@ view.addEventListener("click", e => {
   else if(id === "mp-start"){ M.order = shuffle(M.players.filter(p => p.on).map(p => p.id)); M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ beep(440,.05); act({t:"start"}); }
   else if(id === "mp-guessed"){ act({t:"guessed"}); }
+  else if(id === "mp-skip"){ act({t:"start", skip:true}); }
   else if(id === "mp-adv"){ act({t:"advance"}); }
   else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna qualcosa prima di inviare"; return; } act({t:"send", img}); }
   else if(id === "mp-pass"){ act({t:"pass"}); }
@@ -1224,11 +1240,12 @@ view.addEventListener("submit", e => {
   if(e.target.id !== "g-form") return;
   e.preventDefault();
   const n = cleanName($("#g-name").value); if(!$("#g-name").value.trim()) return;
-  NET.name = n; storeName(n); NET.toHost({t:"hello", name:n}); mpRender(true);
+  NET.name = n; storeName(n); try{ sessionStorage.setItem("ad.joined", NET.code); }catch(_){} NET.toHost({t:"hello", name:n}); mpRender(true);
 });
 view.addEventListener("change", e => {
   if(e.target.id === "host-name" && M){ const n = cleanName(e.target.value); storeName(n); mpPlayer(NET.myId).name = n; publish(); }
 });
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && NET.role) grabWake(); });
 window.addEventListener("beforeunload", () => { try{ NET.role === "guest" && NET.toHost && NET.toHost({t:"bye"}); }catch(e){} });
 function mpLeaveConfirm(){
   if($("#quit")) return;
