@@ -211,8 +211,8 @@ html.wheelmode,html.wheelmode body{height:100%;overflow:hidden}
 html.wheelmode .app{height:100dvh;min-height:0;box-sizing:border-box;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 html.wheelmode #view{flex:1;min-height:0;display:flex;flex-direction:column}
 html.wheelmode #view>.screen{flex:1;min-height:0;gap:12px}
-.wheelzone{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;container-type:size}
-.wheelzone .wheelwrap{flex:none;width:min(100cqw,calc(100cqh - 3.6em),420px);height:auto;max-width:none;aspect-ratio:1}
+.wheelzone{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;container-type:size;margin-top:-4px}
+.wheelzone .wheelwrap{flex:none;width:min(100cqw,calc(100cqh - 3.6em - 64px),420px);height:auto;max-width:none;aspect-ratio:1}
 .wheelwrap{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
 .wheel{position:absolute;inset:0}
 .wheel::before{content:"";position:absolute;inset:14%;border-radius:50%;border:2px dashed var(--night-3)}
@@ -224,6 +224,7 @@ html.wheelmode #view>.screen{flex:1;min-height:0;gap:12px}
 .whub b{font:700 clamp(1rem,4.6vw,1.35rem)/1.05 var(--display);text-align:center}
 .whub small{font:700 .62rem var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.75}
 .wdesc{text-align:center;margin:0;min-height:2.6em;color:var(--muted);flex:none}
+.wplay{flex:none;width:100%;margin-top:auto}
 .ggrid{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
 .gtile{width:100%;aspect-ratio:1;max-width:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;text-align:center;background:var(--c);color:var(--ink);border:0;border-radius:32px;padding:26px 22px 24px;font:inherit;cursor:pointer;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.28);-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:transform .15s}
 .gtile.pressing{transform:scale(.96)}
@@ -497,7 +498,7 @@ const CATALOG = [
   {id:"porcellino", name:"Il Porcellino", icon:"pig", color:"#e8233f", adult:true, players:"4-10", mins:"20-30", phones:"one", desc:"Domande e sfide per adulti, per quando la serata si scalda."},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
-const DEFAULT_SETTINGS = {wheel:false, keysound:true, sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
+const DEFAULT_SETTINGS = {wheel:false, sfx:false, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
 const $ = (s, r=document) => r.querySelector(s);
@@ -512,6 +513,7 @@ function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch
 
 let timerId = null, wake = null, audio = null;
 S.settings = {...DEFAULT_SETTINGS, ...(S.settings||{})};
+if(!S.settings.audioOffV1){ S.settings.sfx = false; S.settings.music = false; S.settings.audioOffV1 = true; } // per ora l'audio parte spento: si accende dalle impostazioni
 const ST = () => S.settings;
 
 function go(screen){ S.screen = screen; save(); render(); window.scrollTo(0,0); }
@@ -766,6 +768,7 @@ function unlockAudio(){
   setAudioSession(true);
   try{ const a = ctx(); const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); audioUnlocked = true; audioIdle(400); }catch(e){}
 }
+["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 /* l'audio resta acceso solo mentre suona: finito l'effetto si spegne, così iPhone non mostra niente sulla Dynamic Island */
 function audioIdle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!musicT && audio && audio.state === "running") audio.suspend().catch(()=>{}); }, ms); }
 
@@ -811,14 +814,13 @@ const SFX = {
   fanfare(){ [[392,0],[523,.12],[659,.24],[784,.36]].forEach(([f,t]) => tone(f, t, .14, {type:"square", gain:.06, lp:2200})); [784,988,1175].forEach(f => tone(f, .5, .8, {type:"square", gain:.05, lp:2000})); },
   sad(){ [[392,0],[370,.32],[349,.64]].forEach(([f,t]) => tone(f, t, .3, {type:"sawtooth", gain:.08, lp:1200})); tone(330, .96, .9, {type:"sawtooth", gain:.09, lp:1000, to:300}); }
 };
-function sfx(name, ...a){ return; // effetti sonori tolti (scelta di Rob: niente icona audio sulla Dynamic Island)
-  if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
+function sfx(name, ...a){ if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
 window.__sfxTest = () => Object.keys(SFX).map(k => { try{ ctx(); SFX[k](k === "drumroll" ? .5 : undefined); return k + ":ok"; }catch(e){ return k + ":" + e.message; } });
 function vol(){ return ST().volume/100; }
 /* vibrazione: solo Android (iPhone non la permette alle app web) */
 function buzz(ms){ if(ST().vibration){ try{ navigator.vibrate?.(ms); }catch(e){} } }
 function beep(freq, dur){
-  return;
+  if(!ST().sfx || !ST().volume) return;
   try{
     ctx();
     const o = audio.createOscillator(), gn = audio.createGain();
@@ -843,22 +845,10 @@ function musicTick(){
   musicNote(ch[[0,1,2,1,0,2,1,2][musicStep%8]]*(musicStep%4===3?2:1), t, .5, v);
   musicStep++;
 }
-function startMusic(){ return; if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
+function startMusic(){ if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
 function stopMusic(){ clearInterval(musicT); musicT = null; audioIdle(300); }
 document.addEventListener("pointerdown", () => { if(ST().music && !musicT) startMusic(); });
-/* prova: solo un "tic" brevissimo sui tasti. Ogni volta apro l'audio, suono 25 millisecondi e lo chiudo del tutto */
-function keyClick(){
-  if(!ST().keysound) return;
-  try{
-    if(navigator.audioSession) navigator.audioSession.type = "ambient";
-    const a = new (window.AudioContext||window.webkitAudioContext)(), t = a.currentTime, o = a.createOscillator(), g = a.createGain();
-    o.type = "sine"; o.frequency.setValueAtTime(1300, t); o.frequency.exponentialRampToValueAtTime(700, t + .025);
-    g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.0001, t + .03);
-    o.connect(g).connect(a.destination); o.start(t); o.stop(t + .035);
-    setTimeout(() => a.close().catch(()=>{}), 120);
-  }catch(e){}
-}
-document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]),.gtile,label.set-row")) keyClick(); }, true);
+document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]):not(#b-send):not(#mp-go):not(.gtile)")) sfx("tap"); }, true);
 
 function confetti(n=90){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -945,7 +935,10 @@ function openSettings(){
     <div class="set-list">
       <div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
         <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>
-      ${sw("keysound","Suono dei tasti","Un tic brevissimo quando tocchi un pulsante")}
+      <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
+      ${sw("music","Musica","Sottofondo leggero mentre giocate")}
+      ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
+      ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
       ${sw("vibration","Vibrazione","Solo Android: un tic quando giri la ruota")}
       ${sw("awake","Schermo sempre acceso","Durante i turni a tempo")}
       ${sw("splash","Animazione iniziale","All'apertura dell'app")}
@@ -1118,7 +1111,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:55";
+const APP_VERSION = "22.11 · 20:00";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1694,7 +1687,7 @@ let WHEEL = null;
 function wheelHTML(list){
   return `<div class="wheelzone"><div class="wheelwrap" id="wheelwrap"><div class="wheel" id="wheel">${list.map((g,i) => `<button class="wtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-wi="${i}" aria-label="${g.name}">${ICONS[g.icon]}</button>`).join("")}</div>
     <button class="whub" id="whub" aria-live="polite"></button></div>
-    <p class="wdesc" id="wdesc"></p></div>`;
+    <p class="wdesc" id="wdesc"></p><button class="btn pink wplay" id="wplay"></button></div>`;
 }
 function wheelInit(){
   const list = [...document.querySelectorAll(".wtile")].map(b => CATALOG.find(g => g.name === b.getAttribute("aria-label")));
@@ -1703,7 +1696,7 @@ function wheelInit(){
   WHEEL = {list};
   const sel = () => ((Math.round(rot) % N) + N) % N;
   const draw = () => {
-    const W = wrap.clientWidth, R = W * .39, ws = Math.max(48, Math.min(72, 2 * Math.PI * R / N * .72));
+    const W = wrap.clientWidth, R = W * .40, ws = Math.max(48, Math.min(78, 2 * Math.PI * R / N * .72));
     wrap.style.setProperty("--ws", ws + "px");
     wrap.querySelectorAll(".wtile").forEach((b, i) => {
       let d = ((i - rot) % N + N) % N; if(d > N/2) d -= N;           // distanza dal gioco in alto
@@ -1716,6 +1709,7 @@ function wheelInit(){
       hub.dataset.game = g.id; hub.style.setProperty("--c", g.color); hub.classList.toggle("locked", !g.ready);
       hub.innerHTML = `${ICONS[g.icon]}<b>${g.name}</b><small>${g.ready ? "Tocca per giocare" : "In arrivo"}</small>`;
       $("#wdesc").textContent = g.desc; S.wheelPos = sel();
+      const pb = $("#wplay"); pb.dataset.game = g.id; pb.textContent = g.ready ? `Gioca a ${g.name}` : `${g.name}: in arrivo`; pb.classList.toggle("ghost", !g.ready); pb.classList.toggle("pink", g.ready);
     }
   };
   const goTo = target => {
