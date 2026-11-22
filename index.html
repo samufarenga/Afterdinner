@@ -64,7 +64,7 @@ h2{font-size:1.6rem}
 .stack{display:flex;flex-direction:column;gap:12px}
 
 /* home */
-.hero{padding:18px 0 6px;text-align:center}
+.hero{padding:0;margin-top:-6px;text-align:center}
 .hero h1{margin:0}
 .hero h1 span{color:var(--mango)}
 .games{display:flex;flex-direction:column;gap:14px}
@@ -203,8 +203,9 @@ h2{font-size:1.6rem}
 .chev{font:700 1.6rem var(--display);opacity:.5}
 .modal{position:fixed;inset:0;z-index:80;background:rgba(10,12,28,.7);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:in .2s ease-out}
 .modal .sheet{width:100%;max-width:480px;background:var(--night-2);border:2px solid var(--night-3);border-radius:24px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
-.viewsw{margin-top:4px}
-.viewsw button{padding:6px 14px;font-size:.8rem}
+.viewsw{display:flex;align-self:center;background:var(--night-2);border:2px solid var(--night-3);border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
+.viewsw button{font:600 .85rem var(--body);padding:7px 16px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.viewsw button[aria-pressed="true"]{background:var(--night-3);color:var(--paper)}
 .wheelwrap{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
 .wheel{position:absolute;inset:0}
 .wheel::before{content:"";position:absolute;inset:14%;border-radius:50%;border:2px dashed var(--night-3)}
@@ -244,6 +245,7 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr svg{width:22px;height:22px;color:var(--mango)}
 #ptr.armed{border-color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
+.newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
 #info-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #info-btn svg{width:24px;height:24px}
@@ -529,6 +531,7 @@ const screens = {
         ${n ? `<button class="pclear" data-people="0" aria-label="Mostra tutti i giochi">✕</button>` : ""}</div>
       </div>
       <div class="chips" role="group" aria-label="Filtra i giochi">${chip("all","Tutti")}${chip("one","Un telefono")}${chip("many","Più telefoni")}</div>
+      <div class="viewsw" role="group" aria-label="Vista dei giochi"><button data-view="list" aria-pressed="${!ST().wheel}">☰ Lista</button><button data-view="wheel" aria-pressed="${!!ST().wheel}">◎ Ruota</button></div>
       ${ST().wheel && list.length ? wheelHTML(list) : `<ul class="ggrid">${list.map(g => `
         <li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-game="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
           <span class="gname">${g.name}</span>
@@ -539,7 +542,7 @@ const screens = {
       </ul>`}
       ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o tocca ✕.</p>`}
       ${ST().wheel ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
-      <div class="chips viewsw" role="group" aria-label="Vista dei giochi"><button data-view="list" aria-pressed="${!ST().wheel}">Lista</button><button data-view="wheel" aria-pressed="${!!ST().wheel}">Ruota</button></div>
+
     </section>`;
   },
 
@@ -924,6 +927,7 @@ function openSettings(){
       <div class="set-row"><span class="lbl"><b>Cancella dati</b><span>Nomi dei giocatori e partita in corso</span></span><button class="iconbtn" id="set-reset">Cancella</button></div>
       <div id="reset-slot"></div>
     </div>
+    <p class="hint" style="text-align:center;margin:0">Versione ${APP_VERSION}</p>
     <button class="btn" data-close style="width:100%">Fatto</button></div>`;
   document.body.appendChild(m);
   m.addEventListener("change", e => {
@@ -1088,6 +1092,19 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 let lastTouchEnd = 0;
 document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
+/* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
+const APP_VERSION = "22.11 · 19:15";
+function hardReload(){ const done = () => location.reload(); fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000); }
+setTimeout(() => {
+  if(QS.get("room")) return;
+  fetch(location.pathname + "?check=" + Date.now(), {cache:"no-store"}).then(r => r.text()).then(t => {
+    const v = (t.match(/APP_VERSION = "([^"]+)"/) || [])[1];
+    if(!v || v === APP_VERSION || document.getElementById("newver")) return;
+    const b = document.createElement("button"); b.id = "newver"; b.className = "newver"; b.textContent = "Nuova versione disponibile · tocca per aggiornare";
+    b.onclick = () => { b.textContent = "Aggiorno…"; hardReload(); };
+    document.body.appendChild(b);
+  }).catch(() => {});
+}, 3500);
 /* trascina giù nella home per aggiornare l'app all'ultima versione */
 (() => {
   let y0 = null, dy = 0, el = null;
@@ -1111,8 +1128,7 @@ document.addEventListener("touchend", e => { const now = Date.now(); if(now - la
   document.addEventListener("touchend", () => {
     if(y0 == null) return; y0 = null;
     if(dy > 200){ set(110, true); el.classList.add("go"); buzz(15);
-      const done = () => location.reload();
-      fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000);
+      hardReload();
     } else set(-60, true);
   });
 })();
