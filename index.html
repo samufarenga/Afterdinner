@@ -368,7 +368,8 @@ html.mpmode header.top{min-height:44px}
 .viewer{position:relative}
 .viewer img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
-.guessview{gap:12px}
+.guessview{gap:10px}
+.guessview .row .btn{padding:12px 16px}
 .gstrip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 8px;margin:0 -2px;scrollbar-width:none;flex:none}
 .gstrip::-webkit-scrollbar{display:none}
 .gcard{flex:none;scroll-snap-align:start;position:relative;width:96px;height:132px;padding:0;border:0;border-radius:14px;background:var(--board);box-shadow:0 0 0 2px var(--night-3);overflow:hidden;cursor:pointer;animation:cardin .45s both cubic-bezier(.2,1.1,.4,1)}
@@ -392,7 +393,7 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .watchview{gap:10px}
 .finale h1{font-size:clamp(1.7rem,8.5vw,2.3rem);overflow-wrap:anywhere}
 .finact{position:sticky;bottom:0;padding:10px 0 max(6px,env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--night) 70%,transparent);z-index:3}
-.stickybtn{position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:3;box-shadow:0 5px 0 #b3204a,0 10px 30px rgba(0,0,0,.45)}
+.stickybtn{position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:3}
 .sentbox{display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;align-items:stretch;text-align:center}
 .sentlist .chk{width:22px;height:22px;flex:none;border-radius:7px;border:2px solid var(--night-3);display:grid;place-items:center;font:700 .85rem var(--body);color:var(--ink)}
 .sentlist li.ok .chk{background:var(--mint);border-color:var(--mint)}
@@ -427,7 +428,7 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .watchview .viewer{position:relative}
 .thinkbub{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(27,30,58,.92);color:var(--paper);border-radius:999px;padding:8px 14px;font-weight:600;font-size:.9rem;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .thinkbub .think i{width:7px;height:7px}
-.guessview .viewer{aspect-ratio:1/1.3;max-height:56dvh}
+.guessview .viewer{aspect-ratio:1/1.3;max-height:min(56dvh,calc(100dvh - 430px));min-height:160px;margin-inline:auto}
 /* esito e classifica */
 .resultview{gap:10px}
 .rhead{text-align:center;background:var(--night-2);border-radius:20px;padding:12px 14px;animation:popin .45s cubic-bezier(.3,1.4,.5,1)}
@@ -685,7 +686,7 @@ const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite 
 const $ = (s, r=document) => r.querySelector(s);
 const view = $("#view");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const initial = n => esc((n.trim()[0]||"?").toUpperCase());
+const initial = n => esc((Array.from(n.trim())[0] || "?").toUpperCase()); // anche un'emoji intera
 
 let S = load() || fresh();
 function fresh(){ return {screen:"home", players:[], rounds:2, seconds:60, game:null, settings:{...DEFAULT_SETTINGS}}; }
@@ -1357,7 +1358,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 23:55";
+const APP_VERSION = "23.11 · 00:15";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1473,7 +1474,7 @@ async function guestOpen(){
     msg = {...msg, pid:NET.myId};
     if(USE_LOCAL){ NET.bc.postMessage({from:NET.myId, to:"host", msg}); return; }
     if(NET.conn && NET.conn.open){ try{ NET.conn.send(msg); return; }catch(e){} }
-    if(!/^(peek|hello|bye)$/.test(msg.t)) NET.outbox.push(msg); // lo mando appena torna la connessione
+    if(!/^(peek|hello|bye|hb)$/.test(msg.t)) NET.outbox.push(msg); // lo mando appena torna la connessione
   };
   if(USE_LOCAL){
     NET.bc = new BroadcastChannel("ad-" + NET.code);
@@ -1496,16 +1497,46 @@ function guestConnect(){
     const conn = peer.connect(PEER_PREFIX + NET.code, {reliable:true}); NET.conn = conn;
     conn.on("open", () => {
       if(NET.conn !== conn) return;
-      NET.status = "open"; NET.lostAt = 0; NET.wasIn = NET.wasIn || !!NET.name;
+      NET.status = "open"; NET.lostAt = 0; NET.lastHost = Date.now(); NET.wasIn = NET.wasIn || !!NET.name;
       NET.toHost({t:"peek"}); if(NET.name) NET.toHost({t:"hello", name:NET.name});
       NET.outbox.splice(0).forEach(m => { try{ conn.send(m); }catch(e){} });
       M ? (mpNotes(), mpRender()) : mpRender(true);
     });
-    conn.on("data", guestReceive);
+    conn.on("data", m => { NET.lastHost = Date.now(); guestReceive(m); });
     conn.on("close", () => { if(NET.conn === conn) guestLost(false); });
   };
   if(peer.open) dial(); else peer.once("open", dial);
 }
+/* battito: PeerJS non si accorge di un telefono spento o in background, quindi ogni 3 s ci si dice "ci sei?".
+   Dopo 10 s di silenzio l'host segna l'amico offline; l'amico chiude e si ricollega da solo (anche dopo "Riprendi") */
+const BEAT = 2500, SILENCE = 8000;
+function beat(){
+  if(!M && NET.role !== "guest") return;
+  const now = Date.now();
+  if(NET.role === "host" && M){
+    mpBroadcast({t:"hb"});
+    let changed = false;
+    M.players.forEach(p => {
+      if(p.id === NET.myId || !p.on) return;
+      const seen = (NET.seen || {})[p.id] || 0;
+      if(seen && now - seen > SILENCE){
+        const c = NET.conns.get(p.id); NET.conns.delete(p.id); try{ c && c.close(); }catch(e){}
+        p.on = false; p.offAt = now; changed = true;
+      }
+    });
+    if(M.phase === "turn" && turnCheck()) changed = true; // chi è sparito da un po' non si aspetta più
+    if(changed) publish();
+    mpNotes(); // "X è offline da 1 min. Togliere?" compare anche se nel frattempo non succede niente
+  } else if(NET.role === "guest"){
+    if(NET.status === "open") NET.toHost({t:"hb"});
+    if(!USE_LOCAL && NET.status === "open" && NET.lastHost && now - NET.lastHost > SILENCE){
+      const c = NET.conn; NET.conn = null; try{ c && c.close(); }catch(e){}
+      guestLost(false); clearTimeout(NET.retryT); NET.retryT = setTimeout(guestConnect, 300);
+    }
+  }
+}
+setInterval(beat, BEAT);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && NET.role){ if(NET.role === "guest" && NET.lastHost) NET.lastHost = Math.min(NET.lastHost, Date.now() - SILENCE + 2500); beat(); } });
 /* connessione persa: riprovo ogni 3 secondi per 5 minuti (l'host potrebbe aver chiuso e riaperto l'app) */
 function guestLost(noroom){
   if(NET.role !== "guest" || ["closed","full"].includes(NET.status)) return;
@@ -1594,7 +1625,8 @@ function armAutoFinal(){
 }
 function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
 // chi perde la connessione durante il turno conta ancora: non si scopre prima della fine del tempo
-const stillDrawing = () => M.players.filter(p => p.id !== guesserId() && !M.queue.includes(p.id) && (p.on || (p.offAt && M.startedAt && p.offAt >= M.startedAt)));
+// chi si scollega durante il turno conta ancora per qualche secondo (può rientrare e consegnare), poi non lo si aspetta più
+const stillDrawing = () => M.players.filter(p => p.id !== guesserId() && !M.queue.includes(p.id) && (p.on || (p.offAt && M.startedAt && p.offAt >= M.startedAt && Date.now() - p.offAt < 5000)));
 /* disegni finiti: chi indovina li ha visti tutti e nessuno sta più disegnando */
 /* fine del tempo (o tutti hanno inviato): tocca a chi indovina, senza tempo */
 function toReveal(){
@@ -1699,6 +1731,9 @@ function nextGuesser(){
 function hostReceive(pid, msg){
   if(!M || !msg || !pid) return;
   const p = mpPlayer(pid);
+  (NET.seen = NET.seen || {})[pid] = Date.now();
+  if(p && !p.on && !["bye","hello","peek"].includes(msg.t)){ playerBack(p); publish(); } // era sparito ed è tornato sulla stessa connessione
+  if(msg.t === "hb") return;
   switch(msg.t){
     case "peek": NET.sendTo(pid, {t:"info", host:mpPlayer(M.host).name, game:"Scarabocchi"}); break;
     case "photo": // selfie facoltativo: piccolo, solo in memoria, girato a tutti nella stanza
@@ -1785,6 +1820,8 @@ function hostReceive(pid, msg){
 /* ---------- tutti: ricezione e disegno ---------- */
 function guestReceive(msg){
   if(!msg) return;
+  NET.lastHost = Date.now();
+  if(msg.t === "hb") return;
   if(msg.t === "info"){ NET.info = msg; mpRender(true); }
   else if(msg.t === "full"){ NET.status = "full"; mpRender(true); }
   else if(msg.t === "state"){ M = msg.s; if(M.phase === "turn") mpEndsLocal = Date.now() + M.left; onState(M); }
@@ -2296,8 +2333,8 @@ function mpView(){
         <span class="eyebrow" style="text-align:center">Classifica</span>
         ${lbHTML()}
         <div class="spacer"></div>
-        ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost" id="mp-next">Vai subito</button>` : ""}`
-          : canNext ? `<button class="btn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno</p>`}</section>`;
+        ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost stickybtn" id="mp-next">Vai subito</button>` : ""}`
+          : canNext ? `<button class="btn stickybtn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno</p>`}</section>`;
     }
     case "final": {
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
