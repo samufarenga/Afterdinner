@@ -293,10 +293,19 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #info-btn .rq{width:26px;height:26px;border-radius:50%;background:var(--mango);color:var(--ink);display:grid;place-items:center;font:700 .95rem var(--display)}
 @media (max-width:400px){header.top .logo{font-size:1.25rem}header.top .hright,header.top .hleft{gap:5px}#snd-btn,#host-btn,#back-btn{width:38px!important;height:38px!important}#info-btn{height:38px;padding:0 9px 0 4px;gap:5px;font-size:.82rem}#info-btn .rq{width:24px;height:24px;font-size:.85rem}}
 @media (max-width:350px){header.top .logo>span:last-child{display:none}}
-/* in partita: solo i tre pallini al centro, pulsanti bilanciati ai lati */
-html.mpmode header.top .logo>span:last-child{display:none}
-html.mpmode header.top .logo .dots i{width:13px;height:13px}
-html.mpmode header.top{min-height:44px}
+/* in partita: pallini e scritta AfterDinner al centro, pulsanti bilanciati ai lati (l'host esce toccando il logo) */
+html.mpmode header.top{min-height:44px;column-gap:6px}
+html.mpmode header.top .logo{font-size:1.12rem;gap:3px}
+html.mpmode header.top .logo>span:last-child{display:block!important;white-space:nowrap}
+html.mpmode header.top .logo .dots{gap:5px}
+html.mpmode header.top .logo .dots i{width:9px;height:9px}
+html.mpmode #back-btn{display:none!important}
+@media (max-width:350px){html.mpmode header.top .logo{font-size:.98rem}}
+/* mentre si disegna: in alto solo il logo, piccolo e centrato, al posto della banda vuota */
+html.drawmode header.top{display:flex!important;justify-content:center;min-height:0;padding-block:0 6px}
+html.drawmode header.top .hleft,html.drawmode header.top .hright{display:none}
+html.drawmode header.top .logo{flex-direction:row;align-items:center;gap:8px;font-size:1rem;pointer-events:none}
+html.drawmode header.top .logo .dots i{width:8px;height:8px}
 @media (max-width:350px){header.top .hright,header.top .hleft{gap:4px}#snd-btn,#host-btn,#back-btn{width:36px!important;height:36px!important}#info-btn{height:36px}}
 #snd-btn svg{width:22px;height:22px}
 #snd-btn[aria-pressed="false"]{color:var(--muted)}
@@ -577,7 +586,6 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .drawscreen{gap:8px;min-height:0}
 /* lavagna a tutto schermo: niente intestazione, timer piccolo, strumenti in una pillola sopra la lavagna */
 html.drawmode,html.drawmode body{overflow:hidden}
-html.drawmode header.top{display:none}
 html.drawmode #view{flex:1;display:flex;flex-direction:column;min-height:0}
 html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-bottom,0px))}
 .dtop{display:flex;align-items:center;gap:10px}
@@ -597,6 +605,8 @@ html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px
 .bfit svg{width:18px;height:18px}
 .boardwrap .toolbar .ink{width:26px;height:26px;border:0;transform:none}
 .boardwrap .toolbar .ink[aria-pressed="true"]{transform:none}
+@media (max-width:370px){.boardwrap .toolbar .ink{width:21px;height:21px}}
+.dtw .eyebrow{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .boardwrap .boardcv{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;max-height:none;border-radius:20px}
 .boardwrap .toolbar{position:absolute;left:0;right:0;margin:0 auto;width:max-content;bottom:10px;max-width:calc(100% - 16px);gap:6px;padding:6px 10px;box-sizing:border-box;background:rgba(27,30,58,.92);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .drawhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -1365,10 +1375,10 @@ const RULES = {
     <p class="hint" style="margin:0">Uno contro uno, ognuno con il proprio telefono. Esattamente 2 giocatori.</p>
     <h3>Prima di iniziare</h3><ol>
       <li>Chi organizza apre Scarabocchi di coppia e mostra il QR, oppure manda il link. L'altro lo inquadra, scrive il nome ed entra.</li>
-      <li>L'host sceglie la difficoltà delle parole.</li></ol>
+      <li>L'host sceglie la difficoltà delle parole e il numero di turni.</li></ol>
     <h3>Il turno</h3><ol>
-      <li>La partita dura <b>10 turni</b>: a ogni turno ci si scambia i ruoli, quindi ognuno disegna 5 volte e indovina 5 volte.</li>
-      <li>Chi <b>disegna</b> vede la parola e ha <b>60 secondi</b>. Niente lettere, numeri, gesti o suoni.</li>
+      <li>Prima di iniziare l'host sceglie quanti turni: <b>6, 10 o 16</b> (circa 8, 13 o 21 minuti). A ogni turno ci si scambia i ruoli, quindi ognuno disegna e indovina lo stesso numero di volte.</li>
+      <li>Chi <b>disegna</b> preme Via: solo allora vede la parola e ha <b>60 secondi</b>. Chi indovina vede «sta iniziando a disegnare». Niente lettere, numeri, gesti o suoni.</li>
       <li>Chi <b>indovina</b> vede il disegno <b>in diretta</b>, tratto per tratto, mentre nasce.</li>
       <li>Si possono scrivere <b>tutte le risposte che si vuole</b> finché c'è tempo. Ogni risposta sbagliata compare anche sul telefono di chi disegna, così può correggere il tiro.</li>
       <li>Valgono i sinonimi stretti (cornetto o brioche) e un piccolo errore di battitura, ma singolare e plurale contano.</li>
@@ -1380,7 +1390,7 @@ const RULES = {
     <h3>Se qualcuno si scollega</h3><ul>
       <li>Chi si scollega rientra da solo appena torna la connessione. Se chi disegna non torna entro pochi secondi, il turno finisce senza punti.</li>
       <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
-    <h3>Fine partita</h3><ul><li>Dopo il decimo turno vince chi ha più punti. A pari punti è pareggio.</li></ul>`
+    <h3>Fine partita</h3><ul><li>Dopo l'ultimo turno vince chi ha più punti. A pari punti è pareggio.</li></ul>`
 };
 function openRules(forId){
   const id = typeof forId === "string" ? forId : currentRulesGame(); if(!id || !RULES[id] || $("#rules-sheet")) return;
@@ -1408,7 +1418,7 @@ function hostItems(){
 }
 function hostDo(a, arg){
   if(NET.role !== "host" || !M) return;
-  if(a === "go"){ hostReceive(guesserId(), {t:"start"}); return; }
+  if(a === "go"){ hostReceive(isDuo() ? NET.myId : guesserId(), isDuo() ? {t:"start", force:true} : {t:"start"}); return; }
   if(a === "close" && M.phase === "turn"){ toReveal(); }
   else if(a === "reveal" && M.phase === "reveal"){ M.revealed = true; }
   else if(a === "skipdraw" && M.phase === "reveal" && M.revealed && M.view < M.queue.length){ M.view++; turnCheck(); }
@@ -1464,7 +1474,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 02:40";
+const APP_VERSION = "23.11 · 03:25";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1910,7 +1920,7 @@ function hostReceive(pid, msg){
         publish();
       } break;
     case "start":
-      if(M.phase === "ready" && (pid === guesserId() || (isDuo() && M.order.includes(pid) && !msg.skip) || (pid === M.host && msg.skip))){
+      if(M.phase === "ready" && (isDuo() ? pid === drawerId() || (pid === M.host && (msg.skip || msg.force)) : pid === guesserId() || (pid === M.host && msg.skip))){
         if(msg.skip){ M.turn++; toNextTurn(); publish(); break; }
         const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
         M.queue = []; M.view = 0; M.tries = []; M.paused = null; M.revealed = false;
@@ -2002,7 +2012,7 @@ function onState(s){
   if(s.phase === "reveal" && prevPhase === "turn"){ sfx("timeUp"); buzz([40,60,40]); analysisIntro(s); }
   if(s.phase === "turn" && prevPhase !== "turn") sfx("go");
   if(s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal")){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); sfx("correct"); } else if(s.last && s.last.reason === "pass") sfx("pass"); else sfx("timeUp"); }
-  if(s.phase === "ready" && prevPhase !== "ready" && amGuesser()){ buzz([20,40,20]); sfx("join"); }
+  if(s.phase === "ready" && prevPhase !== "ready" && (s.game === "coppia" ? s.order.find(id => id !== s.order[s.turn]) === NET.myId : amGuesser())){ buzz([20,40,20]); sfx("join"); }
   if(s.phase !== prevPhase && $("#showcase") && (["ready","turn"].includes(s.phase) || (s.phase === "reveal" && amGuesser()))) closeShowcase(); // si torna alla partita quando c'è da fare
   const enteringFinal = s.phase === "final" && prevPhase !== "final";
   prevPhase = s.phase;
@@ -2426,9 +2436,10 @@ function timerHTML(){ return `<div class="mptime" id="mptime">${M.paused != null
 function duoSetupHTML(online){
   return `<div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
+            <div class="opt"><label>Turni (ognuno disegna la metà delle volte)</label><div class="seg">${[3,5,8].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r*2} turni<small>≈ ${Math.round(r*2*80/60)} min</small>${r===5?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div></div>
           </div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
-            <li>10 turni, i ruoli si scambiano: uno disegna, l'altro indovina. 60 secondi a turno.</li>
+            <li>${M.rounds*2} turni, i ruoli si scambiano: uno disegna, l'altro indovina. 60 secondi a turno.</li>
             <li>Chi indovina vede il disegno in diretta e può scrivere tutte le risposte che vuole.</li>
             <li>Indovinata entro 20 secondi: 3 punti. Entro 40: 2 punti. Entro 60: 1 punto. A chi disegna, 1 punto se viene indovinata.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
           <p class="hint pcount">Sfida a due: entra solo il tuo avversario.</p>
@@ -2464,7 +2475,7 @@ function mpView(){
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
             <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Quando arriva il primo disegno, chi sta ancora disegnando ha 30 secondi per finire." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
             <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => Math.round(n * r * (M.seconds + 30) / 60), rec = [3,2,1].find(r => est(r) <= 25) || 1;
-              return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r}<small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
+              return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r} ${r === 1 ? "giro" : "giri"}<small>${Math.max(online, 2) * r} turni</small><small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
           </div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
             <li>A turno uno di voi indovina. Gli altri vedono la parola e la disegnano sul loro telefono, in silenzio. Niente lettere né numeri.</li>
@@ -2483,11 +2494,15 @@ function mpView(){
     }
     case "ready":
       if(isDuo()){ const d = mpPlayer(drawerId());
+        if(amGuesser()) return `<section class="screen pass bigwait">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${av(d, "big-av")}<div><h1>${esc(d ? d.name : "")} sta iniziando a disegnare</h1></div>
+        <div class="think"><i></i><i></i><i></i></div>
+        <div class="duoscale"><span><b>3pt</b> entro 20 s</span><span><b>2pt</b> entro 40 s</span><span><b>1pt</b> entro 60 s</span></div>
+        ${NET.role === "host" && d && !d.on ? `<p class="hint">${esc(d.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il turno</button>` : ""}</section>`;
         return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
-        ${av(amGuesser() ? me : d, "big-av")}<div><h1>${amGuesser() ? "Tocca a te indovinare" : "Tocca a te disegnare"}</h1>
-        <p class="lead">${amGuesser() ? `${esc(d ? d.name : "")} disegna, tu lo vedi in diretta. Scrivi la parola appena la riconosci: più sei veloce, più punti prendi.` : `${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi.`}</p></div>
-        <div class="duoscale"><span><b>3</b> entro 20 s</span><span><b>2</b> entro 40 s</span><span><b>1</b> entro 60 s</span></div>
-        <p class="hint" style="text-align:center;margin:0">Può premere Via chiunque dei due.</p>
+        ${av(me, "big-av")}<div><h1>Tocca a te disegnare</h1>
+        <p class="lead">${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi. La parola compare quando premi Via.</p></div>
+        <div class="duoscale"><span><b>3pt</b> entro 20 s</span><span><b>2pt</b> entro 40 s</span><span><b>1pt</b> entro 60 s</span></div>
         <div class="spacer"></div><button class="btn stickybtn" id="mp-go" style="width:100%">Via!</button></section>`; }
       if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(me, "big-av")}<div><h1>Tocca a te!</h1>
@@ -2501,7 +2516,7 @@ function mpView(){
     case "turn": {
       if(isDuo() && amGuesser()){ const d = mpPlayer(drawerId());
         return `<section class="screen duoguess">
-          <div class="dtop"><div class="dtw"><span class="eyebrow">${turnLabel()} · disegna ${esc(d ? d.name : "")}</span><div class="duonow" id="duopts">Vale <b>${duoPts()}</b></div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">${GLY.more}</button>` : ""}${timerHTML()}</div>
+          <div class="dtop"><div class="dtw"><span class="eyebrow">${turnLabel()} · disegna ${esc(d ? d.name : "")}</span><div class="duonow" id="duopts">Vale <b>${duoPts()}pt</b></div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">${GLY.more}</button>` : ""}${timerHTML()}</div>
           <form class="field guessform" id="g-guess" autocomplete="off"><input id="gtxt" maxlength="40" placeholder="Scrivi la parola" aria-label="La tua risposta" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"><button class="btn mint" type="submit">Prova</button></form>
           <div class="liveview empty" id="liveview"><canvas id="livecv" aria-label="Disegno in diretta"></canvas><div class="livewait">${esc(d ? d.name : "")} sta per disegnare<span class="think"><i></i><i></i><i></i></span></div><span class="livetag"><i class="ldot"></i>in diretta</span></div>
           <ul class="tries" id="ctries">${duoTriesHTML()}</ul>
@@ -2647,7 +2662,7 @@ function mpAfterRender(){
     mpTick = setInterval(() => {
       const el = $("#mptime"); const s = M && M.paused != null ? Math.ceil(M.paused/1000) : Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000));
       if(el && el.textContent !== String(s)){ el.textContent = s; el.classList.toggle("low", s <= 10); if(s <= 5 && s > 0 && !(M && M.paused != null)) sfx("tick"); }
-      const dp = $("#duopts"); if(dp){ const v = `Vale <b>${duoPts()}</b>`; if(dp.innerHTML !== v){ dp.innerHTML = v; dp.classList.remove("drop"); void dp.offsetWidth; dp.classList.add("drop"); } }
+      const dp = $("#duopts"); if(dp){ const v = `Vale <b>${duoPts()}pt</b>`; if(dp.innerHTML !== v){ dp.innerHTML = v; dp.classList.remove("drop"); void dp.offsetWidth; dp.classList.add("drop"); } }
     }, 200);
   }
 }
@@ -2658,7 +2673,7 @@ view.addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
   if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
-  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; M.rounds = 5; } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
+  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ act({t:"start"}); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
