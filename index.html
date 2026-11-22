@@ -296,6 +296,11 @@ header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
 #mpnote button.k{background:var(--pink)}
 .spin{width:16px;height:16px;border-radius:50%;border:3px solid var(--night-3);border-top-color:var(--mango);animation:spin 1s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
+.invite{gap:18px}
+.invite-line{margin:6px 0 0;font-size:clamp(1.8rem,8vw,2.4rem);line-height:1.1}
+.invite .qrbox{width:min(72vw,280px)}
+.sharebtns{display:flex;gap:10px;width:100%;flex-wrap:wrap}
+.sharebtns .btn{flex:1 1 130px}
 .qrcard{background:var(--night-2);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .qrbox{background:#fff;border-radius:18px;padding:10px;width:220px;max-width:100%;aspect-ratio:1;display:grid;place-items:center}
 .qrbox svg{width:100%;height:auto;display:block}
@@ -1294,7 +1299,7 @@ function boardSnapshot(){
 /* ---------- avvio host e ospite ---------- */
 async function mpHostStart(){
   mpClose();
-  NET.role = "host"; NET.myId = myPid(); NET.code = newCode(); NET.status = "connecting";
+  NET.role = "host"; NET.myId = myPid(); NET.code = newCode(); NET.status = "connecting"; NET.lobbyStep = 1; NET.inviteN = Math.floor(Math.random()*100);
   M = {game:"scarabocchi", phase:"lobby", host:NET.myId, players:[{id:NET.myId, name:cleanName(savedName() || "Host"), color:COLORS[0], on:true}],
        scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:1, seconds:120, level:"medium", word:null, cat:null, last:null, queue:[], tries:[], view:0};
   prevPhase = "lobby";
@@ -1308,7 +1313,7 @@ async function mpHostStart(){
 /* riapro la partita salvata con lo stesso codice: gli amici si ricollegano da soli */
 async function mpHostResume(sv){
   mpClose();
-  NET.role = "host"; NET.myId = myPid(); NET.code = sv.code; NET.status = "connecting";
+  NET.role = "host"; NET.myId = myPid(); NET.code = sv.code; NET.status = "connecting"; NET.lobbyStep = 2; NET.inviteN = 0;
   M = sv.M; MD = sv.MD || {}; NET.deck = sv.deck; NET.deckLevel = sv.deckLevel;
   if(M.host !== NET.myId){ const h = mpPlayer(M.host); if(h) h.id = NET.myId; M.scores[NET.myId] = M.scores[M.host]; M.order = M.order.map(x => x === M.host ? NET.myId : x); M.host = NET.myId; }
   M.players.forEach(p => { if(p.id !== NET.myId && p.on){ p.on = false; p.offAt = Date.now(); } });
@@ -1358,6 +1363,7 @@ function mpScoreList(){
 function mpPlayersChips(){
   return `<ul class="pchips">${M.players.map(p => `<li class="${p.on?"":"off"}">${av(p)}<span>${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span></li>`).join("")}</ul>`;
 }
+const INVITE_LINES = ["Tutti dentro, si gioca!","Telefoni fuori, matite pronte!","Inquadra e si parte","Chi entra, disegna","Stasera si scarabocchia","Prendete posto: si comincia"];
 function guessInfo(){
   const cur = M.queue[M.view], cp = mpPlayer(cur), waiting = M.queue.length - M.view - (cur ? 1 : 0), drawing = stillDrawing().length;
   const pts = cur ? (M.view === 0 ? `Primo disegno: se indovini, 2 punti a te e 2 a ${esc(cp ? cp.name : "")}.` : `${M.view+1}° disegno: 1 punto a te e 1 a ${esc(cp ? cp.name : "")}.`) + " Hai un solo tentativo." : "";
@@ -1381,12 +1387,18 @@ function mpView(){
         const online = M.players.filter(p => p.on).length;
         const seg = (key, vals, fmt) => `<div class="seg">${vals.map(v => `<button data-mpset="${key}" data-v="${v}" aria-pressed="${M[key]===v}">${fmt(v)}</button>`).join("")}</div>`;
         let qr = "";
-        if(NET.status === "open") qr = `<div class="qrbox" id="qrbox"></div><div class="code">${NET.code}</div><p class="hint">Fate inquadrare il codice con la fotocamera</p><button class="iconbtn" id="copy-link">Copia il link da mandare</button>`;
+        if(NET.status === "open") qr = `<div class="qrbox" id="qrbox"></div><div class="code" aria-label="Codice stanza">${NET.code}</div>
+            <div class="sharebtns">${navigator.share ? `<button class="btn" id="share-link">Condividi il link</button>` : ""}<button class="btn ghost" id="copy-link">Copia il link</button></div>`;
         else if(NET.status === "error") qr = `<p class="hint">Non riesco ad aprire la stanza. Il gioco con più telefoni funziona dall'app pubblicata sul tuo link, non da questa anteprima.</p><button class="btn ghost" id="mp-retry">Riprova</button>`;
-        else qr = `<p class="hint">Apro la stanza…</p>`;
-        return `<section class="screen">
-          <div style="text-align:center"><span class="eyebrow">Scarabocchi</span><h2>Fate entrare gli amici</h2></div>
+        else qr = `<div class="qrbox"><span class="spin" style="width:34px;height:34px"></span></div><p class="hint">Apro la stanza…</p>`;
+        if(NET.lobbyStep !== 2) return `<section class="screen invite">
+          <div style="text-align:center"><span class="eyebrow">Scarabocchi</span><h1 class="invite-line">${INVITE_LINES[NET.inviteN % INVITE_LINES.length]}</h1><p class="lead" style="margin:6px 0 0">Inquadrate il QR con la fotocamera, oppure mandate il link nel gruppo.</p></div>
           <div class="qrcard">${qr}</div>
+          <div><span class="eyebrow">Già dentro (${online})</span>${mpPlayersChips()}</div>
+          <button class="btn pink" id="mp-setup">${online < 2 ? "Imposta la partita" : `Ci siamo tutti: imposta la partita`}</button>
+        </section>`;
+        return `<section class="screen">
+          <div class="drawhead"><div><span class="eyebrow">Scarabocchi</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
           <div class="field"><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
           <div class="opts">
@@ -1550,10 +1562,13 @@ view.addEventListener("click", e => {
   else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna qualcosa prima di inviare"; return; } if(NET.role === "guest" && NET.status !== "open"){ b.textContent = "Lo invio appena torna la connessione"; b.disabled = true; } act({t:"send", img}); }
   else if(id === "mp-pass"){ act({t:"pass"}); }
   else if(id === "mp-next"){ act({t:"next"}); }
-  else if(id === "mp-again"){ M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
+  else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
   else if(id === "mp-exit"){ mpEndRoom(); go("home"); }
   else if(id === "mp-retry"){ mpHostStart(); }
   else if(id === "g-retry"){ location.reload(); }
+  else if(id === "mp-setup"){ NET.lobbyStep = 2; render(); window.scrollTo(0, 0); }
+  else if(id === "mp-showqr"){ NET.lobbyStep = 1; render(); window.scrollTo(0, 0); }
+  else if(id === "share-link"){ navigator.share({title:"AfterDinner", text:`Vieni a giocare a Scarabocchi con ${mpPlayer(M.host).name}!`, url:joinUrl()}).catch(() => {}); }
   else if(id === "copy-link"){ const u = joinUrl(); navigator.clipboard?.writeText(u).then(() => { b.textContent = "Link copiato"; }, () => { b.textContent = u; }); }
   else if(d.ink){ BOARD.ink = d.ink; BOARD.eraser = false; $("#b-eraser").setAttribute("aria-pressed", false); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", x === b)); }
   else if(id === "b-eraser"){ BOARD.eraser = !BOARD.eraser; b.setAttribute("aria-pressed", BOARD.eraser); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", !BOARD.eraser && x.dataset.ink === BOARD.ink)); }
