@@ -257,7 +257,10 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr.go svg{animation:spin .8s linear infinite}
 .newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
-#info-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#info-btn,#snd-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#snd-btn svg{width:22px;height:22px}
+#snd-btn[aria-pressed="false"]{color:var(--muted)}
+#snd-btn[hidden]{display:none}
 #info-btn svg{width:24px;height:24px}
 .rulesheet .sheet{gap:14px}
 .rulesheet h3{margin:4px 0 0;font:600 1.05rem var(--display);color:var(--mango)}
@@ -521,6 +524,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
     <button class="logo" id="home-btn" aria-label="Torna alla home"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>AfterDinner</span></button>
     <div class="hright">
     <button class="iconbtn" id="board-btn" hidden>Punteggi</button>
+    <button class="iconbtn" id="snd-btn" hidden aria-label="Effetti audio"></button>
     <button class="iconbtn" id="info-btn" hidden aria-label="Regole del gioco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><circle cx="12" cy="7" r=".6" fill="currentColor"/></svg></button>
     <button class="iconbtn" id="menu-btn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
     </div>
@@ -594,7 +598,7 @@ const CATALOG = [
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
 const WHEEL_ON = false; // vista a ruota messa da parte: true per riattivarla
-const DEFAULT_SETTINGS = {wheel:false, sfx:false, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
+const DEFAULT_SETTINGS = {wheel:false, sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
 const $ = (s, r=document) => r.querySelector(s);
@@ -609,7 +613,8 @@ function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch
 
 let timerId = null, wake = null, audio = null;
 S.settings = {...DEFAULT_SETTINGS, ...(S.settings||{})};
-if(!S.settings.audioOffV1){ S.settings.sfx = false; S.settings.music = false; S.settings.audioOffV1 = true; } // per ora l'audio parte spento: si accende dalle impostazioni
+if(!S.settings.audioOffV1){ S.settings.sfx = false; S.settings.music = false; S.settings.audioOffV1 = true; }
+if(!S.settings.sfxOnV2){ S.settings.sfx = true; S.settings.sfxOnV2 = true; } // Rob: effetti accesi per tutti, ospiti compresi; la musica resta spenta // per ora l'audio parte spento: si accende dalle impostazioni
 const ST = () => S.settings;
 
 function go(screen){ S.screen = screen; save(); render(); window.scrollTo(0,0); }
@@ -968,6 +973,7 @@ function render(){
   view.innerHTML = screens[S.screen]();
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
   document.documentElement.classList.toggle("drawmode", !!$(".drawscreen"));
+  if(typeof sndBtn === "function") sndBtn();
   if($("#wheel")) wheelInit();
   $("#back-btn").hidden = S.screen==="home";
   $("#menu-btn").hidden = S.screen!=="home";
@@ -1189,6 +1195,11 @@ function openRules(){
   $("#rules-ok").focus({preventScroll:true}); m.querySelector(".sheet").scrollTop = 0;
 }
 $("#info-btn").addEventListener("click", openRules);
+/* tasto audio nelle partite multi-telefono: ognuno spegne o accende gli effetti sul suo telefono */
+const SND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const SND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>';
+function sndBtn(){ const b = $("#snd-btn"); if(!b) return; b.hidden = S.screen !== "mp"; const on = !!ST().sfx && ST().volume > 0; b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Spegni gli effetti audio" : "Accendi gli effetti audio"); }
+$("#snd-btn").addEventListener("click", () => { const st = ST(), on = !!st.sfx && st.volume > 0; st.sfx = !on; if(!on && !st.volume) st.volume = 70; save(); sndBtn(); if(st.sfx) sfx("tap"); });
 /* ogni finestra ha la sua X per chiudere, e mentre è aperta lo sfondo non scorre */
 new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
   if(!(m instanceof HTMLElement) || !m.classList.contains("modal")) return;
@@ -1208,7 +1219,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 21:15";
+const APP_VERSION = "22.11 · 21:35";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2116,6 +2127,7 @@ function mpAfterRender(){
   $("#board-btn").hidden = true;
   if(NET.role === "guest"){ $("#back-btn").hidden = true; $("#menu-btn").hidden = true; }
   $("#info-btn").hidden = !M;
+  sndBtn();
   if($("#qrbox")){
     loadScript("lib/qrcode.js", "qrcode").then(() => {
       const q = qrcode(0, "M"); q.addData(joinUrl()); q.make();
