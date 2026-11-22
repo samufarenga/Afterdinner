@@ -341,6 +341,17 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .think i:nth-child(2){animation-delay:.15s;background:var(--pink)}.think i:nth-child(3){animation-delay:.3s;background:var(--mint)}
 @keyframes thinkdot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-8px);opacity:1}}
 .watchview{gap:10px}
+.sentlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;width:100%;max-width:360px}
+.sentlist li{display:flex;align-items:center;gap:10px;background:var(--night-2);border-radius:12px;padding:5px 12px;text-align:left}
+.sentlist .av{width:24px;height:24px;font-size:.72rem;flex:none}
+.sentlist .sn{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sentlist .ss{font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.sentlist li.ok .ss{color:var(--mint)}
+.sentlist li.ok:last-of-type{animation:popin .45s cubic-bezier(.3,1.5,.5,1)}
+.sentlist li.wait{opacity:.7}.sentlist li.wait .ss{color:var(--muted);font-weight:500}
+.sentlist li.off{opacity:.45}
+.sentlist .think i{width:5px;height:5px}
+.bigwait .megatime{margin:-6px 0}
 .watchhead{text-align:center;background:var(--night-2);border-radius:18px;padding:10px 14px;animation:popin .4s cubic-bezier(.3,1.4,.5,1)}
 .watchhead .wtitle{font:700 1.5rem/1.15 var(--display)}
 .watchhead.mine{background:linear-gradient(135deg,var(--mango),#ff8a3d);color:var(--ink)}
@@ -427,6 +438,12 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 @keyframes xfade{0%,10%{opacity:0}25%,75%{opacity:1}100%{opacity:0}}
 .shake{animation:shake .45s}
 .xfail.sprint{align-content:start;padding-top:120px}
+.xfail.watch{background:rgba(10,12,28,.82);justify-items:center;text-align:center;padding:24px;animation:xfade 2.6s ease-out forwards}
+.xfail.watch svg{width:30vmin;height:30vmin;max-width:150px;max-height:150px;animation:xpop 2.6s ease-out forwards}
+.xfail.watch p{animation:none;background:none;padding:0}
+.xfail.watch .xwho{color:var(--muted);font:600 1.1rem var(--body)}
+.xfail.watch .xword{font:700 clamp(2rem,11vw,3.4rem)/1.05 var(--display);color:var(--ink);background:var(--paper);border-radius:18px;padding:8px 20px;max-width:100%;overflow-wrap:anywhere;animation:popin .45s cubic-bezier(.3,1.5,.5,1)}
+.xfail.watch .xno{color:var(--pink);font:700 1.6rem var(--display)}
 .xfail.sprint p{background:var(--mango);color:var(--ink);font-size:1.25rem;animation-duration:1.6s}
 @keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
 .tries{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0;padding:0;list-style:none}
@@ -1219,7 +1236,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 21:35";
+const APP_VERSION = "22.11 · 21:50";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1439,7 +1456,8 @@ function armTurnTimer(){
   NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ toReveal(); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
 }
 function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
-const stillDrawing = () => M.players.filter(p => p.on && p.id !== guesserId() && !M.queue.includes(p.id));
+// chi perde la connessione durante il turno conta ancora: non si scopre prima della fine del tempo
+const stillDrawing = () => M.players.filter(p => p.id !== guesserId() && !M.queue.includes(p.id) && (p.on || (p.offAt && M.startedAt && p.offAt >= M.startedAt)));
 /* disegni finiti: chi indovina li ha visti tutti e nessuno sta più disegnando */
 /* fine del tempo (o tutti hanno inviato): tocca a chi indovina, senza tempo */
 function toReveal(){
@@ -1565,7 +1583,7 @@ function hostReceive(pid, msg){
         sfx("join"); buzz(20);
       } else { playerBack(p); if(msg.name) p.name = cleanName(msg.name); }
       publish();
-      if(Object.keys(MD).length) NET.sendTo(pid, {t:"drawings", imgs:MD});
+      if(Object.keys(MD).length){ NET.sendTo(pid, {t:"drawings", imgs:{}}); Object.entries(MD).forEach(([id, img]) => NET.sendTo(pid, {t:"draw1", id, img})); }
       break;
     }
     case "bye":
@@ -1579,19 +1597,19 @@ function hostReceive(pid, msg){
         if(msg.skip){ M.turn++; toNextTurn(); publish(); break; }
         const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
         M.queue = []; M.view = 0; M.tries = []; M.paused = null; M.revealed = false;
-        M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000;
+        M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000; M.startedAt = Date.now();
         armTurnTimer();
         mpBroadcast({t:"drawings", imgs:MD}); publish();
       } break;
     case "send": // un disegnatore ha finito e invia il disegno
-      if(M.phase === "turn" && pid !== guesserId() && !M.queue.includes(pid) && typeof msg.img === "string" && msg.img.length < 400000){
+      if((M.phase === "turn" || M.phase === "reveal") && pid !== guesserId() && !M.queue.includes(pid) && typeof msg.img === "string" && msg.img.length < 400000){
         MD[pid] = msg.img; M.queue.push(pid);
         if(M.sprint && M.queue.length === 1){ // Sprint: dal primo disegno restano 30 secondi a tutti
           if(M.paused != null) M.paused = Math.min(M.paused, 30000);
           else if(M.endsAt - Date.now() > 30000){ M.endsAt = Date.now() + 30000; armTurnTimer(); }
         }
-        turnCheck(); // se hanno inviato tutti si passa subito alle risposte
-        mpBroadcast({t:"drawings", imgs:MD}); onDrawings(); publish();
+        if(M.phase === "turn") turnCheck(); // se hanno inviato tutti si passa subito alle risposte
+        mpBroadcast({t:"draw1", id:pid, img:msg.img}); onDrawings(); publish(); // solo il disegno nuovo: messaggi piccoli, niente cadute di connessione
       } break;
     case "advance": // chi indovina salta il disegno senza provare (non si torna indietro)
       if(M.phase === "reveal" && M.revealed && pid === guesserId() && M.view < M.queue.length && (msg.view == null || msg.view === M.view)){ M.view++; turnCheck(); publish(); } break;
@@ -1625,6 +1643,7 @@ function guestReceive(msg){
   else if(msg.t === "full"){ NET.status = "full"; mpRender(true); }
   else if(msg.t === "state"){ M = msg.s; if(M.phase === "turn") mpEndsLocal = Date.now() + M.left; onState(M); }
   else if(msg.t === "drawings"){ MD = msg.imgs || {}; onDrawings(); }
+  else if(msg.t === "draw1"){ MD[msg.id] = msg.img; onDrawings(); }
   else if(msg.t === "rehello"){ if(NET.name) NET.toHost({t:"hello", name:NET.name}); }
   else if(msg.t === "closed"){ NET.status = "closed"; clearTimeout(NET.retryT); try{ sessionStorage.removeItem("ad.joined"); }catch(_){} M = null; mpNotes(); mpRender(true); }
 }
@@ -1660,9 +1679,9 @@ function sprintAlert(){
 function showX(text, who){
   sfx("wrong"); buzz(who ? 20 : [60,40,60]);
   document.querySelector(".xfail")?.remove();
-  const x = document.createElement("div"); x.className = "xfail"; x.setAttribute("aria-live","assertive");
-  x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><p>${who ? `${esc(who.name)} dice «${esc(text)}». Sbagliato!` : `«${esc(text)}» non è giusta`}</p>`;
-  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 1500 : 1200);
+  const x = document.createElement("div"); x.className = "xfail" + (who ? " watch" : ""); x.setAttribute("aria-live","assertive");
+  x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>${who ? `<p class="xwho">${esc(who.name)} ha provato</p><div class="xword">${esc(text)}</div><p class="xno">Sbagliato!</p>` : `<p>«${esc(text)}» non è giusta</p>`}`;
+  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 2600 : 1200);
   const v = $(".viewer"); if(v){ v.classList.remove("shake"); void v.offsetWidth; v.classList.add("shake"); }
 }
 /* avvisi in basso: connessione persa, pausa, giocatori da togliere */
@@ -1710,7 +1729,9 @@ function boardInit(){
   const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
   cv.width = r.width * dpr; cv.height = r.height * dpr;
   const g = cv.getContext("2d"); g.scale(dpr, dpr); g.lineCap = "round"; g.lineJoin = "round";
-  BOARD = {cv, g, w:r.width, h:r.height, strokes:(BOARD && BOARD.key === mpKey) ? BOARD.strokes : [], cur:null, ink:(BOARD && BOARD.ink) || INKS[0], size:(BOARD && BOARD.size) || 5, eraser:!!(BOARD && BOARD.eraser), key:mpKey};
+  const bkey = NET.code + "|" + mpKey; let saved = null;
+  if(!BOARD || BOARD.key !== mpKey){ try{ const o = JSON.parse(sessionStorage.getItem("ad.board") || "null"); if(o && o.k === bkey) saved = o.s; }catch(_){} }
+  BOARD = {cv, g, w:r.width, h:r.height, strokes:(BOARD && BOARD.key === mpKey) ? BOARD.strokes : (saved || []), cur:null, ink:(BOARD && BOARD.ink) || INKS[0], size:(BOARD && BOARD.size) || 5, eraser:!!(BOARD && BOARD.eraser), key:mpKey};
   BOARD.view = {z:1, x:0, y:0}; BOARD.pts = new Map(); BOARD.pinch = null; BOARD.noDraw = false;
   boardRedraw(); boardZoomUI();
   /* un dito disegna, due dita zoomano e spostano la lavagna (solo la lavagna, mai la pagina) */
@@ -1741,12 +1762,14 @@ function boardInit(){
   };
   cv.onpointerup = cv.onpointercancel = e => {
     BOARD.pts.delete(e.pointerId);
-    if(BOARD.cur && BOARD.cur.id === e.pointerId) BOARD.cur = null;
+    if(BOARD.cur && BOARD.cur.id === e.pointerId){ BOARD.cur = null; boardSave(); }
     if(BOARD.pts.size < 2) BOARD.pinch = null;
     if(BOARD.pts.size === 0) BOARD.noDraw = false; // si torna a disegnare solo dopo aver alzato tutte le dita
   };
 }
 if(/[?&]local/.test(location.search)) window.T = {boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }}; // solo per le prove
+/* il disegno resta salvato sul telefono: se la pagina si ricarica a metà turno non si perde */
+function boardSave(){ try{ sessionStorage.setItem("ad.board", JSON.stringify({k:NET.code + "|" + BOARD.key, s:BOARD.strokes})); }catch(_){} }
 function boardZoomUI(){ const b = $("#b-fit"); if(b) b.hidden = !BOARD || BOARD.view.z <= 1.01; }
 function boardFit(){ if(!BOARD) return; BOARD.view = {z:1, x:0, y:0}; boardRedraw(); boardZoomUI(); }
 function boardPaint(g, w, h, strokes, view){
@@ -1763,10 +1786,10 @@ function boardPaint(g, w, h, strokes, view){
 function boardRedraw(){ if(BOARD) boardPaint(BOARD.g, BOARD.w, BOARD.h, BOARD.strokes, BOARD.view); }
 function boardSnapshot(){
   if(!BOARD || !BOARD.strokes.length) return null;
-  const c = document.createElement("canvas"), W = 360, H = Math.round(360 * BOARD.h / BOARD.w);
+  const c = document.createElement("canvas"), W = 300, H = Math.round(300 * BOARD.h / BOARD.w);
   c.width = W; c.height = H; const g = c.getContext("2d"); g.lineCap = "round"; g.lineJoin = "round";
   boardPaint(g, W, H, BOARD.strokes);
-  return c.toDataURL("image/jpeg", .72);
+  return c.toDataURL("image/jpeg", .65);
 }
 
 /* ---------- avvio host e ospite ---------- */
@@ -1934,6 +1957,12 @@ function guessInfo(){
   return pts + (q ? `<br>${q}` : "");
 }
 /* fila dei disegni: già visti (sbagliato o saltato), quello che sta guardando, quelli dopo */
+/* chi ha inviato, in ordine di arrivo, e chi sta ancora disegnando */
+function sentListHTML(){
+  const sent = M.queue.map(id => mpPlayer(id)).filter(Boolean), todo = stillDrawing();
+  const name = p => p.id === NET.myId ? "Tu" : esc(p.name);
+  return `<ol class="sentlist">${sent.map((p, i) => `<li class="ok">${av(p)}<span class="sn">${i+1}° ${name(p)}</span><span class="ss">✓ inviato</span></li>`).join("")}${todo.map(p => `<li class="wait ${p.on ? "" : "off"}">${av(p)}<span class="sn">${name(p)}</span><span class="ss">${p.on ? `disegna <span class="think"><i></i><i></i><i></i></span>` : "offline"}</span></li>`).join("")}</ol>`;
+}
 function qstripHTML(){
   return `<ol class="qstrip">${M.queue.map((id, i) => { const p = mpPlayer(id), t = (M.tries || []).find(x => x.on === id);
     const st = i < M.view ? (t ? "ko" : "skip") : i === M.view ? "now" : "next";
@@ -2008,14 +2037,13 @@ function mpView(){
           <span class="eyebrow">Stanno disegnando per te</span>
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
-          <div class="sentdots">${Array.from({length:drawers}, (_, i) => `<i class="${i < M.queue.length ? "on" : ""}"></i>`).join("")}</div></section>`;
+          ${sentListHTML()}</section>`;
       if(sent) return `<section class="screen pass bigwait watchwait">${meBar()}
           <span class="sentok">✓ Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
           <p class="lead" style="margin:0">${esc(g.name)} inizia a guardare tra</p>
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
-          <div class="sentdots">${Array.from({length:drawers}, (_, i) => `<i class="${i < M.queue.length ? "on" : ""}"></i>`).join("")}</div>
-          ${MD[NET.myId] ? `<img class="mine small" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}</section>`;
+          ${sentListHTML()}</section>`;
       return `<section class="screen drawscreen">
           <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
@@ -2170,8 +2198,8 @@ view.addEventListener("click", e => {
   else if(id === "b-eraser"){ BOARD.eraser = !BOARD.eraser; b.setAttribute("aria-pressed", BOARD.eraser); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", !BOARD.eraser && x.dataset.ink === BOARD.ink)); }
   else if(id === "b-size"){ BOARD.size = BOARD.size > 6 ? 5 : 11; b.querySelector(".sz").classList.toggle("thick", BOARD.size > 6); }
   else if(id === "b-fit"){ boardFit(); }
-  else if(id === "b-undo"){ BOARD && BOARD.strokes.pop(); boardRedraw(); }
-  else if(id === "b-clear"){ if(BOARD){ BOARD.strokes = []; boardRedraw(); } }
+  else if(id === "b-undo"){ if(BOARD){ BOARD.strokes.pop(); boardRedraw(); boardSave(); } }
+  else if(id === "b-clear"){ if(BOARD){ BOARD.strokes = []; boardRedraw(); boardSave(); } }
 });
 view.addEventListener("submit", e => {
   if(e.target.id !== "g-form") return;
