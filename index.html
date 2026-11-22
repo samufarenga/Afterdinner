@@ -180,8 +180,8 @@ h2{font-size:1.6rem}
 .people{display:flex;flex-direction:column;align-items:center;gap:8px}
 .people .plabel{font:700 .72rem var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .prow{position:relative;display:flex;justify-content:center;width:100%}
-.stepper{display:flex;align-items:center;gap:6px;background:var(--night-2);border:2px solid var(--night-3);border-radius:999px;padding:5px}
-.stepper button{width:44px;height:44px;border-radius:50%;border:0;background:var(--night-3);color:var(--paper);font:700 1.4rem var(--display);cursor:pointer;display:grid;place-items:center}
+.stepper{display:flex;align-items:center;gap:6px;background:radial-gradient(120% 140% at 50% 50%,var(--night) 55%,color-mix(in srgb,var(--night-3) 55%,var(--night)) 100%);border:2px solid color-mix(in srgb,var(--paper) 38%,var(--night-3));border-radius:999px;padding:5px;box-shadow:inset 0 0 18px rgba(0,0,0,.35)}
+.stepper button{width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--paper);font:700 1.4rem var(--display);cursor:pointer;display:grid;place-items:center}
 .stepper button:disabled{opacity:.35}
 .stepper output{min-width:64px;text-align:center;font:700 1.4rem var(--display)}
 .pclear{position:absolute;left:calc(50% + 100px);top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer}
@@ -203,9 +203,9 @@ h2{font-size:1.6rem}
 .chev{font:700 1.6rem var(--display);opacity:.5}
 .modal{position:fixed;inset:0;z-index:80;background:rgba(10,12,28,.7);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:in .2s ease-out}
 .modal .sheet{width:100%;max-width:480px;background:var(--night-2);border:2px solid var(--night-3);border-radius:24px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
-.viewsw{display:flex;align-self:center;background:var(--night-2);border:2px solid var(--night-3);border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
+.viewsw{display:flex;align-self:center;background:radial-gradient(120% 160% at 50% 50%,var(--night) 55%,color-mix(in srgb,var(--night-3) 55%,var(--night)) 100%);border:2px solid color-mix(in srgb,var(--paper) 38%,var(--night-3));border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
 .viewsw button{font:600 .85rem var(--body);padding:7px 16px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
-.viewsw button[aria-pressed="true"]{background:var(--night-3);color:var(--paper)}
+.viewsw button[aria-pressed="true"]{background:color-mix(in srgb,var(--paper) 14%,transparent);color:var(--paper)}
 .wheelwrap{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
 .wheel{position:absolute;inset:0}
 .wheel::before{content:"";position:absolute;inset:14%;border-radius:50%;border:2px dashed var(--night-3)}
@@ -1093,7 +1093,7 @@ document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scal
 let lastTouchEnd = 0;
 document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:15";
+const APP_VERSION = "22.11 · 19:20";
 function hardReload(){ const done = () => location.reload(); fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000); }
 setTimeout(() => {
   if(QS.get("room")) return;
