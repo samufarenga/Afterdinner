@@ -33,7 +33,7 @@ html,body{height:100%}
 body{background:var(--night);color:var(--paper);font-family:var(--body);font-size:16px;line-height:1.45;
   background-image:radial-gradient(circle at 15% 10%,rgba(255,181,71,.10),transparent 40%),radial-gradient(circle at 90% 85%,rgba(255,111,145,.10),transparent 45%);
   background-attachment:fixed}
-.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+.app{max-width:520px;margin:0 auto;min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 28px}
 header.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding-block:6px 16px}
 .logo{grid-column:2;font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.01em;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1;background:none;border:0;color:var(--paper);cursor:pointer;padding:0}
@@ -328,6 +328,53 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .viewer img{width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
 .dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
 .guessview{gap:12px}
+/* esito e classifica */
+.resultview{gap:10px}
+.rhead{text-align:center;background:var(--night-2);border-radius:20px;padding:12px 14px;animation:popin .45s cubic-bezier(.3,1.4,.5,1)}
+.rhead.ok{box-shadow:inset 0 0 0 2px var(--mint)}
+.rhead.ko{box-shadow:inset 0 0 0 2px var(--night-3)}
+.rword{font:700 1.8rem/1.1 var(--display);margin:2px 0}
+.rline{margin:0;color:var(--muted)}
+.rline b{color:var(--paper)}
+.lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lb li{display:flex;align-items:center;gap:10px;background:var(--night-2);border-radius:14px;padding:7px 12px;position:relative;will-change:transform}
+.lb li.me{box-shadow:inset 0 0 0 2px var(--mango)}
+.lb li.first{background:linear-gradient(90deg,rgba(255,181,71,.25),var(--night-2))}
+.lb .av{width:30px;height:30px;font-size:.9rem;flex:none}
+.lb.dense{gap:4px}.lb.dense li{padding:4px 12px}.lb.dense .av{width:24px;height:24px;font-size:.75rem}
+.lpos{font:700 1rem var(--display);color:var(--muted);width:2em;text-align:center}
+.lb li.first .lpos{color:var(--mango)}
+.lname{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldelta{font:700 .85rem var(--display);color:var(--ink);background:var(--mint);border-radius:999px;padding:2px 8px;animation:popin .5s 2.4s both cubic-bezier(.3,1.6,.5,1)}
+.lsc{font:700 1.3rem var(--display);font-variant-numeric:tabular-nums;min-width:1.6em;text-align:right}
+.lsc.bump{animation:bump .25s}
+.lb li.gain{animation:glow 1.2s 2.4s}
+@keyframes bump{50%{transform:scale(1.45);color:var(--mint)}}
+@keyframes glow{30%{background:color-mix(in srgb,var(--mint) 30%,var(--night-2))}}
+@keyframes popin{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+.outcome{position:fixed;inset:0;z-index:85;display:grid;place-items:center;padding:24px;background:rgba(10,12,28,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadein .25s;cursor:pointer}
+.outcome.out{animation:fadeout .35s forwards}
+.oc-in{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;animation:popin .55s cubic-bezier(.3,1.5,.5,1)}
+.oc-pts{font:700 clamp(5rem,30vw,8rem)/1 var(--display);color:var(--mint);text-shadow:0 10px 50px rgba(20,212,148,.5)}
+.outcome.ko .oc-pts{color:var(--pink);text-shadow:0 10px 50px rgba(255,61,114,.4)}
+.oc-title{font:700 1.9rem/1.1 var(--display)}
+.oc-sub{color:var(--muted);font-size:1.05rem}
+.oc-word{font:700 1.4rem var(--display);background:var(--paper);color:var(--ink);border-radius:14px;padding:6px 16px;margin-top:6px}
+.outcome img{width:min(56vw,220px);border-radius:16px;margin-top:6px;animation:popin .6s .2s both}
+@keyframes fadein{from{opacity:0}}
+@keyframes fadeout{to{opacity:0}}
+/* transizioni di gioco */
+.megatime{animation:beat 1s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.06)}}
+.sentdots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sentdots i{width:14px;height:14px;border-radius:50%;background:var(--night-3);transition:background .3s}
+.sentdots i.on{background:var(--mint);animation:popin .4s cubic-bezier(.3,1.6,.5,1)}
+.drawscreen .dword{animation:wordin .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes wordin{from{opacity:0;transform:translateY(10px) scale(.8)}to{opacity:1;transform:none}}
+.pass .big-av{animation:popin .5s cubic-bezier(.3,1.5,.5,1)}
+.guessview .viewer img{animation:cardin .45s cubic-bezier(.2,1.1,.4,1)}
+@keyframes cardin{from{opacity:0;transform:translateX(60px) rotate(4deg) scale(.92)}to{opacity:1;transform:none}}
+#mp-reveal{animation:beat 1.2s ease-in-out infinite}
 .mebar{box-sizing:border-box;display:flex;align-items:center;gap:10px;background:var(--night-2);border:1px solid var(--night-3);border-radius:999px;padding:4px 14px 4px 4px;align-self:stretch;width:100%}
 .mebar .av{width:30px;height:30px;font-size:.9rem;flex:none}
 .mebar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-weight:600}
@@ -1111,7 +1158,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 20:00";
+const APP_VERSION = "22.11 · 20:10";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1510,7 +1557,9 @@ let prevPhase = null;
 function onState(s){
   if(NET.role === "host") mpEndsLocal = s.endsAt;
   if(!wake) grabWake(); // schermo acceso per tutta la serata
-  if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0; }
+  if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0;
+    NET.prevScores = {...s.scores}; NET.prevOrder = [...s.players].sort((a,b) => (s.scores[b.id]||0) - (s.scores[a.id]||0) || a.name.localeCompare(b.name)).map(p => p.id); }
+  const showResult = s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal");
   if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; if(amGuesser()) showX(t.text); else if(s.queue.includes(NET.myId)) buzz(15); }
   if(s.phase === "turn" && s.sprint && s.queue && s.queue.length === 1 && (NET.lastQ||0) === 0 && !amGuesser() && s.queue[0] !== NET.myId){ sprintAlert(); }
   if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ sfx("pop"); buzz(15); } NET.lastQ = s.queue.length; }
@@ -1524,6 +1573,7 @@ function onState(s){
   if(NET.role === "guest" && mpPlayer(NET.myId)) NET.wasIn = true;
   mpNotes();
   mpRender();
+  if(showResult) showOutcome(s); else if(s.phase === "result") animateLB();
 }
 function onDrawings(){ if(!M) return; if(M.phase === "result") mpRender(true); else if(M.phase === "reveal") mpRender(); }
 function sprintAlert(){
@@ -1676,6 +1726,35 @@ function mpPlayersChips(){
   return `<ul class="pchips">${M.players.map(p => `<li class="${p.on?"":"off"}">${av(p)}<span>${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span></li>`).join("")}</ul>`;
 }
 const INVITE_LINES = ["Tutti dentro, si gioca!","Telefoni fuori, matite pronte!","Inquadra e si parte","Chi entra, disegna","Stasera si scarabocchia","Prendete posto: si comincia"];
+/* classifica compatta: entra in una schermata; le posizioni si animano dal turno prima */
+function lbHTML(){
+  const sc = id => M.scores[id] || 0, prev = NET.prevScores || {};
+  const ranked = [...M.players].sort((a,b) => sc(b.id) - sc(a.id) || a.name.localeCompare(b.name));
+  const pos = p => 1 + ranked.filter(x => sc(x.id) > sc(p.id)).length;
+  return `<ol class="lb ${ranked.length > 6 ? "dense" : ""}" id="lb">${ranked.map(p => { const d = sc(p.id) - (prev[p.id] || 0);
+    return `<li data-id="${p.id}" class="${p.id === NET.myId ? "me" : ""} ${pos(p) === 1 && sc(p.id) > 0 ? "first" : ""}"><span class="lpos">${pos(p)}°</span>${av(p)}<span class="lname">${esc(p.name)}</span>${d > 0 ? `<span class="ldelta">+${d}</span>` : ""}<span class="lsc" data-from="${prev[p.id] || 0}" data-to="${sc(p.id)}">${sc(p.id)}</span></li>`; }).join("")}</ol>`;
+}
+/* esito a tutto schermo su tutti i telefoni, poi si vede la classifica */
+function showOutcome(s){
+  document.querySelector(".outcome")?.remove();
+  const L = s.last || {}, g = mpPlayer(s.order[s.turn]), h = mpPlayer(L.helper);
+  const o = document.createElement("div"); o.className = "outcome " + (L.reason === "guess" ? "ok" : "ko"); o.setAttribute("role","status");
+  o.innerHTML = L.reason === "guess"
+    ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato!</div>${h ? `<div class="oc-sub">+${L.pts} anche a ${esc(h.name)}</div>` : ""}${h && MD[h.id] ? `<img src="${MD[h.id]}" alt="">` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
+    : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
+  document.body.appendChild(o);
+  const close = () => { o.classList.add("out"); setTimeout(() => o.remove(), 350); animateLB(); };
+  o.addEventListener("click", close); setTimeout(close, L.reason === "guess" ? 2300 : 1700);
+}
+function animateLB(){
+  const lb = $("#lb"); if(!lb || lb.dataset.done) return; lb.dataset.done = 1;
+  const rows = [...lb.children], h = rows[0] ? rows[0].offsetHeight + 6 : 0, prevOrder = NET.prevOrder || [];
+  rows.forEach((li, i) => {
+    const old = prevOrder.indexOf(li.dataset.id), sc = li.querySelector(".lsc"), from = +sc.dataset.from, to = +sc.dataset.to;
+    if(old >= 0 && old !== i){ li.style.transition = "none"; li.style.transform = `translateY(${(old - i) * h}px)`; requestAnimationFrame(() => requestAnimationFrame(() => { li.style.transition = "transform .7s cubic-bezier(.3,1.3,.5,1)"; li.style.transform = ""; })); }
+    if(to > from){ sc.textContent = from; let v = from; const t = setInterval(() => { v++; sc.textContent = v; sc.classList.remove("bump"); void sc.offsetWidth; sc.classList.add("bump"); if(v >= to) clearInterval(t); }, 260); li.classList.add("gain"); }
+  });
+}
 /* in alto su ogni telefono: il tuo nome, i tuoi punti e la tua posizione */
 function meBar(){
   const me = mpPlayer(NET.myId); if(!me || !M || M.phase === "lobby") return "";
@@ -1811,7 +1890,7 @@ function mpView(){
           <span class="eyebrow">Stanno disegnando per te</span>
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
-          <div class="spacer"></div><button class="btn ghost" id="mp-pass" style="width:100%">Passo</button></section>`;
+          <div class="sentdots">${Array.from({length:drawers}, (_, i) => `<i class="${i < M.queue.length ? "on" : ""}"></i>`).join("")}</div></section>`;
       if(sent) return `<section class="screen pass bigwait">${meBar()}
           <span class="eyebrow">Inviato · sei il ${M.queue.indexOf(NET.myId)+1}°</span>
           <div class="mptime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
@@ -1854,16 +1933,16 @@ function mpView(){
     }
     case "result": {
       const L = M.last || {}, helper = mpPlayer(L.helper);
-      const head = L.reason === "guess"
-        ? `<div class="plus">+${L.pts} +${L.pts}</div><h2>${esc(g ? g.name : "")}${helper ? ` e ${esc(helper.name)}` : ""}</h2><p class="lead" style="margin:0">Indovinata al ${L.pos+1}° disegno</p>${helper && MD[helper.id] ? `<img class="mine" src="${MD[helper.id]}" alt="Disegno vincente">` : ""}`
-        : `<div class="plus" style="color:var(--pink)">0</div><h2>${L.reason === "none" ? "Nessuno indovinato" : L.reason === "nodraw" ? "Nessun disegno inviato" : "Passo"}</h2>`;
+      const line = L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato${helper ? ` col disegno di <b>${esc(helper.name)}</b>` : ""}`
+        : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
       const canNext = amGuesser() || NET.role === "host";
       const lastTurn = M.turn + 1 >= M.order.length && M.round >= M.rounds;
-      return `<section class="screen">${meBar()}<div class="burst">${head}<p class="lead">La parola era <b style="color:var(--paper)">${esc(L.word)}</b></p></div>
-        ${triesHTML()}
-        ${(M.queue||[]).length ? `<div class="gallery small">${M.queue.filter(id => MD[id]).map(id => [id, MD[id]]).map(([id,img], i) => `<figure class="dcard"><img src="${img}" alt=""><span class="dname">${i+1}° ${esc((mpPlayer(id)||{}).name||"")}</span></figure>`).join("")}</div>` : ""}
-        ${mpScoreList()}
-        ${canNext ? `<button class="btn" id="mp-next">${lastTurn ? "Classifica finale" : "Prossimo turno"}</button>` : `<p class="hint" style="text-align:center">Tra poco il prossimo turno</p>`}</section>`;
+      return `<section class="screen resultview">${meBar()}
+        <div class="rhead ${L.reason === "guess" ? "ok" : "ko"}"><span class="eyebrow">La parola era</span><div class="rword">${esc(L.word)}</div><p class="rline">${line}</p></div>
+        <span class="eyebrow" style="text-align:center">Classifica</span>
+        ${lbHTML()}
+        <div class="spacer"></div>
+        ${canNext ? `<button class="btn" id="mp-next">${lastTurn ? "Classifica finale" : "Prossimo turno"}</button>` : `<p class="hint" style="text-align:center;margin:0">Tra poco il prossimo turno</p>`}</section>`;
     }
     case "final": {
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
