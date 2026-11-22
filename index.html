@@ -235,6 +235,10 @@ header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
 .preview .pmeta span{font-size:.78rem;font-weight:700;background:var(--night-3);color:var(--paper);border-radius:999px;padding:4px 10px}
 .preview .row{width:100%}
 /* multi-telefono */
+.viewer{background:var(--paper);border-radius:22px;aspect-ratio:1/1.1;max-height:58vh;width:100%;display:grid;place-items:center;overflow:hidden}
+.viewer img{width:100%;height:100%;object-fit:contain;display:block;animation:in .25s ease-out}
+.dwait.big{background:transparent;color:#7a6f8f;font-size:1rem;text-align:center;padding:20px;aspect-ratio:auto}
+.guessview{gap:12px}
 .qrcard{background:var(--night-2);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .qrbox{background:#fff;border-radius:18px;padding:10px;width:220px;max-width:100%;aspect-ratio:1;display:grid;place-items:center}
 .qrbox svg{width:100%;height:auto;display:block}
@@ -245,11 +249,6 @@ header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
 .pchips li.off{opacity:.45}
 .mptime{font:700 2rem var(--display);font-variant-numeric:tabular-nums;min-width:2.4em;text-align:center;background:var(--night-2);border-radius:16px;padding:4px 10px}
 .mptime.low{color:var(--pink)}
-.forehead{position:fixed;inset:0;z-index:60;background:var(--mango);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));text-align:center}
-.forehead .fh-word{flex:1;display:grid;place-items:center;font:700 clamp(3rem,16vw,6rem) var(--display);line-height:1;overflow-wrap:anywhere;text-wrap:balance}
-.forehead .fh-count{font-size:clamp(6rem,40vw,12rem)}
-.forehead .mptime{background:rgba(0,0,0,.12);color:var(--ink)}
-.forehead .fh-actions{width:100%;max-width:480px}
 .drawscreen{gap:12px}
 .drawhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .drawhead>div:first-child{min-width:0}
@@ -354,7 +353,7 @@ const ICONS = (() => {
 })();
 const CATALOG = [
   {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:true, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
-  {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"3-10", mins:"15-25", phones:"all", desc:"Tu hai la parola in fronte, gli altri la disegnano in silenzio sui loro telefoni."},
+  {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"3-10", mins:"15-25", phones:"all", desc:"Gli altri disegnano la parola e te la inviano: chi arriva primo rischia, ma vale doppio."},
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
   {id:"catena", name:"Disegno a catena", icon:"pencil", color:"#14d494", players:"4-10", mins:"15-20", phones:"all", desc:"Frase, disegno, frase: guarda come si deforma il messaggio."},
@@ -831,7 +830,7 @@ const USE_LOCAL = QS.has("local");
 const NET = { role:null, code:null, myId:null, status:"idle", peer:null, conn:null, conns:new Map(), bc:null, name:"", info:null, turnT:null };
 let M = null;          // stato della partita (sull'host è quello vero, sugli altri è una copia)
 let MD = {};           // disegni del turno {idGiocatore: immagine}
-let mpTick = null, mpEndsLocal = 0, mpKey = "", fhCount = 0;
+let mpTick = null, mpEndsLocal = 0, mpKey = "";
 
 function myPid(){
   if(USE_LOCAL) return NET._pid || (NET._pid = "u"+Math.random().toString(36).slice(2,10)); // in prova ogni scheda è un giocatore diverso
@@ -943,23 +942,30 @@ function hostReceive(pid, msg){
     case "start":
       if(M.phase === "ready" && pid === guesserId()){
         const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
-        M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000 + 3000; // 3 secondi per mettersi il telefono in fronte
+        M.queue = []; M.view = -1;
+        M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000;
         clearTimeout(NET.turnT);
-        NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ M.phase = "result"; M.last = {reason:"time", word:M.word, by:guesserId()}; publish(); } }, M.seconds*1000 + 3300);
-        publish();
+        NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ M.phase = "result"; M.last = {reason:"time", word:M.word, by:guesserId()}; publish(); } }, M.seconds*1000 + 300);
+        mpBroadcast({t:"drawings", imgs:MD}); publish();
       } break;
-    case "guessed":
-      if(M.phase === "turn" && pid === guesserId()){ clearTimeout(NET.turnT); M.phase = "pick"; publish(); } break;
-    case "pass":
-      if(M.phase === "turn" && pid === guesserId()){ clearTimeout(NET.turnT); M.phase = "result"; M.last = {reason:"pass", word:M.word, by:pid}; publish(); } break;
-    case "drawing":
-      if(pid !== guesserId() && typeof msg.img === "string" && msg.img.length < 400000){ MD[pid] = msg.img; mpBroadcast({t:"drawings", imgs:MD}); onDrawings(); } break;
-    case "pick":
-      if(M.phase === "pick" && pid === guesserId() && msg.id !== pid && mpPlayer(msg.id)){
-        M.scores[pid]++; M.scores[msg.id]++;
-        M.last = {reason:"guess", word:M.word, by:pid, helper:msg.id};
+    case "send": // un disegnatore ha finito e invia il disegno
+      if(M.phase === "turn" && pid !== guesserId() && !M.queue.includes(pid) && typeof msg.img === "string" && msg.img.length < 400000){
+        MD[pid] = msg.img; M.queue.push(pid);
+        if(M.view < 0) M.view = 0;
+        mpBroadcast({t:"drawings", imgs:MD}); onDrawings(); publish();
+      } break;
+    case "advance": // chi indovina passa al disegno successivo (non si torna indietro)
+      if(M.phase === "turn" && pid === guesserId() && M.view < M.queue.length - 1){ M.view++; publish(); } break;
+    case "guessed": // conta il disegno che chi indovina ha sullo schermo adesso
+      if(M.phase === "turn" && M.view >= 0 && (pid === guesserId() || M.queue.includes(pid) || pid === M.host)){
+        clearTimeout(NET.turnT);
+        const helper = M.queue[M.view], pts = M.view === 0 ? 2 : 1, g = guesserId();
+        M.scores[g] += pts; M.scores[helper] += pts;
+        M.last = {reason:"guess", word:M.word, by:g, helper, pts, pos:M.view};
         M.phase = "result"; publish();
       } break;
+    case "pass":
+      if(M.phase === "turn" && pid === guesserId()){ clearTimeout(NET.turnT); M.phase = "result"; M.last = {reason:"pass", word:M.word, by:pid}; publish(); } break;
     case "next":
       if(M.phase === "result" && (pid === guesserId() || pid === M.host)){
         M.turn++; if(M.turn >= M.order.length){ M.turn = 0; M.round++; }
@@ -980,14 +986,13 @@ function guestReceive(msg){
 let prevPhase = null;
 function onState(s){
   if(NET.role === "host") mpEndsLocal = s.endsAt;
-  // a fine turno chi ha disegnato manda il suo disegno all'host
-  if(prevPhase === "turn" && s.phase !== "turn" && !amGuesser()){ const img = boardSnapshot(); if(img) act({t:"drawing", img}); }
-  if(s.phase === "turn" && prevPhase !== "turn"){ grabWake(); if(amGuesser()) fhCount = 3; }
-  if(s.phase !== "turn" && prevPhase === "turn"){ releaseWake(); if(s.phase === "pick" || (s.last && s.last.reason === "guess")) { confetti(); buzz([30,40,30]); beep(660,.12); setTimeout(()=>beep(880,.16),120); } else beep(220,.35); }
+  if(s.phase === "turn" && prevPhase !== "turn"){ grabWake(); NET.lastQ = 0; }
+  if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ beep(760,.07); buzz(20); } NET.lastQ = s.queue.length; }
+  if(s.phase !== "turn" && prevPhase === "turn"){ releaseWake(); if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); beep(660,.12); setTimeout(()=>beep(880,.16),120); } else beep(220,.35); }
   prevPhase = s.phase;
   mpRender();
 }
-function onDrawings(){ if(M && (M.phase === "pick" || M.phase === "result")) mpRender(true); }
+function onDrawings(){ if(M && (M.phase === "result" || (M.phase === "turn" && amGuesser()))) mpRender(true); }
 
 /* lavagna */
 const INKS = ["#2a2140","#ff3d72","#3d8bff","#14d494","#ffa41b"];
@@ -1075,9 +1080,9 @@ function mpView(){
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
           <div class="opts"><div class="opt"><label>Secondi per turno</label>${seg("seconds",[60,90,120],v=>v+"s")}</div><div class="opt"><label>Giri a testa</label>${seg("rounds",[1,2,3],v=>v)}</div></div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
-            <li>A turno uno di voi tiene il telefono sulla fronte: la parola la vedono tutti tranne lui.</li>
-            <li>Gli altri disegnano la parola sul loro telefono, in silenzio. Niente lettere, niente numeri.</li>
-            <li>Quando indovina, sceglie il disegno che l'ha aiutato per primo: <b>1 punto a lui e 1 a chi l'ha disegnato</b>.</li>
+            <li>A turno uno di voi indovina. Gli altri vedono la parola e la disegnano sul loro telefono, in silenzio. Niente lettere né numeri.</li>
+            <li>Chi ha finito preme Invia. I disegni arrivano a chi indovina uno alla volta, nell'ordine di invio, e non si torna indietro.</li>
+            <li>Conta il disegno sullo schermo quando indovina: se è il <b>primo arrivato, 2 punti a lui e 2 a chi l'ha disegnato</b>; se è uno dei successivi, 1 e 1.</li>
             <li>Se scade il tempo o passa, nessun punto. Poi tocca al prossimo.</li></ol></details>
           <button class="btn pink" id="mp-start" ${online < 3 ? "disabled" : ""}>${online < 3 ? `Servono almeno 3 giocatori` : "Inizia la partita"}</button>
         </section>`;
@@ -1089,40 +1094,52 @@ function mpView(){
     case "ready":
       if(amGuesser()) return `<section class="screen pass"><span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
         <div class="big-av" style="background:${me.color}">${initial(me.name)}</div><div><h1>Tocca a te!</h1>
-        <p class="lead">Premi Via e metti subito il telefono sulla fronte, con lo schermo verso gli altri.</p></div>
+        <p class="lead">Premi Via: gli altri vedranno la parola e la disegneranno. I disegni ti arrivano qui, uno alla volta, nell'ordine in cui li inviano.</p></div>
         <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button></section>`;
       return `<section class="screen pass"><span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
         <div class="big-av" style="background:${g.color}">${initial(g.name)}</div>
         <div><p class="lead" style="margin:0 0 6px">Ora indovina</p><h1>${esc(g.name)}</h1></div>
-        <p class="hint">Quando preme Via, sul tuo telefono compare la lavagna. Disegna in silenzio!</p></section>`;
-    case "turn":
-      if(amGuesser()) return `<section class="forehead" id="forehead">
-          <div class="fh-word" id="fh-word">${fhCount > 0 ? `<span class="fh-count">${fhCount}</span>` : esc(M.word)}</div>
-          ${timerHTML()}
-          <div class="row fh-actions"><button class="btn ghost" id="mp-pass">Passo</button><button class="btn mint" id="mp-guessed">Indovinata!</button></div>
+        <p class="hint">Quando preme Via compare la parola e la lavagna. Disegna e premi Invia: chi invia per primo rischia di più ma vale 2 punti.</p></section>`;
+    case "turn": {
+      const sent = M.queue.includes(NET.myId);
+      if(amGuesser()){
+        const cur = M.view >= 0 ? M.queue[M.view] : null, cp = mpPlayer(cur), more = M.queue.length - 1 - M.view;
+        return `<section class="screen guessview">
+          <div class="drawhead"><div><span class="eyebrow">Indovina la parola</span><div class="dword">${cur ? `Disegno ${M.view+1} · ${esc(cp.name)}` : "Aspetta i disegni…"}</div></div>${timerHTML()}</div>
+          <div class="viewer">${cur && MD[cur] ? `<img src="${MD[cur]}" alt="Disegno di ${esc(cp.name)}">` : `<div class="dwait big">I tuoi amici stanno disegnando.<br>Il primo disegno arriva qui.</div>`}</div>
+          <p class="hint" style="text-align:center">${cur ? (M.view === 0 ? "Se indovini su questo disegno: 2 punti a te e 2 a chi l'ha fatto." : "Da qui in poi: 1 punto a te e 1 a chi l'ha fatto.") : ""} Ricevuti: ${M.queue.length}</p>
+          <div class="row"><button class="btn ghost" id="mp-pass">Passo</button>
+            <button class="btn" id="mp-adv" ${more > 0 ? "" : "disabled"}>${more > 0 ? `Prossimo disegno (${more})` : "Prossimo disegno"}</button></div>
+          <button class="btn mint" id="mp-guessed" ${cur ? "" : "disabled"}>Indovinata!</button>
         </section>`;
+      }
+      if(sent){
+        const pos = M.queue.indexOf(NET.myId), viewing = M.view >= 0 ? mpPlayer(M.queue[M.view]) : null;
+        return `<section class="screen pass"><span class="eyebrow">La parola è «${esc(M.word)}»</span>
+          ${MD[NET.myId] ? `<img class="mine" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}
+          <h2>Inviato! Sei arrivato ${pos+1}°</h2>
+          <p class="lead">${viewing ? `${esc(g.name)} sta guardando il disegno di <b style="color:var(--paper)">${viewing.id===NET.myId ? "te" : esc(viewing.name)}</b>` : ""}</p>
+          ${timerHTML()}
+          <button class="btn mint" id="mp-guessed">Ha indovinato!</button>
+          <p class="hint">Premilo se ${esc(g.name)} dice la parola giusta e non l'ha ancora segnato.</p></section>`;
+      }
       return `<section class="screen drawscreen">
           <div class="drawhead"><div><span class="eyebrow">Disegna per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}</div>
           <canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
           <div class="tools">${INKS.map(c => `<button class="ink" data-ink="${c}" style="background:${c}" aria-label="Colore" aria-pressed="${BOARD && BOARD.ink===c}"></button>`).join("")}
             <button class="iconbtn" id="b-undo">Annulla</button><button class="iconbtn" id="b-clear">Pulisci</button></div>
+          <button class="btn pink" id="b-send">Invia il disegno${M.queue.length ? ` (già ${M.queue.length} inviati)` : " per primo"}</button>
         </section>`;
-    case "pick": {
-      const others = M.players.filter(p => p.id !== NET.myId && p.id !== guesserId());
-      if(amGuesser()) return `<section class="screen"><div><span class="eyebrow">Era «${esc(M.word)}»</span><h2>Quale disegno ti ha fatto indovinare per primo?</h2></div>
-        <div class="gallery">${M.players.filter(p => p.id !== NET.myId).map(p => `<button class="dcard" data-pick="${p.id}">${MD[p.id] ? `<img src="${MD[p.id]}" alt="Disegno di ${esc(p.name)}">` : `<span class="dwait">In arrivo…</span>`}<span class="dname">${av(p)}${esc(p.name)}</span></button>`).join("")}</div></section>`;
-      return `<section class="screen pass"><h2>${esc(g.name)} ha indovinato!</h2><p class="lead">Sta scegliendo il disegno che l'ha aiutato…</p>
-        ${MD[NET.myId] ? `<img class="mine" src="${MD[NET.myId]}" alt="Il tuo disegno">` : ""}</section>`;
     }
     case "result": {
       const L = M.last || {}, helper = mpPlayer(L.helper);
       const head = L.reason === "guess"
-        ? `<div class="plus">+1 +1</div><h2>${esc(g.name)} e ${esc(helper.name)}</h2>${MD[helper.id] ? `<img class="mine" src="${MD[helper.id]}" alt="Disegno vincente">` : ""}`
+        ? `<div class="plus">+${L.pts} +${L.pts}</div><h2>${esc(g.name)} e ${esc(helper.name)}</h2><p class="lead" style="margin:0">Indovinata al ${L.pos+1}° disegno</p>${MD[helper.id] ? `<img class="mine" src="${MD[helper.id]}" alt="Disegno vincente">` : ""}`
         : `<div class="plus" style="color:var(--pink)">0</div><h2>${L.reason === "time" ? "Tempo scaduto" : "Passo"}</h2>`;
       const canNext = amGuesser() || NET.role === "host";
       const lastTurn = M.turn + 1 >= M.order.length && M.round >= M.rounds;
       return `<section class="screen"><div class="burst">${head}<p class="lead">La parola era <b style="color:var(--paper)">${esc(L.word)}</b></p></div>
-        ${Object.keys(MD).length && L.reason !== "guess" ? `<div class="gallery small">${Object.entries(MD).map(([id,img]) => `<figure class="dcard"><img src="${img}" alt=""><span class="dname">${esc((mpPlayer(id)||{}).name||"")}</span></figure>`).join("")}</div>` : ""}
+        ${(M.queue||[]).length ? `<div class="gallery small">${M.queue.filter(id => MD[id]).map(id => [id, MD[id]]).map(([id,img], i) => `<figure class="dcard"><img src="${img}" alt=""><span class="dname">${i+1}° ${esc((mpPlayer(id)||{}).name||"")}</span></figure>`).join("")}</div>` : ""}
         ${mpScoreList()}
         ${canNext ? `<button class="btn" id="mp-next">${lastTurn ? "Classifica finale" : "Prossimo turno"}</button>` : `<p class="hint" style="text-align:center">Aspettiamo il prossimo turno…</p>`}</section>`;
     }
@@ -1153,10 +1170,11 @@ function guestWelcome(){
 
 function mpRender(force){
   if(S.screen !== "mp") return;
-  const key = M ? [M.phase, M.turn, M.round, amGuesser()].join("|") : "none";
-  // durante il turno non ridisegno la pagina, altrimenti si cancellerebbe la lavagna
-  if(!force && key === mpKey && M && M.phase === "turn") return;
-  if(M && M.phase === "turn" && key !== mpKey) BOARD = null;
+  const drawing = M && M.phase === "turn" && !amGuesser() && !(M.queue||[]).includes(NET.myId);
+  const key = M ? [M.phase, M.turn, M.round, amGuesser(), drawing].join("|") : "none";
+  // mentre disegni non ridisegno la pagina, altrimenti si cancellerebbe la lavagna
+  if(!force && key === mpKey && drawing) return;
+  if(drawing && key !== mpKey) BOARD = null;
   mpKey = key;
   render();
 }
@@ -1176,11 +1194,6 @@ function mpAfterRender(){
     mpTick = setInterval(() => {
       const el = $("#mptime"); const s = Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000));
       if(el && el.textContent !== String(s)){ el.textContent = s; el.classList.toggle("low", s <= 10); if(s <= 5 && s > 0) beep(520,.06); }
-      if(fhCount > 0 && amGuesser()){
-        const left = mpEndsLocal - Date.now() - M.seconds*1000; // i 3 secondi iniziali
-        const n = Math.ceil(left/1000);
-        if(n !== fhCount){ fhCount = Math.max(0, n); const w = $("#fh-word"); if(w) w.innerHTML = fhCount > 0 ? `<span class="fh-count">${fhCount}</span>` : esc(M.word); if(fhCount===0) buzz(60); }
-      }
     }, 200);
   }
 }
@@ -1194,8 +1207,9 @@ view.addEventListener("click", e => {
   else if(id === "mp-start"){ M.order = shuffle(M.players.filter(p => p.on).map(p => p.id)); M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ beep(440,.05); act({t:"start"}); }
   else if(id === "mp-guessed"){ act({t:"guessed"}); }
+  else if(id === "mp-adv"){ act({t:"advance"}); }
+  else if(id === "b-send"){ const img = boardSnapshot(); if(!img){ b.textContent = "Disegna qualcosa prima di inviare"; return; } act({t:"send", img}); }
   else if(id === "mp-pass"){ act({t:"pass"}); }
-  else if(d.pick){ act({t:"pick", id:d.pick}); }
   else if(id === "mp-next"){ act({t:"next"}); }
   else if(id === "mp-again"){ M.phase = "lobby"; M.last = null; MD = {}; publish(); }
   else if(id === "mp-exit"){ mpClose(); go("home"); }
