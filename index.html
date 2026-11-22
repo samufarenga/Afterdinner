@@ -94,7 +94,12 @@ h2{font-size:1.6rem}
 .selfie-cta{width:auto;padding:10px 18px;font-size:1rem}
 .linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;cursor:pointer;padding:4px}
 .mebtn{position:relative;border:0;background:none;padding:0;cursor:pointer;flex:none;display:grid}
-.mebtn .cam{position:absolute;right:-6px;bottom:-4px;font-size:.7rem;font-style:normal;background:var(--night-3);border-radius:50%;width:18px;height:18px;display:grid;place-items:center}
+.mebtn .cam{position:absolute;right:-9px;bottom:-7px;font-style:normal;background:var(--night);border-radius:50%;width:19px;height:19px;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--night-3)}
+.mebtn .cam .camic{width:14px;height:14px}
+.mebar .mebtn + b{margin-left:4px}
+.camic{width:22px;height:22px;flex:none}
+.selfie-cta{display:inline-flex;align-items:center;gap:8px}
+.selfiebtn .camic{width:26px;height:26px}
 .hostme{display:flex;gap:10px;align-items:center}
 .selfiebtn{width:48px;height:48px;flex:none;border-radius:50%;border:2px dashed var(--night-3);background:var(--night-2);font-size:1.3rem;display:grid;place-items:center;cursor:pointer;padding:0}
 .selfiebtn .av{width:44px;height:44px}
@@ -265,6 +270,7 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr.armed{border-color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
 .newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
+.hleft{grid-column:1;grid-row:1;justify-self:start;display:flex;gap:8px;align-items:center}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
 #host-btn,.dhost{font-size:1.4rem;width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center;flex:none;line-height:1;letter-spacing:-.05em}
 #host-btn[hidden]{display:none}
@@ -278,6 +284,15 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .hitem.danger b{color:var(--pink)}
 .hitem.danger.armed{border-color:var(--pink)}.hitem.danger em{color:var(--pink)}
 #info-btn,#snd-btn,#host-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#info-btn{width:auto;border-radius:999px;padding:0 12px 0 6px;display:inline-flex;gap:6px;align-items:center;font:600 .9rem var(--body);height:44px}
+#info-btn .rq{width:26px;height:26px;border-radius:50%;background:var(--mango);color:var(--ink);display:grid;place-items:center;font:700 .95rem var(--display)}
+@media (max-width:400px){header.top .logo{font-size:1.25rem}header.top .hright,header.top .hleft{gap:5px}#snd-btn,#host-btn,#back-btn{width:38px!important;height:38px!important}#info-btn{height:38px;padding:0 9px 0 4px;gap:5px;font-size:.82rem}#info-btn .rq{width:24px;height:24px;font-size:.85rem}}
+@media (max-width:350px){header.top .logo>span:last-child{display:none}}
+/* in partita: solo i tre pallini al centro, pulsanti bilanciati ai lati */
+html.mpmode header.top .logo>span:last-child{display:none}
+html.mpmode header.top .logo .dots i{width:13px;height:13px}
+html.mpmode header.top{min-height:44px}
+@media (max-width:350px){header.top .hright,header.top .hleft{gap:4px}#snd-btn,#host-btn,#back-btn{width:36px!important;height:36px!important}#info-btn{height:36px}}
 #snd-btn svg{width:22px;height:22px}
 #snd-btn[aria-pressed="false"]{color:var(--muted)}
 #snd-btn[hidden]{display:none}
@@ -300,7 +315,7 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .sw:checked::after{transform:translateX(22px)}
 .set-row input[type=range]{flex:1;accent-color:var(--mango);min-width:0}
 
-#back-btn{grid-column:1;grid-row:1;justify-self:start;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#back-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #back-btn svg{width:22px;height:22px}
 
 .lock{position:absolute;right:-4px;top:-4px;width:22px;height:22px;border-radius:50%;background:var(--night-3);border:2px solid var(--night)}
@@ -361,6 +376,10 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 .gcard .gname{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;background:rgba(27,30,58,.88);color:var(--paper);font:600 .75rem var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gcard.win{box-shadow:0 0 0 3px var(--mint)}
 .gcard.win .gname{background:var(--mint);color:var(--ink)}
+.outcome.intro .oc-title{font-size:clamp(1.8rem,8vw,2.4rem);max-width:12em;background:linear-gradient(90deg,var(--mango),var(--pink),var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}
+.intro-top{font:700 .9rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--mint);border-radius:999px;padding:6px 14px;animation:popin .4s cubic-bezier(.3,1.6,.5,1)}
+.intro-icon{font-size:4.5rem;line-height:1;animation:sweep 1.2s ease-in-out .2s both}
+@keyframes sweep{0%{transform:translateX(-40px) rotate(-15deg);opacity:0}40%{opacity:1}60%{transform:translateX(30px) rotate(10deg)}100%{transform:none}}
 .outcome.zoomd img{width:auto;max-width:86vw;max-height:66vh;border-radius:18px}
 .still,.still .watchhead,.still .rhead,.still .sentok,.still .big-av,.still .dword,.still .viewer img,.still .sentlist li,.still .gcard,.still .lb li,.still .ldelta{animation:none!important}
 /* chi ha già disegnato: countdown, chi sta guardando, esito */
@@ -371,6 +390,9 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .think i:nth-child(2){animation-delay:.15s;background:var(--pink)}.think i:nth-child(3){animation-delay:.3s;background:var(--mint)}
 @keyframes thinkdot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-8px);opacity:1}}
 .watchview{gap:10px}
+.finale h1{font-size:clamp(1.7rem,8.5vw,2.3rem);overflow-wrap:anywhere}
+.finact{position:sticky;bottom:0;padding:10px 0 max(6px,env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--night) 70%,transparent);z-index:3}
+.stickybtn{position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:3;box-shadow:0 5px 0 #b3204a,0 10px 30px rgba(0,0,0,.45)}
 .sentbox{display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;align-items:stretch;text-align:center}
 .sentlist .chk{width:22px;height:22px;flex:none;border-radius:7px;border:2px solid var(--night-3);display:grid;place-items:center;font:700 .85rem var(--body);color:var(--ink)}
 .sentlist li.ok .chk{background:var(--mint);border-color:var(--mint)}
@@ -473,6 +495,8 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 @keyframes xfade{0%,10%{opacity:0}25%,75%{opacity:1}100%{opacity:0}}
 .shake{animation:shake .45s}
 .xfail.sprint{align-content:start;padding-top:120px}
+.xfail .xprev{position:absolute;inset:0;margin:auto;width:min(86vw,420px);max-height:62vh;object-fit:contain;border-radius:22px;background:var(--board);opacity:.95;z-index:-1;animation:xfade 1.4s ease-out forwards}
+.xfail:not(.watch){background:rgba(10,12,28,.55)}
 .xfail.watch{background:rgba(10,12,28,.82);justify-items:center;text-align:center;padding:24px;animation:xfade 2.6s ease-out forwards}
 .xfail.watch svg{width:30vmin;height:30vmin;max-width:150px;max-height:150px;animation:xpop 2.6s ease-out forwards}
 .xfail.watch p{animation:none;background:none;padding:0}
@@ -517,15 +541,16 @@ html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px
 .dtop{display:flex;align-items:center;gap:10px}
 .dtw{flex:1;min-width:0}
 .dtw .eyebrow{font-size:.65rem}
-.dtop .dword{font-size:1.45rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dtop .dword{font-size:clamp(1.1rem,5.2vw,1.45rem);line-height:1.1;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dtop .mptime{font-size:1.25rem;padding:6px 10px;border-radius:12px;min-width:2.2em}
 .btn.dsend{width:auto;flex:none;padding:11px 20px;margin:0}
 .boardwrap{flex:1;position:relative;min-height:0}
+@media (max-width:370px){.dtop{gap:6px}.dtop .mptime{font-size:1.05rem;padding:5px 7px}.btn.dsend{padding:10px 14px}.dhost{width:34px!important;height:34px!important}.boardwrap .toolbar{gap:3px;padding:5px 9px}.boardwrap .toolbar .inks{gap:3px}.boardwrap .toolbar .ink{width:21px;height:21px}.boardwrap .toolbar .tbtn{width:28px;height:28px}.boardwrap .toolbar .tbtn svg{width:17px;height:17px}.boardwrap .toolbar .tsep{margin:0}}
 .bfit{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 12px;background:rgba(27,30,58,.92);color:var(--paper);font:600 .85rem var(--body);box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;animation:popin .3s}
 .bfit[hidden]{display:none}
 .bfit svg{width:18px;height:18px}
 .boardwrap .toolbar .ink{width:26px;height:26px;border:0;transform:none}
-.boardwrap .toolbar .ink[aria-pressed="true"]{transform:scale(1.1)}
+.boardwrap .toolbar .ink[aria-pressed="true"]{transform:none}
 .boardwrap .boardcv{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;max-height:none;border-radius:20px}
 .boardwrap .toolbar{position:absolute;left:0;right:0;margin:0 auto;width:max-content;bottom:10px;max-width:calc(100% - 16px);gap:6px;padding:6px 10px;box-sizing:border-box;background:rgba(27,30,58,.92);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .drawhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -577,12 +602,14 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
     <button class="logo" id="home-btn" aria-label="Torna alla home"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>AfterDinner</span></button>
     <div class="hright">
     <button class="iconbtn" id="board-btn" hidden>Punteggi</button>
-    <button class="iconbtn" id="host-btn" hidden aria-label="Comandi dell'host">⋯</button>
-    <button class="iconbtn" id="snd-btn" hidden aria-label="Effetti audio"></button>
-    <button class="iconbtn" id="info-btn" hidden aria-label="Regole del gioco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><circle cx="12" cy="7" r=".6" fill="currentColor"/></svg></button>
+    <button class="iconbtn" id="info-btn" hidden aria-label="Regole del gioco"><span class="rq">?</span>Regole</button>
     <button class="iconbtn" id="menu-btn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
     </div>
+    <div class="hleft">
     <button class="iconbtn" id="back-btn" hidden aria-label="Torna alla home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="iconbtn" id="snd-btn" hidden aria-label="Effetti audio"></button>
+    <button class="iconbtn" id="host-btn" hidden aria-label="Comandi dell'host">⋯</button>
+    </div>
   </header>
   <main id="view"></main>
 </div>
@@ -1027,11 +1054,15 @@ function render(){
   if(LOCK_ON && !isUnlocked() && S.screen!=="mp") S.screen="locked";
   const html = screens[S.screen](), k = S.screen + "|" + (S.screen === "mp" ? mpKey : "");
   if(html !== view._html){ // stessa schermata aggiornata: niente animazione di entrata, niente scatti
-    const same = view._k === k; view.innerHTML = html; view._html = html; view._k = k;
+    const same = view._k === k, typed = {}, act = document.activeElement && document.activeElement.id;
+    view.querySelectorAll("input[id]").forEach(i => { if(i.value) typed[i.id] = [i.value, i.selectionStart]; }); // ciò che stai scrivendo non si cancella
+    view.innerHTML = html; view._html = html; view._k = k;
+    Object.entries(typed).forEach(([id, [v, c]]) => { const i = document.getElementById(id); if(i && i.type !== "range" && !i.value){ i.value = v; if(id === act){ i.focus({preventScroll:true}); try{ i.setSelectionRange(c, c); }catch(_){} } } });
     if(same && view.firstElementChild) view.firstElementChild.classList.add("still");
   }
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
   document.documentElement.classList.toggle("drawmode", !!$(".drawscreen"));
+  document.documentElement.classList.toggle("mpmode", S.screen === "mp" && !!M && M.phase !== "lobby");
   if(typeof sndBtn === "function") sndBtn();
   if($("#wheel")) wheelInit();
   $("#back-btn").hidden = S.screen==="home";
@@ -1326,7 +1357,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 23:05";
+const APP_VERSION = "22.11 · 23:45";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1531,17 +1562,22 @@ function publish(){
 const normWord = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/[’`]/g, "'").replace(/^\s*(il|lo|la|i|gli|le|un|uno|una)\s+/, "").replace(/^\s*(l|un|gl)'\s*/, "")
   .replace(/[^a-z0-9]+/g, "");
-function lev(a, b){
-  const d = Array.from({length:b.length + 1}, (_, i) => i);
-  for(let i = 1; i <= a.length; i++){ let prev = d[0]; d[0] = i;
-    for(let j = 1; j <= b.length; j++){ const t = d[j]; d[j] = Math.min(d[j] + 1, d[j-1] + 1, prev + (a[i-1] === b[j-1] ? 0 : 1)); prev = t; } }
-  return d[b.length];
+function lev(a, b){ // distanza con scambio di lettere vicine (Damerau)
+  const d = Array.from({length:a.length + 1}, (_, i) => Array.from({length:b.length + 1}, (_, j) => i ? (j ? 0 : i) : j));
+  for(let i = 1; i <= a.length; i++) for(let j = 1; j <= b.length; j++){
+    const c = a[i-1] === b[j-1] ? 0 : 1;
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + c);
+    if(i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);
+  }
+  return d[a.length][b.length];
 }
-function guessOk(text, word){
+const ALT_WORDS = {}; // Rob non vuole accettare i sinonimi come risposta giusta: le parole con sinonimi stretti si tolgono dalla lista
+function guessOk(text, word){ return [word, ...(ALT_WORDS[word] || [])].some(w => guessOne(text, w)); }
+function guessOne(text, word){
   const a = normWord(text), b = normWord(word);
   if(!a) return false; if(a === b) return true;
-  const dist = lev(a, b);
-  return b.length >= 9 ? dist <= 2 : b.length >= 5 ? dist <= 1 : false;
+  const dist = lev(a, b); // conta anche due lettere invertite come un solo errore
+  return b.length >= 9 ? dist <= 2 : b.length >= 5 ? dist <= 1 : b.length >= 4 ? dist <= 1 && a.length === b.length && [...a].sort().join("") === [...b].sort().join("") : false;
 }
 function armTurnTimer(){
   clearTimeout(NET.turnT);
@@ -1596,9 +1632,9 @@ function playerBack(p){
   if(M.phase === "turn" && M.paused != null && p.id === guesserId()){ M.endsAt = Date.now() + Math.max(M.paused, 10000); M.paused = null; armTurnTimer(); }
 }
 const DRAW_WORDS = {
-  beginner: ["Casa", "Sole", "Albero", "Gatto", "Pesce", "Mela", "Banana", "Ombrello", "Occhiali", "Chiave", "Barca", "Fiore", "Luna", "Pizza", "Gelato", "Cappello", "Scarpa", "Bicicletta", "Automobile", "Treno", "Aereo", "Pallone", "Nuvola", "Fungo", "Uovo", "Candela", "Forbici", "Tazza", "Libro", "Orologio", "Lampadina", "Torta", "Ragno", "Serpente", "Lumaca", "Farfalla", "Cane", "Montagna", "Pennello", "Matita", "Bottiglia", "Sedia", "Finestra", "Chitarra", "Cactus", "Ciambella", "Anguria", "Carota", "Martello", "Aquilone", "Stella", "Cuore", "Pera", "Ciliegia", "Fragola", "Limone", "Uva", "Ananas", "Pomodoro", "Patata", "Cipolla", "Formaggio", "Panino", "Hamburger", "Biscotto", "Caramella", "Lecca-lecca", "Cucchiaio", "Forchetta", "Coltello", "Piatto", "Pentola", "Bicchiere", "Letto", "Tavolo", "Lampada", "Porta", "Scala", "Divano", "Televisore", "Telefono", "Computer", "Cuffie", "Fuoco", "Pioggia", "Neve", "Fulmine", "Onda", "Isola", "Spiaggia", "Conchiglia", "Granchio", "Balena", "Squalo", "Tartaruga", "Rana", "Uccello", "Gallina", "Mucca", "Maiale", "Pecora", "Cavallo", "Coniglio", "Topo", "Elefante", "Leone", "Scimmia", "Orso", "Ape", "Formica", "Coccodrillo", "Gufo", "Anatra", "Dente", "Occhio", "Naso", "Mano", "Piede", "Orecchio", "Calzino", "Guanto", "Sciarpa", "Maglietta", "Pantaloni", "Borsa", "Anello", "Collana", "Regalo", "Palloncino", "Campana", "Tamburo", "Razzo", "Nave", "Autobus", "Moto", "Camion", "Ruota", "Ancora", "Bandiera", "Freccia", "Lucchetto", "Specchio", "Spazzolino", "Pettine", "Doccia", "Cravatta", "Pinguino", "Ghiacciolo", "Ciuccio"],
-  medium: ["Pizzaiolo", "Pompiere", "Astronauta", "Sirena", "Pirata", "Vulcano", "Faro", "Arcobaleno", "Mongolfiera", "Ponte", "Castello", "Robot", "Dinosauro", "Giraffa", "Polpo", "Canguro", "Scheletro", "Fantasma", "Spaventapasseri", "Paracadute", "Sottomarino", "Altalena", "Tenda da campeggio", "Pupazzo di neve", "Corona", "Spada", "Microfono", "Pianoforte", "Valigia", "Zaino", "Semaforo", "Lavatrice", "Frigorifero", "Aspirapolvere", "Tostapane", "Moka", "Cannocchiale", "Calamita", "Clessidra", "Monopattino", "Elicottero", "Trattore", "Igloo", "Piramide", "Unicorno", "Drago", "Mummia", "Vampiro", "Cuoco", "Dottore", "Poliziotto", "Contadino", "Pescatore", "Pittore", "Cantante", "Mago", "Strega", "Re", "Principessa", "Cavaliere", "Cowboy", "Ninja", "Supereroe", "Alieno", "Zombie", "Angelo", "Diavolo", "Babbo Natale", "Befana", "Albero di Natale", "Zucca di Halloween", "Torta di compleanno", "Bagnino", "Ambulanza", "Ruspa", "Gru", "Mulino a vento", "Grattacielo", "Chiesa", "Ospedale", "Stazione", "Pompa di benzina", "Cassaforte", "Salvadanaio", "Lavagna", "Calcolatrice", "Telecomando", "Joystick", "Macchina fotografica", "Termometro", "Siringa", "Cerotto", "Stampella", "Sedia a rotelle", "Passeggino", "Biberon", "Culla", "Trono", "Tesoro", "Mappa", "Bussola", "Binocolo", "Telescopio", "Satellite", "Cometa", "Pianeta", "Tornado", "Cascata", "Deserto", "Oasi", "Giungla", "Fattoria", "Pozzo", "Spiedino", "Barbecue", "Sushi", "Spaghetti", "Popcorn", "Patatine fritte", "Frullato", "Cocktail", "Bowling", "Freccette", "Biliardo", "Canestro", "Racchetta", "Skateboard", "Tavola da surf", "Sci", "Slitta", "Pattini", "Trampolino", "Piscina", "Ombrellone", "Sdraio", "Castello di sabbia", "Retino", "Pagliaccio", "Cavalletta", "Scorpione", "Pipistrello", "Pavone", "Fenicottero", "Struzzo", "Koala", "Zebra", "Ippopotamo", "Riccio"],
-  extreme: ["Imbianchino", "Equilibrista", "Giocoliere", "Domatore di leoni", "Ventriloquo", "Sommelier", "Apicoltore", "Spazzacamino", "Torre di Pisa", "Colosseo", "Gondola", "Partita a scacchi", "Ingorgo stradale", "Eclissi", "Terremoto", "Effetto domino", "Montagne russe", "Ruota panoramica", "Acquario", "Ragnatela", "Formicaio", "Alveare", "Camaleonte", "Ornitorinco", "Medusa", "Bastone per selfie", "Karaoke", "Matrimonio", "Trasloco", "Picnic", "Sauna", "Tatuaggio", "Barbiere", "Naufragio", "Isola deserta", "Caccia al tesoro", "Tiro alla fune", "Corsa nei sacchi", "Lottatore di sumo", "Ballerina classica", "Mimo", "Fachiro", "Lupo mannaro", "Labirinto", "Cavallo a dondolo", "Serenata", "Ombra cinese", "Prestigiatore", "Fila alla posta", "Pesca subacquea", "Torre Eiffel", "Statua della Libertà", "Muraglia cinese", "Sfinge", "Funambolo", "Sommozzatore", "Archeologo", "Detective", "Giudice", "Chirurgo", "Dentista", "Parrucchiere", "Sarto", "Falegname", "Idraulico", "Giardiniere", "Postino", "Cameriere", "Pasticciere", "Gelataio", "Fioraio", "Vigile urbano", "Arbitro", "Portiere", "Fotografo", "Regista", "Scienziato pazzo", "Esploratore", "Alpinista", "Paracadutista", "Pilota di Formula 1", "Tifoso allo stadio", "Direttore d'orchestra", "Uomo cannone", "Sposa in fuga", "Festa a sorpresa", "Coda al casello", "Saldi", "Colloquio di lavoro", "Sciopero", "Applauso", "Inchino", "Selfie", "Sbadiglio", "Starnuto", "Solletico", "Incubo", "Sonnambulo", "Russare", "Dieta", "Mal di denti", "Gamba ingessata", "Pronto soccorso", "Gemelli", "Neonato", "Primo appuntamento", "Colpo di fulmine", "Cuore spezzato", "Litigio", "Rapina in banca", "Evasione dal carcere", "Manette", "Impronte digitali", "Casa stregata", "Seduta spiritica", "Sfera di cristallo", "Lampada di Aladino", "Tappeto volante", "Cavallo di Troia", "Arca di Noè", "Nave in bottiglia", "Buco nero", "Pala eolica", "Pannello solare", "Blackout", "Batteria scarica", "Videochiamata", "Ascensore bloccato", "Torta in faccia", "Bolla di sapone", "Messaggio in bottiglia", "Uomo delle caverne", "Pigiama party", "Mangiafuoco", "Statua vivente", "Gara di ballo", "Pallone gonfiabile", "Baciamano", "Tiro con l'arco", "Corsa a ostacoli", "Fuochi d'artificio"]
+  beginner: ["Casa", "Sole", "Albero", "Gatto", "Pesce", "Mela", "Banana", "Ombrello", "Occhiali", "Chiave", "Barca", "Fiore", "Luna", "Pizza", "Gelato", "Cappello", "Scarpa", "Bicicletta", "Automobile", "Treno", "Aereo", "Pallone", "Nuvola", "Fungo", "Uovo", "Candela", "Forbici", "Tazza", "Libro", "Orologio", "Lampadina", "Torta", "Ragno", "Serpente", "Lumaca", "Farfalla", "Cane", "Montagna", "Pennello", "Matita", "Bottiglia", "Sedia", "Finestra", "Chitarra", "Cactus", "Ciambella", "Anguria", "Carota", "Martello", "Aquilone", "Stella", "Cuore", "Pera", "Ciliegia", "Fragola", "Limone", "Uva", "Ananas", "Pomodoro", "Patata", "Cipolla", "Formaggio", "Panino", "Hamburger", "Biscotto", "Caramella", "Lecca-lecca", "Cucchiaio", "Forchetta", "Coltello", "Piatto", "Pentola", "Bicchiere", "Letto", "Tavolo", "Lampada", "Porta", "Scala", "Divano", "Televisore", "Telefono", "Computer", "Cuffie", "Fuoco", "Pioggia", "Neve", "Fulmine", "Onda", "Isola", "Spiaggia", "Conchiglia", "Granchio", "Balena", "Squalo", "Tartaruga", "Rana", "Uccello", "Gallina", "Mucca", "Maiale", "Pecora", "Cavallo", "Coniglio", "Topo", "Elefante", "Leone", "Scimmia", "Orso", "Ape", "Formica", "Coccodrillo", "Gufo", "Anatra", "Dente", "Occhio", "Naso", "Mano", "Piede", "Orecchio", "Calzino", "Guanto", "Sciarpa", "Maglietta", "Pantaloni", "Borsa", "Anello", "Collana", "Regalo", "Palloncino", "Campana", "Tamburo", "Razzo", "Nave", "Autobus", "Moto", "Camion", "Ruota", "Ancora", "Bandiera", "Freccia", "Lucchetto", "Specchio", "Spazzolino", "Pettine", "Doccia", "Cravatta", "Pinguino", "Ghiacciolo", "Ciuccio", "Bambola", "Orsacchiotto", "Trottola", "Dado", "Cubo", "Secchiello", "Paletta", "Scivolo", "Noce", "Castagna", "Pigna", "Foglia", "Erba", "Sasso", "Roccia", "Collina", "Fiume", "Lago", "Mare", "Strada", "Sentiero", "Recinto", "Cancello", "Muro", "Tetto", "Camino", "Fumo", "Pozzanghera", "Goccia", "Vento", "Ghiaccio", "Fiocco di neve", "Sole che tramonta", "Astronave", "Mostro", "Regina", "Torre", "Scudo", "Arco", "Freccia nel bersaglio", "Bersaglio", "Moneta", "Portafoglio", "Chiave inglese", "Cacciavite", "Chiodo", "Vite", "Sega", "Ascia", "Pala", "Rastrello", "Annaffiatoio", "Vaso di fiori", "Girasole", "Rosa", "Tulipano", "Margherita", "Palma", "Abete", "Quercia", "Tronco", "Ramo", "Nido", "Uovo di Pasqua", "Pulcino", "Gallo", "Oca", "Cigno", "Pappagallo", "Aquila", "Corvo", "Passerotto", "Gabbiano", "Volpe", "Lupo", "Cervo", "Scoiattolo", "Talpa", "Criceto", "Osso", "Cuccia", "Guinzaglio", "Ciotola", "Pesce rosso", "Stella marina", "Cavalluccio marino", "Polipo", "Delfino", "Foca", "Tricheco", "Orca", "Rinoceronte", "Tigre", "Ghepardo", "Panda", "Cammello", "Lama", "Gorilla", "Bruco", "Coccinella", "Zanzara", "Mosca", "Vespa", "Libellula", "Lucciola", "Verme", "Serpente a sonagli", "Lucertola", "Mammut", "Ombrellino", "Impermeabile", "Stivali", "Cappotto", "Giacca", "Gonna", "Vestito", "Felpa", "Pigiama", "Costume da bagno", "Pantofole", "Sandali", "Cintura", "Bottone", "Cerniera", "Corona di fiori", "Orecchini", "Braccialetto", "Rossetto", "Profumo", "Saponetta", "Asciugamano", "Vasca da bagno", "Water", "Lavandino", "Rubinetto", "Spazzola", "Phon", "Rasoio", "Dentifricio", "Carta igienica", "Cestino", "Scopa", "Secchio", "Mocio", "Spugna", "Molletta", "Gruccia", "Armadio", "Cassetto", "Comodino", "Sveglia", "Cuscino", "Coperta", "Materasso", "Tenda", "Tappeto", "Quadro", "Cornice", "Vaso", "Candelabro", "Lampadario", "Interruttore", "Presa elettrica", "Batteria", "Penna", "Gomma", "Righello", "Temperino", "Quaderno", "Astuccio", "Pastelli", "Colla", "Scotch", "Graffetta", "Busta", "Francobollo", "Cartolina", "Giornale", "Lettera", "Pacco", "Calendario", "Globo", "Lente", "Radio", "Altoparlante", "Tastiera", "Mouse", "Tablet", "Videogioco", "Forno", "Microonde", "Frullatore", "Teiera", "Padella", "Mestolo", "Grattugia", "Scolapasta", "Tagliere", "Mattarello", "Barattolo", "Lattina", "Cannuccia", "Tovagliolo", "Tovaglia", "Vassoio", "Brocca", "Uovo fritto", "Pane", "Grissino", "Cornetto", "Brioche", "Pancake", "Waffle", "Muffin", "Cioccolato", "Panna", "Budino", "Marmellata", "Miele", "Burro", "Prosciutto", "Salame", "Salsiccia", "Pollo arrosto", "Bistecca", "Hot dog", "Lasagna", "Riso", "Insalata", "Zuppa", "Peperoncino", "Peperone", "Melanzana", "Zucchina", "Zucca", "Broccolo", "Cavolfiore", "Aglio", "Funghi porcini", "Mais", "Piselli", "Fagioli", "Cocco", "Kiwi", "Pesca", "Arancia", "Mandarino", "Mirtillo", "Lampone", "Melone", "Avocado", "Nocciola", "Arachide", "Bibita", "Succo di frutta", "Latte", "Tè", "Caffè", "Medaglia", "Trofeo", "Fischietto", "Cronometro", "Racchetta da tennis", "Pallina da tennis", "Mazza da baseball", "Guantone", "Porta da calcio", "Rete", "Slittino", "Canoa", "Remo", "Camion dei pompieri", "Auto della polizia", "Taxi", "Tram", "Metropolitana", "Strisce pedonali", "Cartello stradale", "Benzinaio", "Parcheggio", "Garage", "Sacco a pelo", "Torcia", "Falò", "Lanterna", "Fiammifero", "Accendino", "Renna", "Calza della Befana", "Maschera", "Cappello da strega", "Scopa volante", "Bacchetta magica", "Coniglio nel cilindro", "Coriandoli", "Marionetta", "Giostra", "Tendone del circo"],
+  medium: ["Pizzaiolo", "Pompiere", "Astronauta", "Sirena", "Pirata", "Vulcano", "Faro", "Arcobaleno", "Mongolfiera", "Ponte", "Castello", "Robot", "Dinosauro", "Giraffa", "Polpo", "Canguro", "Scheletro", "Fantasma", "Spaventapasseri", "Paracadute", "Sottomarino", "Altalena", "Tenda da campeggio", "Pupazzo di neve", "Corona", "Spada", "Microfono", "Pianoforte", "Valigia", "Zaino", "Semaforo", "Lavatrice", "Frigorifero", "Aspirapolvere", "Tostapane", "Moka", "Cannocchiale", "Calamita", "Clessidra", "Monopattino", "Elicottero", "Trattore", "Igloo", "Piramide", "Unicorno", "Drago", "Mummia", "Vampiro", "Cuoco", "Dottore", "Poliziotto", "Contadino", "Pescatore", "Pittore", "Cantante", "Mago", "Strega", "Re", "Principessa", "Cavaliere", "Cowboy", "Ninja", "Supereroe", "Alieno", "Zombie", "Angelo", "Diavolo", "Babbo Natale", "Befana", "Albero di Natale", "Zucca di Halloween", "Torta di compleanno", "Bagnino", "Ambulanza", "Ruspa", "Gru", "Mulino a vento", "Grattacielo", "Chiesa", "Ospedale", "Stazione", "Pompa di benzina", "Cassaforte", "Salvadanaio", "Lavagna", "Calcolatrice", "Telecomando", "Joystick", "Macchina fotografica", "Termometro", "Siringa", "Cerotto", "Stampella", "Sedia a rotelle", "Passeggino", "Biberon", "Culla", "Trono", "Tesoro", "Mappa", "Bussola", "Binocolo", "Telescopio", "Satellite", "Cometa", "Pianeta", "Tornado", "Cascata", "Deserto", "Oasi", "Giungla", "Fattoria", "Pozzo", "Spiedino", "Barbecue", "Sushi", "Spaghetti", "Popcorn", "Patatine fritte", "Frullato", "Cocktail", "Bowling", "Freccette", "Biliardo", "Canestro", "Racchetta", "Skateboard", "Tavola da surf", "Sci", "Slitta", "Pattini", "Trampolino", "Piscina", "Ombrellone", "Sdraio", "Castello di sabbia", "Retino", "Pagliaccio", "Cavalletta", "Scorpione", "Pipistrello", "Pavone", "Fenicottero", "Struzzo", "Koala", "Zebra", "Ippopotamo", "Riccio", "Meccanico", "Elettricista", "Muratore", "Spazzino", "Bidello", "Maestra", "Bibliotecario", "Infermiere", "Veterinario", "Farmacista", "Macellaio", "Panettiere", "Fruttivendolo", "Barista", "Cassiera", "Autista", "Tassista", "Capitano", "Marinaio", "Soldato", "Guardia", "Giullare", "Arciere", "Samurai", "Gladiatore", "Vichingo", "Faraone", "Sceicco", "Sirenetta", "Fata", "Gnomo", "Elfo", "Orco", "Gigante", "Ciclope", "Centauro", "Pegaso", "Fenice", "Kraken", "Yeti", "Frankenstein", "Cappuccetto Rosso", "Pinocchio", "Biancaneve", "Cenerentola", "Scarpetta di cristallo", "Fagiolo magico", "Casetta di marzapane", "Lupo cattivo", "Tre porcellini", "Brutto anatroccolo", "Gatto con gli stivali", "Spada nella roccia", "Isola del tesoro", "Nave pirata", "Benda sull'occhio", "Gamba di legno", "Uncino", "Forziere", "Bottiglia con messaggio", "Barca a vela", "Motoscafo", "Gommone", "Kayak", "Pedalò", "Transatlantico", "Zattera", "Porto", "Molo", "Scogliera", "Grotta", "Stalattite", "Ghiacciaio", "Iceberg", "Aurora boreale", "Geyser", "Palude", "Savana", "Foresta", "Prato fiorito", "Campo di grano", "Vigneto", "Uliveto", "Serra", "Orto", "Pozzo dei desideri", "Fontana", "Panchina", "Lampione", "Cabina telefonica", "Edicola", "Bancarella", "Mercato", "Gelateria", "Pizzeria", "Ristorante", "Bar", "Panetteria", "Farmacia", "Banca", "Ufficio postale", "Scuola", "Università", "Biblioteca", "Museo", "Teatro", "Cinema", "Stadio", "Palestra", "Piscina olimpionica", "Campo da tennis", "Pista di pattinaggio", "Funivia", "Seggiovia", "Rifugio di montagna", "Baita", "Palafitta", "Diga", "Acquedotto", "Ponte levatoio", "Fossato", "Catapulta", "Cannone", "Armatura", "Elmo", "Lancia", "Balestra", "Ascia vichinga", "Fionda", "Boomerang", "Arpione", "Canna da pesca", "Amo", "Rete da pesca", "Esca", "Timone", "Salvagente", "Muta da sub", "Boccaglio", "Pinne", "Bombola d'ossigeno", "Scafandro", "Tuta spaziale", "Stazione spaziale", "Disco volante", "Stella cadente", "Costellazione", "Sistema solare", "Anelli di Saturno", "Allunaggio", "Bandiera sulla luna", "Microscopio", "Provetta", "Laboratorio", "Ingranaggio", "Leva", "Carrucola", "Ascensore", "Scala mobile", "Tapis roulant", "Nastro trasportatore", "Cassa del supermercato", "Carrello della spesa", "Scontrino", "Codice a barre", "Bancomat", "Lingotto d'oro", "Diamante", "Perla", "Scettro", "Mantello", "Parrucca", "Baffi finti", "Monocolo", "Bastone da passeggio", "Pipa", "Cilindro", "Papillon", "Bretelle", "Tuta da lavoro", "Camice", "Grembiule", "Cappello da cuoco", "Divisa", "Fascia da capitano", "Cartellino rosso", "Calcio d'angolo", "Fuorigioco", "Schiacciata", "Canestro da tre", "Salto in alto", "Salto con l'asta", "Lancio del peso", "Maratona", "Staffetta", "Podio", "Pugilato", "Karate", "Scherma", "Equitazione", "Golf", "Minigolf", "Ping pong", "Pallavolo", "Rugby", "Hockey su ghiaccio", "Bob", "Snowboard", "Parapendio", "Deltaplano", "Bungee jumping", "Arrampicata", "Immersione", "Windsurf", "Kitesurf", "Rafting", "Ciclismo", "Motocross", "Gara di go-kart", "Autoscontro", "Tagadà", "Casa degli specchi", "Zucchero filato", "Mela caramellata", "Tiro a segno", "Pesca dei pesciolini", "Tombola", "Carte da gioco", "Dama", "Domino", "Puzzle", "Cubo di Rubik", "Yo-yo", "Bolle di sapone", "Pistola ad acqua", "Gavettone", "Nascondino", "Mosca cieca", "Salto della corda", "Girotondo", "Castello di carte", "Trenino elettrico", "Macchinina telecomandata", "Drone", "Casa sull'albero", "Amaca", "Dondolo", "Tavolata", "Brindisi", "Spumante", "Tappo che salta", "Torta nuziale", "Bomboniera", "Velo da sposa", "Fedi nuziali", "Anello di fidanzamento", "Lettera d'amore", "Cuore con freccia", "Cupido", "San Valentino", "Pasqua", "Colomba pasquale", "Presepe", "Stella cometa", "Re Magi", "Carnevale", "Maschera veneziana", "Arlecchino", "Pulcinella", "Capodanno", "Conto alla rovescia", "Carbone", "Biglietto d'auguri", "Festa in maschera", "Cuscinata", "Gita scolastica", "Pullman", "Autogrill", "Casello autostradale", "Navigatore", "Mappa del tesoro", "Impronta", "Lente d'ingrandimento", "Cappello da detective", "Ladro mascherato", "Sirena della polizia", "Cella", "Palla al piede", "Cane poliziotto", "Cane da slitta", "Gatto nero", "Pesce palla", "Pesce spada", "Murena", "Aragosta", "Cozza", "Ostrica", "Riccio di mare", "Corallo", "Barriera corallina", "Alga", "Ninfea", "Loto", "Bambù", "Liana", "Baobab", "Salice piangente", "Duna", "Miraggio", "Carovana", "Sarcofago", "Piuma", "Sombrero", "Poncho", "Maracas", "Chitarra elettrica", "Batteria musicale", "Violino", "Arpa", "Flauto", "Tromba", "Sassofono", "Fisarmonica", "Cornamusa", "Xilofono", "Metronomo", "Spartito", "Nota musicale", "Direttore con bacchetta", "Coro", "Concerto rock", "Palco", "Riflettore", "Sipario", "Applausi", "Biglietto del cinema", "Pellicola", "Ciak", "Telecamera", "Divano letto", "Poltrona", "Sedia a dondolo", "Libreria", "Scrivania", "Mappamondo", "Cappuccino", "Brioche col gelato", "Granita", "Panna montata", "Crostata", "Cannolo siciliano", "Babà", "Sfogliatella", "Pastiera", "Arancino", "Piadina", "Focaccia", "Calzone", "Tortellini", "Ravioli", "Gnocchi", "Risotto", "Pesto", "Polpette", "Cotoletta", "Frittata", "Kebab", "Burrito", "Taco", "Ramen", "Bacchette cinesi", "Biscotto della fortuna", "Involtino primavera", "Paella", "Fonduta", "Torre di mattoncini"],
+  extreme: ["Imbianchino", "Equilibrista", "Giocoliere", "Domatore di leoni", "Ventriloquo", "Sommelier", "Apicoltore", "Spazzacamino", "Torre di Pisa", "Colosseo", "Gondola", "Partita a scacchi", "Ingorgo stradale", "Eclissi", "Terremoto", "Effetto domino", "Montagne russe", "Ruota panoramica", "Acquario", "Ragnatela", "Formicaio", "Alveare", "Camaleonte", "Ornitorinco", "Medusa", "Bastone per selfie", "Karaoke", "Matrimonio", "Trasloco", "Picnic", "Sauna", "Tatuaggio", "Barbiere", "Naufragio", "Isola deserta", "Caccia al tesoro", "Tiro alla fune", "Corsa nei sacchi", "Lottatore di sumo", "Ballerina classica", "Mimo", "Fachiro", "Lupo mannaro", "Labirinto", "Cavallo a dondolo", "Serenata", "Ombra cinese", "Prestigiatore", "Fila alla posta", "Pesca subacquea", "Torre Eiffel", "Statua della Libertà", "Muraglia cinese", "Sfinge", "Funambolo", "Sommozzatore", "Archeologo", "Detective", "Giudice", "Chirurgo", "Dentista", "Parrucchiere", "Sarto", "Falegname", "Idraulico", "Giardiniere", "Postino", "Cameriere", "Pasticciere", "Gelataio", "Fioraio", "Vigile urbano", "Arbitro", "Portiere", "Fotografo", "Regista", "Scienziato pazzo", "Esploratore", "Alpinista", "Paracadutista", "Pilota di Formula 1", "Tifoso allo stadio", "Direttore d'orchestra", "Uomo cannone", "Sposa in fuga", "Festa a sorpresa", "Coda al casello", "Saldi", "Colloquio di lavoro", "Sciopero", "Applauso", "Inchino", "Selfie", "Sbadiglio", "Starnuto", "Solletico", "Incubo", "Sonnambulo", "Russare", "Dieta", "Mal di denti", "Gamba ingessata", "Pronto soccorso", "Gemelli", "Neonato", "Primo appuntamento", "Colpo di fulmine", "Cuore spezzato", "Litigio", "Rapina in banca", "Evasione dal carcere", "Manette", "Impronte digitali", "Casa stregata", "Seduta spiritica", "Sfera di cristallo", "Lampada di Aladino", "Tappeto volante", "Cavallo di Troia", "Arca di Noè", "Nave in bottiglia", "Buco nero", "Pala eolica", "Pannello solare", "Blackout", "Batteria scarica", "Videochiamata", "Ascensore bloccato", "Torta in faccia", "Bolla di sapone", "Messaggio in bottiglia", "Uomo delle caverne", "Pigiama party", "Mangiafuoco", "Statua vivente", "Gara di ballo", "Pallone gonfiabile", "Baciamano", "Tiro con l'arco", "Corsa a ostacoli", "Fuochi d'artificio", "Fare la doccia", "Cambiare una gomma", "Allacciarsi le scarpe", "Montare un mobile", "Truccarsi", "Fare yoga", "Impastare la pizza", "Stirare una camicia", "Lavare i piatti", "Stendere i panni", "Fare il letto", "Passare l'aspirapolvere", "Annaffiare le piante", "Portare fuori il cane", "Dar da mangiare ai pesci", "Fare la spesa", "Perdere l'autobus", "Rincorrere il treno", "Parcheggiare in doppia fila", "Fare benzina", "Prendere una multa", "Fare l'autostop", "Cambiare un pannolino", "Cullare un bambino", "Soffiare le candeline", "Scartare un regalo", "Lanciare il bouquet", "Ballare il tango", "Fare la conga", "Cantare sotto la doccia", "Suonare il campanello", "Bussare alla porta", "Spiare dal buco della serratura", "Origliare", "Fare l'occhiolino", "Mandare un bacio", "Stringere la mano", "Dare il cinque", "Abbracciarsi", "Piangere di gioia", "Ridere a crepapelle", "Arrabbiarsi", "Avere paura del buio", "Mangiarsi le unghie", "Grattarsi la testa", "Avere il singhiozzo", "Soffiarsi il naso", "Misurarsi la febbre", "Fare una puntura", "Fare i raggi", "Fare le flessioni", "Fare gli addominali", "Fare jogging", "Fare la ruota", "Fare la verticale", "Fare una capriola", "Tuffarsi a bomba", "Nuotare a farfalla", "Fare il morto a galla", "Prendere il sole", "Spalmarsi la crema", "Seppellire qualcuno nella sabbia", "Raccogliere conchiglie", "Fare snorkeling", "Pescare un pesce gigante", "Cadere dalla barca", "Remare controcorrente", "Scalare una montagna", "Piantare una bandiera", "Accendere un fuoco", "Cucinare sul fuoco", "Montare la tenda", "Dormire sotto le stelle", "Contare le pecore", "Fare un sogno", "Spegnere la sveglia", "Cadere dal letto", "Fare colazione a letto", "Leggere il giornale", "Fare le parole crociate", "Guardare la partita", "Esultare per un gol", "Fischiare l'arbitro", "Fare la ola", "Parare un rigore", "Fare autogol", "Segnare di testa", "Fare una rovesciata", "Tirare una punizione", "Andare in fuorigioco", "Alzare il trofeo", "Tagliare il traguardo", "Fare uno sgambetto", "Scivolare su una buccia di banana", "Pestare una cacca", "Rompere un vaso", "Rovesciare il caffè", "Bruciare la torta", "Far scoppiare un palloncino", "Gonfiare un materassino", "Fare a palle di neve", "Fare un angelo nella neve", "Sciare fuori pista", "Cadere con gli sci", "Pattinare sul ghiaccio", "Scivolare sul ghiaccio", "Andare in bicicletta senza mani", "Bucare una gomma", "Gonfiare la bici", "Prendere una buca", "Perdere le chiavi", "Cercare gli occhiali", "Infilare il filo nell'ago", "Cucire un bottone", "Lavorare a maglia", "Tagliarsi i capelli", "Farsi la barba", "Mettersi lo smalto", "Farsi un tatuaggio", "Saltare la fila", "Litigare per il parcheggio", "Suonare il clacson", "Lavoro da casa", "Riunione noiosa", "Addormentarsi in ufficio", "Fotocopiatrice inceppata", "Cercare il Wi-Fi", "Mandare un messaggio vocale", "Influencer", "Diretta streaming", "Cuffie con il microfono", "Videogiocatore arrabbiato", "Fare zapping", "Telenovela", "Talent show", "Quiz televisivo", "Previsioni del tempo", "Telegiornale", "Intervista", "Conferenza stampa", "Red carpet", "Paparazzo", "Autografo", "Fan in delirio", "Pogo", "Assolo di chitarra", "Spaccare la chitarra", "Dj in consolle", "Karaoke stonato", "Proposta di matrimonio", "Luna di miele", "Lancio del riso", "Primo ballo degli sposi", "Addio al celibato", "Baby shower", "Trasloco in quinto piano", "Scatoloni", "Inquilino rumoroso", "Vicino impiccione", "Condominio", "Assemblea di condominio", "Portinaia", "Citofono", "Pacco sbagliato", "Corriere in ritardo", "Ritiro in posta", "Bolletta salata", "Dichiarazione dei redditi", "Colloquio con il capo", "Licenziamento", "Promozione", "Pensione", "Ultimo giorno di scuola", "Interrogazione", "Compito in classe", "Copiare durante il compito", "Gita in pullman", "Notte prima degli esami", "Laurea", "Prova del vestito", "Camerino", "Black Friday", "Carrello pieno", "Pagare con il telefono", "Monetina nel carrello", "Cliente che si lamenta", "Cameriere che inciampa", "Conto al ristorante", "Fare alla romana", "Mancia", "Chef stellato", "Cucina molecolare", "Assaggiatore", "Gara di cucina", "Mangiare con le mani", "Gara di hot dog", "Peperoncino troppo piccante", "Indigestione", "Abbuffata di Natale", "Mercante in fiera", "Gioco dell'oca", "Partita a briscola", "Barare a carte", "Asso nella manica", "Faccia da poker", "Casinò", "Slot machine", "Roulette", "Gratta e vinci", "Vincere alla lotteria", "Pioggia di soldi", "Bancarotta", "Assalto al furgone portavalori", "Ladro gentiluomo", "Gioconda", "Urlo di Munch", "Notte stellata", "David di Michelangelo", "Venere di Milo", "Pensatore di Rodin", "Big Ben", "Fontana di Trevi", "Lancio della monetina", "Duomo di Milano", "Ponte di Rialto", "Pompei", "Stonehenge", "Partenone", "Taj Mahal", "Machu Picchu", "Piramidi di Giza", "Moai dell'Isola di Pasqua", "Grand Canyon", "Cascate del Niagara", "Monte Everest", "Polo Nord", "Polo Sud", "Equatore", "Triangolo delle Bermuda", "Atlantide", "Città perduta", "Viaggio nel tempo", "Macchina del tempo", "Teletrasporto", "Invisibilità", "Clonazione", "Robot che si ribella", "Intelligenza artificiale", "Realtà virtuale", "Ologramma", "Città del futuro", "Auto volante", "Colonia su Marte", "Atterraggio di emergenza", "Pioggia di meteoriti", "Invasione aliena", "Rapimento alieno", "Cerchio nel grano", "Apocalisse zombie", "Fine del mondo", "Bunker", "Supereroe in pensione", "Cattivo dei film", "Duello all'alba", "Assalto alla diligenza", "Corsa all'oro", "Cercatore d'oro", "Saloon", "Sceriffo", "Taglia sulla testa", "Ricercato", "Scavare un tunnel", "Lenzuola annodate", "Guardia addormentata", "Interrogatorio", "Macchina della verità", "Testimone oculare", "Identikit", "Confronto all'americana", "Avvocato in aula", "Martelletto del giudice", "Giuria", "Sentenza", "Colpo di scena", "Delitto nella biblioteca", "Impronta insanguinata", "Arma del delitto", "Indagine sotto copertura", "Spia", "Messaggio in codice", "Missione impossibile", "Raggi laser", "Bomba a orologeria", "Tagliare il filo rosso", "Esplosione", "Valanga", "Inondazione", "Siccità", "Tsunami", "Grandinata", "Nebbia fitta", "Temporale estivo", "Colpo di calore", "Ondata di gelo", "Effetto serra", "Raccolta differenziata", "Isola di plastica", "Auto elettrica", "Colonnina di ricarica", "Monopattino elettrico", "Pista ciclabile", "Dare da mangiare ai piccioni", "Artista di strada", "Trampoliere", "Domatore di pulci", "Uomo più forte del mondo", "Lanciatore di coltelli", "Donna tagliata a metà", "Coniglio che scompare", "Levitazione", "Ipnosi", "Pendolo dell'ipnotizzatore", "Lettura della mano", "Fondi di caffè", "Oroscopo", "Gatto nero che attraversa", "Specchio rotto", "Passare sotto una scala", "Quadrifoglio", "Ferro di cavallo", "Corno portafortuna", "Toccare ferro", "Esprimere un desiderio", "Notte di San Lorenzo", "Eclissi di luna", "Allineamento dei pianeti", "Fase lunare", "Marea", "Onda anomala", "Squalo nella piscina", "Lo squalo dietro al surfista", "Coccodrillo nel water", "Ragno nella vasca", "Topo in cucina", "Scarafaggio", "Invasione di formiche", "Nido di vespe", "Puntura d'ape", "Sciame di api", "Allevamento di galline", "Mungere una mucca", "Tosare una pecora", "Ferrare un cavallo", "Rodeo", "Toro meccanico", "Corrida", "Palio di Siena", "Regata", "Corsa dei cavalli", "Fotofinish", "Scommessa", "Fantino", "Cavallo che disarciona", "Polo a cavallo", "Dressage", "Salto ad ostacoli", "Ginnastica artistica", "Trave", "Anelli", "Cavallo con maniglie", "Parallele", "Corpo libero", "Nuoto sincronizzato", "Tuffo dal trampolino", "Pallanuoto", "Curling", "Biathlon", "Salto con gli sci", "Slalom gigante", "Discesa libera", "Sci di fondo", "Pattinaggio artistico", "Triplo axel", "Sollevamento pesi", "Braccio di ferro", "Lancio del martello", "Lancio del giavellotto", "Salto triplo", "Foto di squadra", "Allenatore che urla", "Rissa in campo", "Invasione di campo", "Coro da stadio", "Sciarpata", "Fumogeni", "Bandiera a scacchi", "Sorpasso all'ultima curva", "Testacoda", "Uscita di pista", "Pit stop", "Bagno di champagne"]
 };
 const LAST_LINES = [
   "Ultimo {n}. Abbiamo fatto una colletta per comprarti una matita. Non è bastata.",
@@ -1763,10 +1799,10 @@ function onState(s){
   if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0;
     NET.prevScores = {...s.scores}; NET.prevOrder = [...s.players].sort((a,b) => (s.scores[b.id]||0) - (s.scores[a.id]||0) || a.name.localeCompare(b.name)).map(p => p.id); }
   const showResult = s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal");
-  if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; if(amGuesser()) showX(t.text); else showX(t.text, mpPlayer(s.order[s.turn])); }
+  if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; const prevImg = MD[t.on]; if(amGuesser()) showX(t.text, null, prevImg); else showX(t.text, mpPlayer(s.order[s.turn]), prevImg); NET.holdUntil = Date.now() + (amGuesser() ? 1300 : 2400); }
   if(s.phase === "turn" && s.sprint && s.queue && s.queue.length === 1 && (NET.lastQ||0) === 0 && !amGuesser() && s.queue[0] !== NET.myId){ sprintAlert(); }
   if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ sfx("pop"); buzz(15); } NET.lastQ = s.queue.length; }
-  if(s.phase === "reveal" && prevPhase === "turn"){ sfx("timeUp"); buzz([40,60,40]); }
+  if(s.phase === "reveal" && prevPhase === "turn"){ sfx("timeUp"); buzz([40,60,40]); analysisIntro(s); }
   if(s.phase === "turn" && prevPhase !== "turn") sfx("go");
   if(s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal")){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); sfx("correct"); } else if(s.last && s.last.reason === "pass") sfx("pass"); else sfx("timeUp"); }
   if(s.phase === "ready" && prevPhase !== "ready" && amGuesser()){ buzz([20,40,20]); sfx("join"); }
@@ -1775,22 +1811,33 @@ function onState(s){
   if(enteringFinal) setTimeout(() => { sfx("drumroll", .9); setTimeout(() => sfx("fanfare"), 950); if(NET.finalLastAt) setTimeout(() => sfx("sad"), NET.finalLastAt * 1000 + 150); }, 300);
   if(NET.role === "guest" && mpPlayer(NET.myId)) NET.wasIn = true;
   mpNotes();
-  mpRender();
+  if(NET.holdUntil && Date.now() < NET.holdUntil && s.phase === "reveal"){ clearTimeout(NET.holdT); NET.holdT = setTimeout(() => { NET.holdUntil = 0; mpRender(); }, NET.holdUntil - Date.now()); } // la X resta sul disegno provato, poi arriva il prossimo
+  else mpRender();
   if(showResult) showOutcome(s); else if(s.phase === "result") animateLB();
 }
 function onDrawings(){ if(!M) return; if(M.phase === "result") mpRender(true); else if(M.phase === "reveal") mpRender(); }
+/* passaggio tra disegno e scoperta, su tutti i telefoni */
+function analysisIntro(s){
+  document.querySelector(".outcome")?.remove();
+  const all = s.queue.length >= s.players.filter(p => p.id !== s.order[s.turn]).length;
+  const o = document.createElement("div"); o.className = "outcome intro"; o.setAttribute("role","status");
+  o.innerHTML = `<div class="oc-in"><div class="intro-top">${all ? "Tutti hanno consegnato" : "Tempo scaduto"}</div><div class="intro-icon"><svg viewBox="0 0 64 64" width="84" height="84" aria-hidden="true"><circle cx="26" cy="26" r="17" fill="rgba(255,255,255,.08)" stroke="var(--mango)" stroke-width="6"/><path d="M39 39l15 15" stroke="var(--pink)" stroke-width="8" stroke-linecap="round"/><path d="M18 20a10 10 0 0 1 8-5" stroke="var(--mint)" stroke-width="4" stroke-linecap="round" fill="none"/></svg></div><div class="oc-title">Ora passiamo all'analisi dei disegni!</div><div class="oc-sub">${s.queue.length} ${s.queue.length === 1 ? "disegno" : "disegni"} da scoprire</div></div>`;
+  document.body.appendChild(o);
+  const close = () => { o.classList.add("out"); setTimeout(() => o.remove(), 350); };
+  o.addEventListener("click", close); setTimeout(close, 2400);
+}
 function sprintAlert(){
   sfx("sprint"); buzz([40,60,40]);
   const x = document.createElement("div"); x.className = "xfail sprint"; x.setAttribute("aria-live","assertive");
   x.innerHTML = `<p>Primo disegno arrivato: 30 secondi!</p>`;
   document.body.appendChild(x); setTimeout(() => x.remove(), 1600);
 }
-function showX(text, who){
+function showX(text, who, img){
   sfx("wrong"); buzz(who ? 20 : [60,40,60]);
   document.querySelector(".xfail")?.remove();
   const x = document.createElement("div"); x.className = "xfail" + (who ? " watch" : ""); x.setAttribute("aria-live","assertive");
   x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>${who ? `<p class="xwho">${esc(who.name)} ha provato</p><div class="xword">${esc(text)}</div><p class="xno">Sbagliato!</p>` : `<p>«${esc(text)}» non è giusta</p>`}`;
-  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 2600 : 1200);
+  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 2600 : 1400);
   const v = $(".viewer"); if(v){ v.classList.remove("shake"); void v.offsetWidth; v.classList.add("shake"); }
 }
 /* avvisi in basso: connessione persa, pausa, giocatori da togliere */
@@ -2023,8 +2070,9 @@ function animateLB(){
 }
 /* in alto su ogni telefono: il tuo nome, i tuoi punti e la tua posizione */
 /* avatar grande in sala d'attesa con il tasto per il selfie (mai obbligatorio) */
+const CAM_ICON = `<svg class="camic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5 10 4h4l1.5 2.5" fill="var(--mango)"/><rect x="2.5" y="6.5" width="19" height="14" rx="4" fill="var(--pink)"/><circle cx="12" cy="13.5" r="4.6" fill="var(--night)" stroke="var(--mint)" stroke-width="2.2"/><circle cx="18" cy="9.6" r="1.1" fill="var(--mango)"/></svg>`;
 function selfieAv(me){
-  return `<div class="selfiewrap">${av(me, "big-av")}<button class="btn ghost selfie-cta" data-selfie="1">${PH[me.id] ? "📸 Rifai il selfie" : "📸 Aggiungi un selfie"}</button>
+  return `<div class="selfiewrap">${av(me, "big-av")}<button class="btn ghost selfie-cta" data-selfie="1">${PH[me.id] ? "${CAM_ICON} Rifai il selfie" : "${CAM_ICON} Aggiungi un selfie"}</button>
     ${PH[me.id] ? `<button class="linkbtn" data-selfie-del="1">Togli la foto</button>` : `<p class="hint" style="margin:0">Facoltativo: lo vedono solo i giocatori di stasera.</p>`}</div>`;
 }
 /* scatto: fotocamera frontale, ritaglio quadrato 96 px, jpeg leggero. Non viene salvato da nessuna parte */
@@ -2042,7 +2090,7 @@ function setPhoto(img){ if(NET.role === "host") hostReceive(NET.myId, {t:"photo"
 function meBar(){
   const me = mpPlayer(NET.myId); if(!me || !M || M.phase === "lobby") return "";
   const pos = 1 + M.players.filter(p => (M.scores[p.id]||0) > (M.scores[me.id]||0)).length;
-  return `<div class="mebar"><button class="mebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${av(me)}${PH[me.id] ? "" : `<i class="cam">📸</i>`}</button><b>${esc(me.name)}</b><span class="mepts">${M.scores[me.id]||0} pt</span><span class="mepos">${pos}°<small> di ${M.players.length}</small></span></div>`;
+  return `<div class="mebar"><button class="mebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${av(me)}${PH[me.id] ? "" : `<i class="cam">${CAM_ICON}</i>`}</button><b>${esc(me.name)}</b><span class="mepts">${M.scores[me.id]||0} pt</span><span class="mepos">${pos}°<small> di ${M.players.length}</small></span></div>`;
 }
 /* ---------- home a ruota: i giochi girano su una circonferenza ---------- */
 let WHEEL = null;
@@ -2142,11 +2190,11 @@ function mpView(){
           <div style="text-align:center"><span class="eyebrow">Scarabocchi</span><h1 class="invite-line">${INVITE_LINES[NET.inviteN % INVITE_LINES.length]}</h1><p class="lead" style="margin:6px 0 0">Inquadrate il QR con la fotocamera, oppure mandate il link nel gruppo.</p></div>
           <div class="qrcard">${qr}</div>
           <div><span class="eyebrow">Già dentro (${online})</span>${mpPlayersChips()}</div>
-          <button class="btn pink" id="mp-setup">${online < 2 ? "Imposta la partita" : `Ci siamo tutti: imposta la partita`}</button>
+          <button class="btn pink stickybtn" id="mp-setup">${online < 2 ? "Imposta la partita" : `Ci siamo tutti: imposta la partita`}</button>
         </section>`;
         return `<section class="screen">
           <div class="drawhead"><div><span class="eyebrow">Scarabocchi</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
-          <div class="field hostme"><button class="selfiebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${PH[me.id] ? av(me) : "📸"}</button><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
+          <div class="field hostme"><button class="selfiebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${PH[me.id] ? av(me) : CAM_ICON}</button><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
           <div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
@@ -2220,7 +2268,7 @@ function mpView(){
         </section>`;
       }
       if(!M.revealed) return `<section class="screen pass bigwait watchwait">${meBar()}
-          <span class="eyebrow">Tempo scaduto</span>
+          <span class="eyebrow">${M.queue.length >= M.players.filter(p => p.id !== guesserId()).length ? "Tutti hanno consegnato" : "Tempo scaduto"}</span>
           ${av(g, "big-av")}
           <h2>${esc(g.name)} sta per scoprire i disegni</h2>
           <div class="think"><i></i><i></i><i></i></div>
@@ -2264,7 +2312,7 @@ function mpView(){
           <span class="pnum">${pos(p)}°</span>${av(p)}<span class="pname">${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span><span class="ppts">${M.scores[p.id]} pt</span></li>`).join("")}</ol>
         ${middle.length ? `<ol class="mid-list">${middle.map(p => `<li class="rv" style="animation-delay:${step(.25)}s"><span class="pnum">${pos(p)}°</span>${av(p)}<span class="pname">${esc(p.name)}${p.id===NET.myId?" (tu)":""}</span><span class="ppts">${M.scores[p.id]}</span></li>`).join("")}</ol>` : ""}
         ${last ? `<div class="last rv" style="animation-delay:${NET.finalLastAt = step(.6)+.4}s"><span class="eyebrow">Ultimo posto</span><div class="lastrow">${av(last)}<span class="pname">${esc(last.name)}</span><span class="ppts">${M.scores[last.id]} pt</span></div><p class="quip">${line}</p></div>` : ""}
-        <div class="rv" style="animation-delay:${step(.3)+.4}s">${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</div>
+        <div class="rv finact" style="animation-delay:${step(.3)+.4}s">${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</div>
       </section>`;
     }
   }
