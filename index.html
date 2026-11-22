@@ -440,6 +440,9 @@ html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px
 .dtop .mptime{font-size:1.25rem;padding:6px 10px;border-radius:12px;min-width:2.2em}
 .btn.dsend{width:auto;flex:none;padding:11px 20px;margin:0}
 .boardwrap{flex:1;position:relative;min-height:0}
+.bfit{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 12px;background:rgba(27,30,58,.92);color:var(--paper);font:600 .85rem var(--body);box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;animation:popin .3s}
+.bfit[hidden]{display:none}
+.bfit svg{width:18px;height:18px}
 .boardwrap .toolbar .ink{width:26px;height:26px;border:0;transform:none}
 .boardwrap .toolbar .ink[aria-pressed="true"]{transform:scale(1.1)}
 .boardwrap .boardcv{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;max-height:none;border-radius:20px}
@@ -1179,7 +1182,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 20:50";
+const APP_VERSION = "22.11 · 21:00";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1662,7 +1665,8 @@ const PAPER = "#e9ebf7"; /* lavagna: lavanda chiarissimo, non falsa i colori */
 const TICONS = (() => { const w = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   return { undo: w('<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'),
            eraser: w('<path d="m7 21-4-4a2 2 0 0 1 0-3L13 4a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-9 9"/><path d="M7 21h14M9 10l6 6"/>'),
-           trash: w('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>') }; })();
+           trash: w('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+           fit: w('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>') + "Intera" }; })();
 let BOARD = null;
 function boardInit(){
   const cv = $("#board"); if(!cv) return;
@@ -1670,21 +1674,56 @@ function boardInit(){
   cv.width = r.width * dpr; cv.height = r.height * dpr;
   const g = cv.getContext("2d"); g.scale(dpr, dpr); g.lineCap = "round"; g.lineJoin = "round";
   BOARD = {cv, g, w:r.width, h:r.height, strokes:(BOARD && BOARD.key === mpKey) ? BOARD.strokes : [], cur:null, ink:(BOARD && BOARD.ink) || INKS[0], size:(BOARD && BOARD.size) || 5, eraser:!!(BOARD && BOARD.eraser), key:mpKey};
-  boardRedraw();
-  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); BOARD.cur = {c:BOARD.eraser ? PAPER : BOARD.ink, s:BOARD.eraser ? 22 : BOARD.size, p:[[e.offsetX/BOARD.w, e.offsetY/BOARD.h]]}; BOARD.strokes.push(BOARD.cur); boardRedraw(); };
-  cv.onpointermove = e => { if(!BOARD.cur) return; BOARD.cur.p.push([e.offsetX/BOARD.w, e.offsetY/BOARD.h]); boardRedraw(); };
-  cv.onpointerup = cv.onpointercancel = () => { BOARD.cur = null; };
+  BOARD.view = {z:1, x:0, y:0}; BOARD.pts = new Map(); BOARD.pinch = null; BOARD.noDraw = false;
+  boardRedraw(); boardZoomUI();
+  /* un dito disegna, due dita zoomano e spostano la lavagna (solo la lavagna, mai la pagina) */
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const toBoard = ([x,y]) => { const v = BOARD.view; return [(x - v.x) / v.z / BOARD.w, (y - v.y) / v.z / BOARD.h]; };
+  const pinchInfo = () => { const [a,b] = [...BOARD.pts.values()]; return {d:Math.hypot(a[0]-b[0], a[1]-b[1]) || 1, m:[(a[0]+b[0])/2, (a[1]+b[1])/2]}; };
+  cv.onpointerdown = e => {
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){} BOARD.pts.set(e.pointerId, pos(e));
+    if(BOARD.pts.size === 1 && !BOARD.noDraw){
+      BOARD.cur = {c:BOARD.eraser ? PAPER : BOARD.ink, s:(BOARD.eraser ? 22 : BOARD.size) / BOARD.view.z, p:[toBoard(pos(e))], id:e.pointerId};
+      BOARD.strokes.push(BOARD.cur); boardRedraw();
+    } else if(BOARD.pts.size === 2){
+      // arriva il secondo dito: il tratto appena iniziato era un errore, lo tolgo
+      if(BOARD.cur){ const i = BOARD.strokes.indexOf(BOARD.cur); if(i >= 0) BOARD.strokes.splice(i, 1); BOARD.cur = null; }
+      BOARD.noDraw = true; const pi = pinchInfo(); BOARD.pinch = {d0:pi.d, m0:pi.m, v0:{...BOARD.view}}; boardRedraw();
+    }
+  };
+  cv.onpointermove = e => {
+    if(!BOARD.pts.has(e.pointerId)) return; BOARD.pts.set(e.pointerId, pos(e));
+    if(BOARD.pinch && BOARD.pts.size >= 2){
+      const {d, m} = pinchInfo(), {d0, m0, v0} = BOARD.pinch, w = BOARD.w, h = BOARD.h;
+      const z = Math.min(5, Math.max(1, v0.z * d / d0));
+      let x = m[0] - (m0[0] - v0.x) / v0.z * z, y = m[1] - (m0[1] - v0.y) / v0.z * z;
+      x = Math.min(0, Math.max(w - w*z, x)); y = Math.min(0, Math.max(h - h*z, y));
+      BOARD.view = {z, x, y}; boardRedraw(); boardZoomUI(); return;
+    }
+    if(BOARD.cur && BOARD.cur.id === e.pointerId){ BOARD.cur.p.push(toBoard(pos(e))); boardRedraw(); }
+  };
+  cv.onpointerup = cv.onpointercancel = e => {
+    BOARD.pts.delete(e.pointerId);
+    if(BOARD.cur && BOARD.cur.id === e.pointerId) BOARD.cur = null;
+    if(BOARD.pts.size < 2) BOARD.pinch = null;
+    if(BOARD.pts.size === 0) BOARD.noDraw = false; // si torna a disegnare solo dopo aver alzato tutte le dita
+  };
 }
-function boardPaint(g, w, h, strokes){
-  g.fillStyle = PAPER; g.fillRect(0, 0, w, h);
+if(/[?&]local/.test(location.search)) window.T = {boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }}; // solo per le prove
+function boardZoomUI(){ const b = $("#b-fit"); if(b) b.hidden = !BOARD || BOARD.view.z <= 1.01; }
+function boardFit(){ if(!BOARD) return; BOARD.view = {z:1, x:0, y:0}; boardRedraw(); boardZoomUI(); }
+function boardPaint(g, w, h, strokes, view){
+  g.save(); g.fillStyle = PAPER; g.fillRect(0, 0, w, h);
+  if(view && view.z > 1){ g.translate(view.x, view.y); g.scale(view.z, view.z); }
   strokes.forEach(st => {
     g.strokeStyle = st.c; g.lineWidth = st.s * (w/340); g.beginPath();
     st.p.forEach(([x,y], i) => i ? g.lineTo(x*w, y*h) : g.moveTo(x*w, y*h));
     if(st.p.length === 1) g.lineTo(st.p[0][0]*w + .1, st.p[0][1]*h);
     g.stroke();
   });
+  g.restore();
 }
-function boardRedraw(){ if(BOARD) boardPaint(BOARD.g, BOARD.w, BOARD.h, BOARD.strokes); }
+function boardRedraw(){ if(BOARD) boardPaint(BOARD.g, BOARD.w, BOARD.h, BOARD.strokes, BOARD.view); }
 function boardSnapshot(){
   if(!BOARD || !BOARD.strokes.length) return null;
   const c = document.createElement("canvas"), W = 360, H = Math.round(360 * BOARD.h / BOARD.w);
@@ -1935,6 +1974,7 @@ function mpView(){
       return `<section class="screen drawscreen">
           <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
+          <button class="bfit" id="b-fit" hidden aria-label="Torna alla lavagna intera">${TICONS.fit}</button>
           <div class="toolbar" role="toolbar" aria-label="Strumenti">
             <div class="inks">${INKS.map(c => `<button class="ink" data-ink="${c}" style="--ink:${c}" aria-label="Colore" aria-pressed="${(!BOARD && c===INKS[0]) || (BOARD && !BOARD.eraser && BOARD.ink===c)}"></button>`).join("")}</div>
             <span class="tsep"></span>
@@ -2075,6 +2115,7 @@ view.addEventListener("click", e => {
   else if(d.ink){ BOARD.ink = d.ink; BOARD.eraser = false; $("#b-eraser").setAttribute("aria-pressed", false); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", x === b)); }
   else if(id === "b-eraser"){ BOARD.eraser = !BOARD.eraser; b.setAttribute("aria-pressed", BOARD.eraser); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", !BOARD.eraser && x.dataset.ink === BOARD.ink)); }
   else if(id === "b-size"){ BOARD.size = BOARD.size > 6 ? 5 : 11; b.querySelector(".sz").classList.toggle("thick", BOARD.size > 6); }
+  else if(id === "b-fit"){ boardFit(); }
   else if(id === "b-undo"){ BOARD && BOARD.strokes.pop(); boardRedraw(); }
   else if(id === "b-clear"){ if(BOARD){ BOARD.strokes = []; boardRedraw(); } }
 });
