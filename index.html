@@ -1478,7 +1478,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 03:45";
+const APP_VERSION = "23.11 · 03:55";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2447,7 +2447,7 @@ function duoSetupHTML(online){
             <li>Chi indovina vede il disegno in diretta e può scrivere tutte le risposte che vuole.</li>
             <li>Indovinata entro 20 secondi: 3 punti. Entro 40: 2 punti. Entro 60: 1 punto. A chi disegna, 1 punto se viene indovinata.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
           <p class="hint pcount">Sfida a due: entra solo il tuo avversario.</p>
-          <button class="btn pink" id="mp-start" ${online !== 2 ? "disabled" : ""}>${online < 2 ? "Aspetta il tuo avversario" : "Inizia la sfida"}</button>`;
+          <button class="btn pink stickybtn" id="mp-start" ${online !== 2 ? "disabled" : ""}>${online < 2 ? "Aspetta il tuo avversario" : "Inizia la sfida"}</button>`;
 }
 function duoTriesHTML(){ return (M.tries || []).slice(-8).reverse().map(t => `<li>${GLY.no} <b>${esc(t.text)}</b></li>`).join(""); }
 function mpView(){
@@ -2489,7 +2489,7 @@ function mpView(){
             <li>Indovinata sul <b>primo disegno: 2 punti a chi indovina e 2 a chi l'ha disegnato</b>. Sui disegni successivi, 1 e 1.</li>
             <li>Se nessun disegno viene indovinato o passa, nessun punto. Poi tocca al prossimo.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
           <p class="hint pcount">Consigliato da 4 a 8 giocatori.</p>
-          <button class="btn pink" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>`}
+          <button class="btn pink stickybtn" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>`}
         </section>`;
       }
       return `<section class="screen pass">${selfieAv(me)}
