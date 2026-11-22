@@ -209,13 +209,20 @@ h2{font-size:1.6rem}
 .zoom svg{width:120px;height:120px;transition:transform .45s cubic-bezier(.6,0,.2,1),opacity .3s}
 .zoom.fade{opacity:0;transition:opacity .3s}
 html,body{overscroll-behavior-y:contain}
+html:has(.modal),html:has(.modal) body{overflow:hidden}
+.modal{overscroll-behavior:contain}
+.modal .sheet{position:relative;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal .sheet>h2:first-of-type{padding-right:44px}
+.xclose{position:sticky;top:0;align-self:flex-end;flex:none;margin:0 -4px -40px 0;box-shadow:0 4px 14px rgba(0,0,0,.35);width:40px;height:40px;border-radius:50%;border:0;background:var(--night-3);color:var(--paper);display:grid;place-items:center;cursor:pointer;z-index:2}
+.xclose svg{width:20px;height:20px}
+.preview .xclose{background:rgba(20,23,63,.55)}
 #ptr{position:fixed;left:50%;top:0;z-index:95;width:44px;height:44px;margin-left:-22px;border-radius:50%;background:var(--night-2);border:2px solid var(--night-3);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(-60px);pointer-events:none}
 #ptr svg{width:22px;height:22px;color:var(--mango)}
 #ptr.go svg{animation:spin .8s linear infinite}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
 #info-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #info-btn svg{width:24px;height:24px}
-.rulesheet .sheet{max-height:calc(100vh - 32px);overflow-y:auto;gap:14px}
+.rulesheet .sheet{max-height:calc(100dvh - 32px);overflow-y:auto;gap:14px}
 .rulesheet h3{margin:4px 0 0;font:600 1.05rem var(--display);color:var(--mango)}
 .rulesheet ol,.rulesheet ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;line-height:1.45}
 .rulesheet .modes{margin-top:4px}
@@ -232,7 +239,7 @@ html,body{overscroll-behavior-y:contain}
 .sw:checked{background:var(--mint)}
 .sw:checked::after{transform:translateX(22px)}
 .set-row input[type=range]{flex:1;accent-color:var(--mango);min-width:0}
-.settings .sheet{max-height:calc(100vh - 32px);overflow-y:auto}
+.settings .sheet{max-height:calc(100dvh - 32px);overflow-y:auto}
 #back-btn{grid-column:1;grid-row:1;justify-self:start;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #back-btn svg{width:22px;height:22px}
 
@@ -893,7 +900,10 @@ $("#home-btn").addEventListener("click", () => {
     else if(t.id==="quit-no" || t===m){ m.remove(); if(wasPlaying && S.screen==="play"){ S.game.endsAt = Date.now() + S.game.pausedLeft; save(); runTimer(); } }
   });
 });
-$("#back-btn").addEventListener("click", ()=>$("#home-btn").click());
+$("#back-btn").addEventListener("click", () => {
+  if(S.screen === "mp" && NET.role === "host" && M && M.phase === "lobby" && NET.lobbyStep === 2){ NET.lobbyStep = 1; render(); window.scrollTo(0,0); return; } // dalle impostazioni torno al QR
+  $("#home-btn").click();
+});
 $("#menu-btn").addEventListener("click", openSettings);
 /* regole complete del gioco aperto, dal tasto "i" in alto a destra */
 function currentRulesGame(){
@@ -948,6 +958,16 @@ function openRules(){
   $("#rules-ok").focus({preventScroll:true}); m.querySelector(".sheet").scrollTop = 0;
 }
 $("#info-btn").addEventListener("click", openRules);
+/* ogni finestra ha la sua X per chiudere, e mentre è aperta lo sfondo non scorre */
+new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
+  if(!(m instanceof HTMLElement) || !m.classList.contains("modal")) return;
+  const sh = m.querySelector(".sheet"); if(!sh || sh.querySelector(".xclose")) return;
+  const x = document.createElement("button"); x.className = "xclose"; x.type = "button"; x.setAttribute("aria-label","Chiudi");
+  x.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
+  x.addEventListener("click", e => { e.stopPropagation(); const c = sh.querySelector("[data-close]"); if(c) c.click(); else m.dispatchEvent(new MouseEvent("click", {bubbles:true})); });
+  sh.prepend(x);
+  m.addEventListener("touchmove", e => { if(!e.target.closest(".sheet")) e.preventDefault(); }, {passive:false});
+}))).observe(document.body, {childList:true});
 /* trascina giù nella home per aggiornare l'app all'ultima versione */
 (() => {
   let y0 = null, dy = 0, el = null;
