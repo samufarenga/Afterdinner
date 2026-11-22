@@ -203,7 +203,7 @@ h2{font-size:1.6rem}
 .chev{font:700 1.6rem var(--display);opacity:.5}
 .modal{position:fixed;inset:0;z-index:80;background:rgba(10,12,28,.7);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:in .2s ease-out}
 .modal .sheet{width:100%;max-width:480px;background:var(--night-2);border:2px solid var(--night-3);border-radius:24px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
-.viewsw{display:flex;align-self:center;background:radial-gradient(120% 160% at 50% 50%,var(--night) 55%,color-mix(in srgb,var(--night-3) 55%,var(--night)) 100%);border:2px solid color-mix(in srgb,var(--paper) 38%,var(--night-3));border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
+.viewsw{display:flex;align-self:center;flex:none;background:radial-gradient(120% 160% at 50% 50%,var(--night) 55%,color-mix(in srgb,var(--night-3) 55%,var(--night)) 100%);border:2px solid color-mix(in srgb,var(--paper) 38%,var(--night-3));border-radius:999px;padding:3px;gap:2px;margin-top:-6px}
 .viewsw button{font:600 .85rem var(--body);padding:7px 16px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .viewsw button[aria-pressed="true"]{background:color-mix(in srgb,var(--paper) 14%,transparent);color:var(--paper)}
 .wheelwrap{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -922,7 +922,8 @@ function openSettings(){
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
     <div class="set-list">
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
-      ${sw("wheel","Giochi a ruota","In home i giochi girano in cerchio invece che in lista")}
+      <div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
+        <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>
       ${sw("music","Musica","Sottofondo leggero mentre giocate")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
       ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
@@ -939,7 +940,6 @@ function openSettings(){
     const k = e.target.dataset.set; if(!k) return;
     st[k] = e.target.checked; save();
     if(k==="music"){ st.music ? startMusic() : stopMusic(); }
-    if(k==="wheel" && S.screen==="home"){ render(); }
     if(k==="silentOk"){ setAudioSession(true); if(st.sfx) sfx("correct"); }
     if(k==="sfx" && st.sfx) sfx("correct");
     if(k==="vibration" && st.vibration) buzz(30);
@@ -948,6 +948,8 @@ function openSettings(){
   m.addEventListener("change", e => { if(e.target.id==="set-volume") sfx("join"); });
   m.addEventListener("click", e => {
     const t = e.target;
+    const vb = t.closest("[data-view]");
+    if(vb){ st.wheel = vb.dataset.view === "wheel"; save(); m.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", x === vb)); if(S.screen==="home") render(); return; }
     if(t===m || t.closest("[data-close]")) m.remove();
     else if(t.id==="set-reset") $("#reset-slot").innerHTML = `<div class="confirm"><b>Cancellare tutto?</b><span class="hint">Le impostazioni restano.</span><div class="row"><button class="btn ghost" id="reset-no">No</button><button class="btn pink" id="reset-yes">Cancella</button></div></div>`;
     else if(t.id==="reset-no") $("#reset-slot").innerHTML = "";
@@ -1099,7 +1101,7 @@ document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scal
 let lastTouchEnd = 0;
 document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:35";
+const APP_VERSION = "22.11 · 19:40";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
