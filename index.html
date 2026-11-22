@@ -208,7 +208,18 @@ h2{font-size:1.6rem}
 .zoom{position:fixed;z-index:90;border-radius:32px;pointer-events:none;display:grid;place-items:center;color:var(--ink);transition:all .45s cubic-bezier(.6,0,.2,1)}
 .zoom svg{width:120px;height:120px;transition:transform .45s cubic-bezier(.6,0,.2,1),opacity .3s}
 .zoom.fade{opacity:0;transition:opacity .3s}
-#menu-btn{grid-column:3;grid-row:1;justify-self:end;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+html,body{overscroll-behavior-y:contain}
+#ptr{position:fixed;left:50%;top:0;z-index:95;width:44px;height:44px;margin-left:-22px;border-radius:50%;background:var(--night-2);border:2px solid var(--night-3);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(-60px);pointer-events:none}
+#ptr svg{width:22px;height:22px;color:var(--mango)}
+#ptr.go svg{animation:spin .8s linear infinite}
+.hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
+#info-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#info-btn svg{width:24px;height:24px}
+.rulesheet .sheet{max-height:calc(100vh - 32px);overflow-y:auto;gap:14px}
+.rulesheet h3{margin:4px 0 0;font:600 1.05rem var(--display);color:var(--mango)}
+.rulesheet ol,.rulesheet ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;line-height:1.45}
+.rulesheet .modes{margin-top:4px}
+#menu-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #menu-btn svg{width:22px;height:22px}
 .set-list{display:flex;flex-direction:column;gap:4px;width:100%}
 .set-row{display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid var(--night-3)}
@@ -224,7 +235,7 @@ h2{font-size:1.6rem}
 .settings .sheet{max-height:calc(100vh - 32px);overflow-y:auto}
 #back-btn{grid-column:1;grid-row:1;justify-self:start;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #back-btn svg{width:22px;height:22px}
-header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
+
 .lock{position:absolute;right:-4px;top:-4px;width:22px;height:22px;border-radius:50%;background:var(--night-3);border:2px solid var(--night)}
 .lock::after{content:"";position:absolute;left:6px;top:8px;width:6px;height:5px;border-radius:1px;background:var(--muted);box-shadow:0 -3px 0 -1px transparent}
 .lock::before{content:"";position:absolute;left:6.5px;top:4px;width:3px;height:4px;border:1.5px solid var(--muted);border-bottom:0;border-radius:3px 3px 0 0}
@@ -283,6 +294,8 @@ header.top #board-btn{grid-column:3;justify-self:end;grid-row:1}
 @keyframes xpop{0%{transform:scale(.3) rotate(-25deg);opacity:0}22%{transform:scale(1.12) rotate(5deg);opacity:1}36%{transform:scale(1) rotate(0)}75%{opacity:1}100%{opacity:0;transform:scale(.92)}}
 @keyframes xfade{0%,10%{opacity:0}25%,75%{opacity:1}100%{opacity:0}}
 .shake{animation:shake .45s}
+.xfail.sprint{align-content:start;padding-top:120px}
+.xfail.sprint p{background:var(--mango);color:var(--ink);font-size:1.25rem;animation-duration:1.6s}
 @keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
 .tries{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0;padding:0;list-style:none}
 .tries li{background:var(--night-2);border:1px solid var(--night-3);border-radius:999px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
@@ -342,6 +355,7 @@ img.mine{width:min(100%,280px);border-radius:18px;display:block;margin:0 auto}
 .w-body .field{width:100%}
 .g-game{font-size:2.6rem;color:var(--sky)}
 body.guest #back-btn,body.guest #menu-btn,body.guest #board-btn{display:none!important}
+body.guest:has(.welcome) #info-btn{display:none!important}
 canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
 </style>
 </head>
@@ -357,8 +371,11 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
 <div class="app">
   <header class="top">
     <button class="logo" id="home-btn" aria-label="Torna alla home"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>AfterDinner</span></button>
+    <div class="hright">
     <button class="iconbtn" id="board-btn" hidden>Punteggi</button>
+    <button class="iconbtn" id="info-btn" hidden aria-label="Regole del gioco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><circle cx="12" cy="7" r=".6" fill="currentColor"/></svg></button>
     <button class="iconbtn" id="menu-btn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
+    </div>
     <button class="iconbtn" id="back-btn" hidden aria-label="Torna alla home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
   </header>
   <main id="view"></main>
@@ -414,8 +431,8 @@ const ICONS = (() => {
   };
 })();
 const CATALOG = [
-  {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:true, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
   {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"3-10", mins:"15-25", phones:"all", desc:"Gli altri disegnano la parola e te la inviano: chi arriva primo rischia, ma vale doppio."},
+  {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:false, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
   {id:"catena", name:"Disegno a catena", icon:"pencil", color:"#14d494", players:"4-10", mins:"15-20", phones:"all", desc:"Frase, disegno, frase: guarda come si deforma il messaggio."},
@@ -733,6 +750,7 @@ function render(){
   $("#back-btn").hidden = S.screen==="home";
   $("#menu-btn").hidden = S.screen!=="home";
   $("#board-btn").hidden = !(S.game && !S.game.over && ["pass","result"].includes(S.screen));
+  $("#info-btn").hidden = !currentRulesGame();
   if(S.screen==="play"){
     if(!S.game.endsAt || S.game.endsAt < Date.now()) { S.game.endsAt = null; endTurn("time"); return; }
     runTimer();
@@ -877,6 +895,86 @@ $("#home-btn").addEventListener("click", () => {
 });
 $("#back-btn").addEventListener("click", ()=>$("#home-btn").click());
 $("#menu-btn").addEventListener("click", openSettings);
+/* regole complete del gioco aperto, dal tasto "i" in alto a destra */
+function currentRulesGame(){
+  if(S.screen === "mp") return M ? "scarabocchi" : null;
+  if(["players","pass","play","who","result","board","final"].includes(S.screen)) return "lampo";
+  return null;
+}
+const RULES = {
+  lampo: () => `<h2>Lampo: le regole</h2>
+    <p class="hint" style="margin:0">Si gioca con un solo telefono, che passa di mano. Da 3 a 10 giocatori.</p>
+    <h3>Il turno</h3><ol>
+      <li>Il telefono va a un giocatore alla volta: solo lui guarda lo schermo.</li>
+      <li>Esce una parola e il <b>modo</b> in cui farla indovinare. Parte il tempo.</li>
+      <li>Gli altri urlano le risposte. Chi indovina per primo prende <b>1 punto</b>; chi la fa indovinare prende i punti della carta.</li>
+      <li>Se scade il tempo o passi, nessuno prende punti. Il telefono passa al prossimo.</li></ol>
+    <h3>I modi</h3><div class="modes">${MODES.map(m=>`<div style="background:${m.color}"><b>${m.name} · ${m.pts} pt</b>${m.rule}</div>`).join("")}</div>
+    <h3>Fine partita</h3><ul><li>Dopo i giri scelti all'inizio vince chi ha più punti.</li></ul>`,
+  scarabocchi: () => `<h2>Scarabocchi: le regole</h2>
+    <p class="hint" style="margin:0">Ognuno usa il proprio telefono. Consigliati da 4 a 8 giocatori.</p>
+    <h3>Prima di iniziare</h3><ol>
+      <li>Chi organizza apre Scarabocchi e mostra il QR (o manda il link). Gli altri lo inquadrano, scrivono il nome ed entrano: niente app da installare.</li>
+      <li>L'host sceglie difficoltà delle parole, tempo per disegnare (1, 2 o 3 minuti), modalità Sprint e numero di giri.</li></ol>
+    <h3>Il turno</h3><ol>
+      <li>A turno uno di voi <b>indovina</b>: preme Via e non vede la parola.</li>
+      <li>Tutti gli altri vedono la parola e la <b>disegnano</b> sul proprio telefono, in silenzio. Niente lettere, numeri, gesti o suoni.</li>
+      <li>Chi ha finito preme <b>Invia</b>. Un disegno non inviato entro il tempo non vale.</li>
+      <li>I disegni arrivano a chi indovina <b>uno alla volta, nell'ordine di invio</b>, con il nome di chi l'ha fatto.</li>
+      <li>Per ogni disegno c'è <b>un solo tentativo</b>: si scrive la parola. Se è sbagliata compare una X e si passa al disegno successivo. Non si torna indietro.</li>
+      <li>Si può anche saltare un disegno senza provare, oppure passare il turno.</li></ol>
+    <h3>Punti</h3><ul>
+      <li>Indovinata sul <b>primo disegno</b> arrivato: <b>2 punti</b> a chi indovina e <b>2</b> a chi l'ha disegnato.</li>
+      <li>Indovinata su un disegno successivo: <b>1 punto</b> a testa.</li>
+      <li>Tempo scaduto, disegni finiti o turno passato: nessun punto.</li>
+      <li>Inviare per primi conviene, ma uno scarabocchio frettoloso rischia di bruciare il tentativo.</li></ul>
+    <h3>Modalità Sprint</h3><ul>
+      <li>Se attiva, quando arriva il primo disegno a chi sta ancora disegnando restano <b>30 secondi</b> (se ne aveva di più). Non si può cambiare.</li>
+      <li>Senza Sprint, il tempo resta quello scelto per tutti.</li></ul>
+    <h3>Se qualcuno si scollega</h3><ul>
+      <li>La partita continua e chi si scollega rientra da solo appena torna la connessione.</li>
+      <li>Se si scollega chi deve indovinare, il turno va in pausa.</li>
+      <li>Dopo 1 minuto l'host può toglierlo dalla partita.</li>
+      <li>Se l'host chiude l'app, riaprendola riprende la partita da dove era.</li></ul>
+    <h3>Fine partita</h3><ul><li>Dopo i giri scelti compare la classifica animata su tutti i telefoni. Per l'ultimo c'è sempre una frase speciale.</li></ul>`
+};
+function openRules(){
+  const id = currentRulesGame(); if(!id || $("#rules-sheet")) return;
+  const m = document.createElement("div");
+  m.id = "rules-sheet"; m.className = "modal rulesheet"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","Regole");
+  m.innerHTML = `<div class="sheet">${RULES[id]()}<button class="btn" id="rules-ok">Ho capito</button></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e => { if(e.target.id === "rules-ok" || e.target === m) m.remove(); });
+  $("#rules-ok").focus({preventScroll:true}); m.querySelector(".sheet").scrollTop = 0;
+}
+$("#info-btn").addEventListener("click", openRules);
+/* trascina giù nella home per aggiornare l'app all'ultima versione */
+(() => {
+  let y0 = null, dy = 0, el = null;
+  const ok = () => S.screen === "home" && window.scrollY <= 0 && !document.querySelector(".modal");
+  const set = (d, anim) => { if(!el) return; el.style.transition = anim ? "transform .25s" : "none"; el.style.transform = `translateY(${d}px)`; el.querySelector("svg").style.transform = `rotate(${d*4}deg)`; };
+  document.addEventListener("touchstart", e => {
+    if(!ok() || e.touches.length !== 1) { y0 = null; return; }
+    y0 = e.touches[0].clientY; dy = 0;
+    if(!el){ el = document.createElement("div"); el.id = "ptr"; el.setAttribute("aria-hidden","true");
+      el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>`;
+      document.body.appendChild(el); }
+  }, {passive:true});
+  document.addEventListener("touchmove", e => {
+    if(y0 == null) return;
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    if(window.scrollY > 0){ y0 = null; set(-60, true); return; }
+    set(Math.min(dy * .5, 90) - 60 + 16, false);
+    el.style.opacity = Math.min(1, dy / 120);
+  }, {passive:true});
+  document.addEventListener("touchend", () => {
+    if(y0 == null) return; y0 = null;
+    if(dy > 150){ set(40, true); el.classList.add("go"); buzz(15);
+      const done = () => location.reload();
+      fetch(location.pathname, {cache:"reload"}).then(done, done); setTimeout(done, 4000);
+    } else set(-60, true);
+  });
+})();
 $("#board-btn").addEventListener("click", ()=>{ S.prev=S.screen; go("board"); });
 
 /* =====================================================================
@@ -1043,12 +1141,12 @@ function guessOk(text, word){
 function armTurnTimer(){
   clearTimeout(NET.turnT);
   if(!M || M.phase !== "turn" || M.paused != null) return;
-  NET.turnT = setTimeout(() => { if(M && M.phase === "turn" && M.paused == null){ endTurn({reason:"time"}); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
+  NET.turnT = setTimeout(() => { if(M && M.phase === "turn" && M.paused == null){ mpEndTurn({reason:"time"}); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
 }
-function endTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
+function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
 const stillDrawing = () => M.players.filter(p => p.on && p.id !== guesserId() && !M.queue.includes(p.id));
 /* disegni finiti: chi indovina li ha visti tutti e nessuno sta più disegnando */
-function turnCheck(){ if(M.phase === "turn" && M.view >= M.queue.length && !stillDrawing().length){ endTurn({reason:"none"}); return true; } return false; }
+function turnCheck(){ if(M.phase === "turn" && M.view >= M.queue.length && !stillDrawing().length){ mpEndTurn({reason:"none"}); return true; } return false; }
 function toNextTurn(){
   if(M.turn >= M.order.length){ M.turn = 0; M.round++; }
   M.phase = (M.order.length && M.round <= M.rounds && nextGuesser()) ? "ready" : "final";
@@ -1171,6 +1269,10 @@ function hostReceive(pid, msg){
     case "send": // un disegnatore ha finito e invia il disegno
       if(M.phase === "turn" && pid !== guesserId() && !M.queue.includes(pid) && typeof msg.img === "string" && msg.img.length < 400000){
         MD[pid] = msg.img; M.queue.push(pid);
+        if(M.sprint && M.queue.length === 1){ // Sprint: dal primo disegno restano 30 secondi a tutti
+          if(M.paused != null) M.paused = Math.min(M.paused, 30000);
+          else if(M.endsAt - Date.now() > 30000){ M.endsAt = Date.now() + 30000; armTurnTimer(); }
+        }
         mpBroadcast({t:"drawings", imgs:MD}); onDrawings(); publish();
       } break;
     case "advance": // chi indovina salta il disegno senza provare (non si torna indietro)
@@ -1181,14 +1283,14 @@ function hostReceive(pid, msg){
       if(guessOk(text, M.word)){
         const pts = M.view === 0 ? 2 : 1, g = guesserId();
         M.scores[g] += pts; M.scores[helper] = (M.scores[helper] || 0) + pts;
-        endTurn({reason:"guess", helper, pts, pos:M.view, text});
+        mpEndTurn({reason:"guess", helper, pts, pos:M.view, text});
       } else {
         M.tries.push({text, on:helper}); M.view++; turnCheck();
       }
       publish(); break;
     }
     case "pass":
-      if(M.phase === "turn" && pid === guesserId()){ endTurn({reason:"pass"}); publish(); } break;
+      if(M.phase === "turn" && pid === guesserId()){ mpEndTurn({reason:"pass"}); publish(); } break;
     case "next":
       if(M.phase === "result" && (pid === guesserId() || pid === M.host)){
         M.turn++; toNextTurn(); publish();
@@ -1212,6 +1314,7 @@ function onState(s){
   if(!wake) grabWake(); // schermo acceso per tutta la serata
   if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0; }
   if(s.phase === "turn" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; if(amGuesser()) showX(t.text); else if(s.queue.includes(NET.myId)) buzz(15); }
+  if(s.phase === "turn" && s.sprint && s.queue && s.queue.length === 1 && (NET.lastQ||0) === 0 && !amGuesser() && s.queue[0] !== NET.myId){ sprintAlert(); }
   if(s.phase === "turn" && s.queue && s.queue.length > (NET.lastQ||0)){ if(amGuesser()){ beep(760,.07); buzz(20); } NET.lastQ = s.queue.length; }
   if(s.phase !== "turn" && prevPhase === "turn"){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); beep(660,.12); setTimeout(()=>beep(880,.16),120); } else beep(220,.35); }
   prevPhase = s.phase;
@@ -1220,6 +1323,12 @@ function onState(s){
   mpRender();
 }
 function onDrawings(){ if(!M) return; if(M.phase === "result") mpRender(true); else if(M.phase === "turn" && amGuesser()) mpRender(); }
+function sprintAlert(){
+  beep(880,.08); setTimeout(() => beep(880,.08), 140); buzz([40,60,40]);
+  const x = document.createElement("div"); x.className = "xfail sprint"; x.setAttribute("aria-live","assertive");
+  x.innerHTML = `<p>Primo disegno arrivato: 30 secondi!</p>`;
+  document.body.appendChild(x); setTimeout(() => x.remove(), 1600);
+}
 function showX(text){
   beep(180, .25); buzz([60,40,60]);
   document.querySelector(".xfail")?.remove();
@@ -1301,7 +1410,7 @@ async function mpHostStart(){
   mpClose();
   NET.role = "host"; NET.myId = myPid(); NET.code = newCode(); NET.status = "connecting"; NET.lobbyStep = 1; NET.inviteN = Math.floor(Math.random()*100);
   M = {game:"scarabocchi", phase:"lobby", host:NET.myId, players:[{id:NET.myId, name:cleanName(savedName() || "Host"), color:COLORS[0], on:true}],
-       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:1, seconds:120, level:"medium", word:null, cat:null, last:null, queue:[], tries:[], view:0};
+       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:1, seconds:120, sprint:false, level:"medium", word:null, cat:null, last:null, queue:[], tries:[], view:0};
   prevPhase = "lobby";
   go("mp");
   for(let i = 0; i < 3; i++){
@@ -1404,6 +1513,7 @@ function mpView(){
           <div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
+            <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Col primo disegno inviato, a chi sta ancora disegnando restano 30 secondi." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
             <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => Math.round(n * r * (M.seconds + 30) / 60), rec = [3,2,1].find(r => est(r) <= 25) || 1;
               return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r}<small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
           </div>
@@ -1412,7 +1522,7 @@ function mpView(){
             <li>Chi ha finito preme Invia. I disegni arrivano a chi indovina uno alla volta, nell'ordine di invio, con il nome di chi l'ha fatto.</li>
             <li>Per ogni disegno c'è <b>un solo tentativo</b>: si scrive la parola. Sbagliata? Si passa al disegno dopo e non si torna indietro.</li>
             <li>Indovinata sul <b>primo disegno: 2 punti a chi indovina e 2 a chi l'ha disegnato</b>. Sui disegni successivi, 1 e 1.</li>
-            <li>Se scade il tempo, finiscono i disegni o passa, nessun punto. Poi tocca al prossimo.</li></ol></details>
+            <li>Se scade il tempo, finiscono i disegni o passa, nessun punto. Poi tocca al prossimo.</li></ol><p class="hint">Regole complete: tasto <b>i</b> in alto a destra.</p></details>
           <p class="hint pcount">${online < 4 ? `Consigliati da 4 a 8 giocatori. Si può giocare anche in ${online}, ma con qualcuno in più è più divertente.` : online <= 8 ? `${online} giocatori: perfetto.` : online <= 10 ? `Siete in ${online}: si gioca bene, i turni diventano un po' più lunghi.` : `Siete in ${online}: oltre 10 la partita si allunga parecchio. Meglio un giro solo.`}</p>
           <button class="btn pink" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>
         </section>`;
@@ -1533,6 +1643,7 @@ function mpAfterRender(){
   if(S.screen !== "mp") return;
   $("#board-btn").hidden = true;
   if(NET.role === "guest"){ $("#back-btn").hidden = true; $("#menu-btn").hidden = true; }
+  $("#info-btn").hidden = !M;
   if($("#qrbox")){
     loadScript("lib/qrcode.js", "qrcode").then(() => {
       const q = qrcode(0, "M"); q.addData(joinUrl()); q.make();
@@ -1554,7 +1665,7 @@ view.addEventListener("click", e => {
   if(S.screen !== "mp") return;
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
-  if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
+  if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
   else if(id === "mp-start"){ usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ beep(440,.05); act({t:"start"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
