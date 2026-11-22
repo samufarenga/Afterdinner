@@ -392,7 +392,10 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 @keyframes thinkdot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-8px);opacity:1}}
 .watchview{gap:10px}
 .finale h1{font-size:clamp(1.7rem,8.5vw,2.3rem);overflow-wrap:anywhere}
-.finact{position:sticky;bottom:0;padding:10px 0 max(6px,env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--night) 70%,transparent);z-index:3}
+.finact{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;box-sizing:border-box;padding:22px 16px max(14px,env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--night) 72%,transparent);z-index:5}
+.finale{padding-bottom:96px}
+@media (max-width:370px){.finale{padding-bottom:160px}}
+.finact .hint{margin:0}
 .stickybtn{position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:3}
 .sentbox{display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;align-items:stretch;text-align:center}
 .sentlist .chk{width:22px;height:22px;flex:none;border-radius:7px;border:2px solid var(--night-3);display:grid;place-items:center;font:700 .85rem var(--body);color:var(--ink)}
@@ -509,6 +512,29 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .tries{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0;padding:0;list-style:none}
 .tries li{background:var(--night-2);border:1px solid var(--night-3);border-radius:999px;padding:4px 10px;font-size:.85rem;color:var(--muted)}
 .tries li b{color:var(--paper);font-weight:600}
+/* coppia: chi indovina vede il disegno in diretta */
+.duoguess{gap:10px;min-height:0;flex:1;display:flex;flex-direction:column}
+.duoguess .guessform{margin:0}
+.liveview{position:relative;flex:1;min-height:150px;display:grid;place-items:center;overflow:hidden;padding:3px}
+.liveview canvas{display:block;border-radius:16px;box-shadow:0 0 0 3px var(--night-3)}
+.liveview .livewait{position:absolute;inset:3px;border-radius:16px;background:var(--board);color:var(--night-3)!important;display:none;place-items:center;align-content:center;gap:10px;color:var(--muted);font-weight:600;text-align:center;padding:16px}
+.liveview.empty .livewait{display:grid}
+.liveview .livetag{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pink);background:rgba(20,18,40,.72);padding:3px 9px;border-radius:999px;animation:livepulse 1.4s ease-in-out infinite}
+@keyframes livepulse{50%{opacity:.45}}
+.liveview.small{flex:none;height:min(34dvh,300px);min-height:0;background:transparent;box-shadow:none}
+.duoguess .tries{max-height:64px;overflow:hidden}
+.duonow{font:700 1.15rem var(--display);color:var(--mango)}
+.duonow b{font-size:1.45rem;color:var(--paper)}
+.duonow.drop{animation:wordin .5s cubic-bezier(.3,1.4,.5,1)}
+.duoscale{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.duoscale span{background:var(--night-2);border:1px solid var(--night-3);border-radius:999px;padding:5px 12px;font-size:.88rem;color:var(--muted)}
+.duoscale b{color:var(--mango);font-size:1.05rem;margin-right:3px}
+.dtoast{position:fixed;left:0;right:0;margin:auto;width:max-content;max-width:calc(100vw - 32px);top:max(14px,env(safe-area-inset-top,0px));z-index:61;pointer-events:none;display:flex;gap:8px;align-items:baseline;background:var(--pink);color:#fff;padding:10px 16px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:toastin .3s cubic-bezier(.3,1.4,.5,1)}
+.dtoast:not(.watch){top:calc(150px + env(safe-area-inset-top,0px))}
+.dtoast.watch{background:var(--night-2);border:2px solid var(--pink);top:calc(78px + env(safe-area-inset-top,0px))}
+.dtoast b{font:700 1.15rem var(--display);overflow-wrap:anywhere}
+.dtoast span{font-size:.85rem;opacity:.9}
+@keyframes toastin{from{transform:translateY(-14px) scale(.9);opacity:0}}
 .pcount{text-align:center;margin:-4px 0 0}
 #mpnote{box-sizing:border-box;position:fixed;left:0;right:0;bottom:0;z-index:70;display:flex;flex-direction:column;gap:8px;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));pointer-events:none;align-items:center}
 #mpnote .note{box-sizing:border-box;pointer-events:auto;width:100%;max-width:480px;background:var(--night-2);border:2px solid var(--mango);border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 10px 30px rgba(0,0,0,.45);animation:in .25s ease-out}
@@ -542,6 +568,10 @@ html.drawmode .app{height:100%;padding-block:max(8px,env(safe-area-inset-top,0px
 .dtop{display:flex;align-items:center;gap:10px}
 .dtw{flex:1;min-width:0}
 .dtw .eyebrow{font-size:.65rem}
+.dtop.wide{flex-wrap:wrap;row-gap:4px}
+.dtop.wide .dlab{flex:1;min-width:0;font-size:.65rem;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dtop.wide .dtw{order:9;flex-basis:100%}
+.dtop.wide .dword{-webkit-line-clamp:3;overflow-wrap:break-word;hyphens:auto;font-size:clamp(1.15rem,5.6vw,1.5rem)}
 .dtop .dword{font-size:clamp(1.1rem,5.2vw,1.45rem);line-height:1.1;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dtop .mptime{font-size:1.25rem;padding:6px 10px;border-radius:12px;min-width:2.2em}
 .btn.dsend{width:auto;flex:none;padding:11px 20px;margin:0}
@@ -661,11 +691,13 @@ const ICONS = (() => {
     chili: w('<path d="M7 20c7 1 12-5 12-11 0-2-1-3-2.5-3S14 8 13 11c-1 3-4 6-8 7-1 .5-.5 2 2 2z" fill="currentColor" stroke="none"/><path d="M16.5 6c0-2 1-3 2.5-3.5"/>'),
     pig: w('<path d="M6.2 7.2 4.5 2.8 9.6 5.2z M17.8 7.2l1.7-4.4-5.1 2.4z" fill="currentColor" stroke-width="1.4"/><circle cx="12" cy="13.2" r="7.6"/><ellipse cx="12" cy="15.8" rx="4" ry="2.8" stroke-width="1.8"/><circle cx="10.6" cy="15.8" r=".8" fill="currentColor" stroke="none"/><circle cx="13.4" cy="15.8" r=".8" fill="currentColor" stroke="none"/><circle cx="9" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10.5" r="1" fill="currentColor" stroke="none"/>'),
     scribble: w('<rect x="7" y="2.5" width="10" height="5" rx="1.5"/><path d="M4 20c2-4 4-5 5-3s-1 3 1 3 3-6 5-5-1 4 1 4 3-2 4-3"/><path d="M12 7.5v3"/>'),
+    duo: w('<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M20 20l-1-4L8 5 5 8l11 11z"/><path d="M14 7l3 3"/>'),
     trophy: w('<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/>')
   };
 })();
 const CATALOG = [
-  {id:"scarabocchi", name:"Scarabocchi", icon:"scribble", color:"#22c4ff", ready:true, players:"4-8", mins:"15-25", phones:"all", desc:"Indovina la parola dai disegni dei tuoi amici."},
+  {id:"scarabocchi", name:"Scarabocchi di gruppo", icon:"scribble", color:"#22c4ff", ready:true, players:"3-8", mins:"15-25", phones:"all", desc:"Indovina la parola dai disegni dei tuoi amici."},
+  {id:"coppia", name:"Scarabocchi di coppia", icon:"duo", color:"#ff3d72", ready:true, players:"2", mins:"12-15", phones:"all", desc:"Uno contro uno: disegni in diretta, l'altro indovina contro il tempo."},
   {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:false, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
@@ -1062,7 +1094,7 @@ function render(){
     if(same && view.firstElementChild) view.firstElementChild.classList.add("still");
   }
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
-  document.documentElement.classList.toggle("drawmode", !!$(".drawscreen"));
+  document.documentElement.classList.toggle("drawmode", !!$(".drawscreen, .duoguess"));
   document.documentElement.classList.toggle("mpmode", S.screen === "mp" && !!M && M.phase !== "lobby");
   if(typeof sndBtn === "function") sndBtn();
   if($("#wheel")) wheelInit();
@@ -1168,7 +1200,7 @@ let pressT = null, suppressClick = false;
 function openGame(id){
   document.getElementById("preview")?.remove();
   const g = CATALOG.find(x=>x.id===id), tile = document.querySelector(`.gtile[data-game="${id}"]`);
-  const dest = () => { if(id==="lampo") go("players"); else if(id==="scarabocchi"){ const sv = roomLoad(); sv ? mpResumeAsk(sv, true) : mpHostStart(); } };
+  const dest = () => { if(id==="lampo") go("players"); else if(id==="scarabocchi" || id==="coppia"){ const sv = roomLoad(); sv && (sv.M.game || "scarabocchi") === id ? mpResumeAsk(sv, true) : mpHostStart(id); } };
   if(!tile || matchMedia("(prefers-reduced-motion: reduce)").matches){ dest(); return; }
   const r = tile.getBoundingClientRect();
   const z = document.createElement("div");
@@ -1232,7 +1264,7 @@ $("#back-btn").addEventListener("click", () => {
 $("#menu-btn").addEventListener("click", openSettings);
 /* regole complete del gioco aperto, dal tasto "i" in alto a destra */
 function currentRulesGame(){
-  if(S.screen === "mp") return M ? "scarabocchi" : null;
+  if(S.screen === "mp") return M ? (M.game === "coppia" ? "coppia" : "scarabocchi") : null;
   if(["players","pass","play","who","result","board","final"].includes(S.screen)) return "lampo";
   return null;
 }
@@ -1246,10 +1278,10 @@ const RULES = {
       <li>Se scade il tempo o passi, nessuno prende punti. Il telefono passa al prossimo.</li></ol>
     <h3>I modi</h3><div class="modes">${MODES.map(m=>`<div style="background:${m.color}"><b>${m.name} · ${m.pts} pt</b>${m.rule}</div>`).join("")}</div>
     <h3>Fine partita</h3><ul><li>Dopo i giri scelti all'inizio vince chi ha più punti.</li></ul>`,
-  scarabocchi: () => `<h2>Scarabocchi: le regole</h2>
+  scarabocchi: () => `<h2>Scarabocchi di gruppo: le regole</h2>
     <p class="hint" style="margin:0">Ognuno gioca con il proprio telefono. Consigliato da 4 a 8 giocatori.</p>
     <h3>Prima di iniziare</h3><ol>
-      <li>Chi organizza apre Scarabocchi e mostra il QR, oppure manda il link. Gli altri lo inquadrano, scrivono il nome ed entrano. Non serve installare niente.</li>
+      <li>Chi organizza apre Scarabocchi di gruppo e mostra il QR, oppure manda il link. Gli altri lo inquadrano, scrivono il nome ed entrano. Non serve installare niente.</li>
       <li>L'host sceglie la difficoltà delle parole, il tempo per disegnare (1, 2 o 3 minuti), la modalità Sprint e il numero di giri.</li></ol>
     <h3>Il turno</h3><ol>
       <li>A turno, uno di voi <b>indovina</b>. Preme Via e non vede la parola.</li>
@@ -1274,7 +1306,27 @@ const RULES = {
       <li>La partita va avanti. Chi si scollega rientra da solo appena torna la connessione.</li>
       <li>Dopo 1 minuto, l'host può toglierlo dalla partita.</li>
       <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
-    <h3>Fine partita</h3><ul><li>Dopo l'ultimo giro compare la classifica.</li></ul>`
+    <h3>Fine partita</h3><ul><li>Dopo l'ultimo giro compare la classifica.</li></ul>`,
+  coppia: () => `<h2>Scarabocchi di coppia: le regole</h2>
+    <p class="hint" style="margin:0">Uno contro uno, ognuno con il proprio telefono. Esattamente 2 giocatori.</p>
+    <h3>Prima di iniziare</h3><ol>
+      <li>Chi organizza apre Scarabocchi di coppia e mostra il QR, oppure manda il link. L'altro lo inquadra, scrive il nome ed entra.</li>
+      <li>L'host sceglie la difficoltà delle parole.</li></ol>
+    <h3>Il turno</h3><ol>
+      <li>La partita dura <b>10 turni</b>: a ogni turno ci si scambia i ruoli, quindi ognuno disegna 5 volte e indovina 5 volte.</li>
+      <li>Chi <b>disegna</b> vede la parola e ha <b>60 secondi</b>. Niente lettere, numeri, gesti o suoni.</li>
+      <li>Chi <b>indovina</b> vede il disegno <b>in diretta</b>, tratto per tratto, mentre nasce.</li>
+      <li>Si possono scrivere <b>tutte le risposte che si vuole</b> finché c'è tempo. Ogni risposta sbagliata compare anche sul telefono di chi disegna, così può correggere il tiro.</li>
+      <li>Valgono i sinonimi stretti (cornetto o brioche) e un piccolo errore di battitura, ma singolare e plurale contano.</li>
+      <li>Il turno finisce quando la parola viene indovinata o quando scade il tempo.</li></ol>
+    <h3>Punti</h3><ul>
+      <li>Chi indovina entro <b>20 secondi</b> prende <b>3 punti</b>, entro <b>40 secondi 2 punti</b>, entro <b>60 secondi 1 punto</b>.</li>
+      <li>Chi disegna prende <b>1 punto</b> se il suo disegno viene indovinato.</li>
+      <li>Tempo scaduto: nessun punto a nessuno.</li></ul>
+    <h3>Se qualcuno si scollega</h3><ul>
+      <li>Chi si scollega rientra da solo appena torna la connessione. Se chi disegna non torna entro pochi secondi, il turno finisce senza punti.</li>
+      <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
+    <h3>Fine partita</h3><ul><li>Dopo il decimo turno vince chi ha più punti. A pari punti è pareggio.</li></ul>`
 };
 function openRules(){
   const id = currentRulesGame(); if(!id || $("#rules-sheet")) return;
@@ -1290,8 +1342,8 @@ $("#info-btn").addEventListener("click", openRules);
 function hostItems(){
   if(!M) return [];
   const g = mpPlayer(guesserId()), nx = M.phase === "result" ? mpPlayer(peekNext()) : null, it = [];
-  if(M.phase === "ready") it.push(["go", `Fai partire il turno di ${g ? g.name : ""}`]);
-  if(M.phase === "turn") it.push(["close", "Chiudi i disegni ora", "Si passa subito a chi indovina"]);
+  if(M.phase === "ready") it.push(["go", isDuo() ? "Fai partire il turno" : `Fai partire il turno di ${g ? g.name : ""}`]);
+  if(M.phase === "turn" && !isDuo()) it.push(["close", "Chiudi i disegni ora", "Si passa subito a chi indovina"]);
   if(M.phase === "reveal" && !M.revealed) it.push(["reveal", `Scopri i disegni al posto di ${g ? g.name : ""}`]);
   if(M.phase === "reveal" && M.revealed && M.view < M.queue.length) it.push(["skipdraw", "Salta questo disegno", "Si passa al disegno dopo"]);
   if(["ready","turn","reveal"].includes(M.phase)) it.push(["skipturn", "Salta il turno", "Nessun punto a nessuno"]);
@@ -1358,7 +1410,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 00:15";
+const APP_VERSION = "23.11 · 01:00";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1444,6 +1496,10 @@ const newCode = () => Array.from({length:4}, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Ma
 const joinUrl = () => location.origin + location.pathname + "?room=" + NET.code + (USE_LOCAL ? "&local" : "");
 const mpPlayer = id => M && M.players.find(p => p.id === id);
 const guesserId = () => M && M.order[M.turn];
+const isDuo = () => !!M && M.game === "coppia";
+const gameName = g => g === "coppia" ? "Scarabocchi di coppia" : "Scarabocchi di gruppo";
+const turnLabel = () => isDuo() ? `Turno ${(M.round-1)*2 + M.turn + 1} di ${M.rounds*2}` : `Giro ${M.round} di ${M.rounds}`;
+const drawerId = () => isDuo() ? M.order.find(id => id !== guesserId()) : null;
 const amGuesser = () => guesserId() === NET.myId;
 const cleanName = n => String(n||"").trim().slice(0,18) || "Giocatore";
 
@@ -1583,7 +1639,7 @@ function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== N
 function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
 function publish(){
   if(M.phase === "result") armAutoFinal(); else { clearTimeout(NET.autoT); M.autoAt = null; }
-  if(M.phase === "lobby" && !M.roundsManual) M.rounds = recRounds(); // finché l'host non sceglie, uso i giri consigliati
+  if(M.phase === "lobby" && !M.roundsManual && !isDuo()) M.rounds = recRounds(); // finché l'host non sceglie, uso i giri consigliati
   M.left = M.phase === "turn" ? (M.paused != null ? M.paused : Math.max(0, M.endsAt - Date.now())) : null;
   mpBroadcast({t:"state", s:M});
   roomSave();
@@ -1615,7 +1671,7 @@ function guessOne(text, word){
 function armTurnTimer(){
   clearTimeout(NET.turnT);
   if(!M || M.phase !== "turn" || M.paused != null) return;
-  NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ toReveal(); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
+  NET.turnT = setTimeout(() => { if(M && M.phase === "turn"){ if(isDuo()) mpEndTurn({reason:"time"}); else toReveal(); publish(); } }, Math.max(0, M.endsAt - Date.now()) + 300);
 }
 function armAutoFinal(){
   clearTimeout(NET.autoT);
@@ -1735,7 +1791,7 @@ function hostReceive(pid, msg){
   if(p && !p.on && !["bye","hello","peek"].includes(msg.t)){ playerBack(p); publish(); } // era sparito ed è tornato sulla stessa connessione
   if(msg.t === "hb") return;
   switch(msg.t){
-    case "peek": NET.sendTo(pid, {t:"info", host:mpPlayer(M.host).name, game:"Scarabocchi"}); break;
+    case "peek": NET.sendTo(pid, {t:"info", host:mpPlayer(M.host).name, game:gameName(M.game)}); break;
     case "photo": // selfie facoltativo: piccolo, solo in memoria, girato a tutti nella stanza
       if(p && (msg.img === null || (typeof msg.img === "string" && msg.img.startsWith("data:image/") && msg.img.length < 30000))){
         if(msg.img) PH[pid] = msg.img; else delete PH[pid];
@@ -1753,7 +1809,7 @@ function hostReceive(pid, msg){
         publish(); break;
       }
       if(!p){
-        if(M.players.length >= 16){ NET.sendTo(pid, {t:"full"}); return; }
+        if(M.players.length >= (isDuo() ? 2 : 16)){ NET.sendTo(pid, {t:"full", max:isDuo() ? 2 : 16}); return; }
         const used = new Set(M.players.map(x => x.color));
         let nm = cleanName(msg.name), k = 2; while(M.players.some(x => x.name.toLowerCase() === nm.toLowerCase())) nm = cleanName(msg.name).slice(0,15) + " " + k++;
         M.players.push({id:pid, name:nm, color:COLORS.find(c => !used.has(c)) || COLORS[M.players.length % COLORS.length], on:true});
@@ -1763,6 +1819,7 @@ function hostReceive(pid, msg){
       } else { playerBack(p); if(msg.name) p.name = cleanName(msg.name); }
       publish();
       Object.entries(PH).forEach(([id, img]) => NET.sendTo(pid, {t:"photo", id, img}));
+      if(isDuo() && M.phase === "turn" && LIVE.key === liveKey()) NET.sendTo(pid, {t:"live", key:LIVE.key, k:0, st:LIVE.s, a:LIVE.a});
       if(Object.keys(MD).length){ NET.sendTo(pid, {t:"drawings", imgs:{}}); Object.entries(MD).forEach(([id, img]) => NET.sendTo(pid, {t:"draw1", id, img})); }
       break;
     }
@@ -1773,12 +1830,12 @@ function hostReceive(pid, msg){
         publish();
       } break;
     case "start":
-      if(M.phase === "ready" && (pid === guesserId() || (pid === M.host && msg.skip))){
+      if(M.phase === "ready" && (pid === guesserId() || (isDuo() && M.order.includes(pid) && !msg.skip) || (pid === M.host && msg.skip))){
         if(msg.skip){ M.turn++; toNextTurn(); publish(); break; }
         const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
         M.queue = []; M.view = 0; M.tries = []; M.paused = null; M.revealed = false;
         M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000; M.startedAt = Date.now();
-        armTurnTimer();
+        armTurnTimer(); LIVE = {key:liveKey(), s:[], a:LIVE.a};
         mpBroadcast({t:"drawings", imgs:MD}); publish();
       } break;
     case "send": // un disegnatore ha finito e invia il disegno
@@ -1795,6 +1852,22 @@ function hostReceive(pid, msg){
       if(M.phase === "reveal" && M.revealed && pid === guesserId() && M.view < M.queue.length && (msg.view == null || msg.view === M.view)){ M.view++; turnCheck(); publish(); } break;
     case "reveal":
       if(M.phase === "reveal" && pid === guesserId() && !M.revealed){ M.revealed = true; publish(); } break;
+    case "live": // coppia: il disegno in diretta, solo i tratti cambiati
+      if(isDuo() && M.phase === "turn" && pid === drawerId() && msg.key === liveKey() && liveApply(msg)){
+        M.players.forEach(x => { if(x.id !== NET.myId && x.id !== pid) NET.sendTo(x.id, msg); });
+        liveDraw();
+      } break;
+    case "dguess": { // coppia: risposte libere finché c'è tempo
+      if(!isDuo() || M.phase !== "turn" || pid !== guesserId() || typeof msg.text !== "string") break;
+      const text = msg.text.trim().slice(0, 40); if(!text) break;
+      const el = Math.max(0, M.seconds*1000 - (M.endsAt - Date.now())), secs = Math.max(1, Math.ceil(el/1000));
+      if(guessOk(text, M.word)){
+        const pts = el <= 20000 ? 3 : el <= 40000 ? 2 : 1, d = drawerId();
+        M.scores[pid] += pts; if(d) M.scores[d] = (M.scores[d] || 0) + 1;
+        mpEndTurn({reason:"guess", helper:d, pts, secs, text});
+      } else { M.tries.push({text, secs}); if(M.tries.length > 40) M.tries.shift(); M.tryN = (M.tryN || 0) + 1; }
+      publish(); break;
+    }
     case "guess": { // un solo tentativo scritto per disegno
       if(M.phase !== "reveal" || !M.revealed || pid !== guesserId() || M.view >= M.queue.length || msg.view !== M.view || typeof msg.text !== "string") break;
       const text = msg.text.trim().slice(0, 40), helper = M.queue[M.view]; if(!text) break;
@@ -1823,7 +1896,8 @@ function guestReceive(msg){
   NET.lastHost = Date.now();
   if(msg.t === "hb") return;
   if(msg.t === "info"){ NET.info = msg; mpRender(true); }
-  else if(msg.t === "full"){ NET.status = "full"; mpRender(true); }
+  else if(msg.t === "full"){ NET.status = "full"; NET.fullMax = msg.max || 16; mpRender(true); }
+  else if(msg.t === "live"){ if(M && msg.key === liveKey() && liveApply(msg)) liveDraw(); }
   else if(msg.t === "state"){ M = msg.s; if(M.phase === "turn") mpEndsLocal = Date.now() + M.left; onState(M); }
   else if(msg.t === "drawings"){ MD = msg.imgs || {}; onDrawings(); }
   else if(msg.t === "draw1"){ MD[msg.id] = msg.img; onDrawings(); }
@@ -1835,7 +1909,10 @@ let prevPhase = null;
 function onState(s){
   if(NET.role === "host") mpEndsLocal = s.endsAt;
   if(!wake) grabWake(); // schermo acceso per tutta la serata
-  if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = 0;
+  if(prevPhase === "turn" && s.phase !== "turn" && s.game === "coppia" && BOARD && BOARD.key && BOARD.key.startsWith("turn|")){ LIVE.s = BOARD.strokes.map(liveCompact); LIVE.a = BOARD.h / BOARD.w; } // chi disegnava: il disegno finale resta da mostrare
+  if(s.phase === "turn" && s.game === "coppia" && LIVE.key !== liveKey(s)){ LIVE = {key:liveKey(s), s:[], a:LIVE.a}; NET.liveSent = null; }
+  if(s.phase === "turn" && s.game === "coppia" && (s.tryN || 0) > (NET.lastTry || 0) && s.tries.length){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tryN; duoTry(t.text, amGuesser() ? null : mpPlayer(s.order[s.turn])); }
+  if(s.phase === "turn" && prevPhase !== "turn"){ NET.lastQ = 0; NET.lastTry = s.tryN || 0;
     NET.prevScores = {...s.scores}; NET.prevOrder = [...s.players].sort((a,b) => (s.scores[b.id]||0) - (s.scores[a.id]||0) || a.name.localeCompare(b.name)).map(p => p.id); }
   const showResult = s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal");
   if(s.phase === "reveal" && s.tries && s.tries.length > (NET.lastTry||0)){ const t = s.tries[s.tries.length-1]; NET.lastTry = s.tries.length; const prevImg = MD[t.on]; if(amGuesser()) showX(t.text, null, prevImg); else showX(t.text, mpPlayer(s.order[s.turn]), prevImg); NET.holdUntil = Date.now() + (amGuesser() ? 1300 : 2400); }
@@ -1962,7 +2039,57 @@ function boardInit(){
     if(BOARD.pts.size === 0) BOARD.noDraw = false; // si torna a disegnare solo dopo aver alzato tutte le dita
   };
 }
-if(/[?&]local/.test(location.search)) window.T = {boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }}; // solo per le prove
+if(/[?&]local/.test(location.search)) window.T = {boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }, get M(){ return M; }, get LIVE(){ return LIVE; }, hostDo:(a) => hostDo(a), endNow:() => { M.endsAt = Date.now() + 200; armTurnTimer(); }, rerender:() => mpRender(true), setWord:w => { M.word = w; publish(); mpRender(true); }}; // solo per le prove
+/* coppia: il disegno va in diretta a chi indovina. Si mandano solo i tratti cambiati, ogni 250 ms */
+let LIVE = {key:null, s:[], a:1.6};
+const liveKey = (s = M) => s ? `${s.round}.${s.turn}.${s.startedAt || 0}` : null;
+const liveCompact = st => ({c:st.c, s:+st.s.toFixed(2), p:st.p.map(([x,y]) => [Math.round(x*1000)/1000, Math.round(y*1000)/1000])});
+function liveApply(msg){
+  if(!Array.isArray(msg.st) || typeof msg.k !== "number" || msg.k < 0) return false;
+  if(LIVE.key !== msg.key) LIVE = {key:msg.key, s:[], a:LIVE.a};
+  if(msg.k > LIVE.s.length) return false; // manca un pezzo: aspetto il prossimo invio completo
+  LIVE.s = LIVE.s.slice(0, msg.k).concat(msg.st.filter(x => x && Array.isArray(x.p)).slice(0, 2000));
+  if(msg.a > .3 && msg.a < 4) LIVE.a = msg.a;
+  return true;
+}
+function liveTick(){
+  if(!M || !isDuo() || M.phase !== "turn" || amGuesser() || !BOARD || !BOARD.w) return;
+  if(NET.role === "guest" && NET.status !== "open") return;
+  const key = liveKey(), st = BOARD.strokes, sig = st.map(x => x.p.length + x.c);
+  let ls = NET.liveSent; const now = Date.now();
+  if(!ls || ls.key !== key){ ls = NET.liveSent = {key, sig:[], full:0}; }
+  let k = 0; while(k < sig.length && k < ls.sig.length && sig[k] === ls.sig[k]) k++;
+  const full = st.length && now - ls.full > 4000; // ogni tanto tutto il disegno: chi rientra lo ritrova
+  if(!full && k === sig.length && k === ls.sig.length) return;
+  if(full){ k = 0; ls.full = now; }
+  ls.sig = sig;
+  act({t:"live", key, k, st:st.slice(k).map(liveCompact), a:+(BOARD.h / BOARD.w).toFixed(3)});
+}
+setInterval(liveTick, 250);
+function liveDraw(){
+  if(NET.liveRaf) return;
+  NET.liveRaf = requestAnimationFrame(() => {
+    NET.liveRaf = 0;
+    const box = $("#liveview"), cv = $("#livecv"); if(!box || !cv) return;
+    const bw = box.clientWidth, bh = box.clientHeight; if(!bw || !bh) return;
+    let w = bw - 6, h = w * LIVE.a; if(h > bh - 6){ h = bh - 6; w = h / LIVE.a; }
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    if(cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); cv.style.width = w + "px"; cv.style.height = h + "px"; }
+    const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.lineCap = "round"; g.lineJoin = "round";
+    boardPaint(g, w, h, LIVE.s);
+    box.classList.toggle("empty", !LIVE.s.length);
+  });
+}
+window.addEventListener("resize", () => { if($("#livecv")) liveDraw(); });
+/* coppia: una risposta sbagliata compare in alto senza coprire la lavagna */
+function duoTry(text, who){
+  if(who){ buzz(15); } else { sfx("wrong"); buzz([40,30,40]); const f = $("#g-guess"); if(f){ f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); } }
+  document.querySelector(".dtoast")?.remove();
+  const x = document.createElement("div"); x.className = "dtoast" + (who ? " watch" : ""); x.setAttribute("aria-live","assertive");
+  x.innerHTML = who ? `<span>${esc(who.name)} ha scritto</span><b>${esc(text)}</b>` : `<b>«${esc(text)}»</b><span>no, riprova</span>`;
+  document.body.appendChild(x); setTimeout(() => x.remove(), who ? 2200 : 1300);
+}
+function duoPts(){ if(!M || M.phase !== "turn") return 3; const el = M.seconds*1000 - (mpEndsLocal - Date.now()); return el <= 20000 ? 3 : el <= 40000 ? 2 : 1; }
 /* il disegno resta salvato sul telefono: se la pagina si ricarica a metà turno non si perde */
 function boardSave(){ try{ sessionStorage.setItem("ad.board", JSON.stringify({k:NET.code + "|" + BOARD.key, s:BOARD.strokes})); }catch(_){} }
 function boardZoomUI(){ const b = $("#b-fit"); if(b) b.hidden = !BOARD || BOARD.view.z <= 1.01; }
@@ -1988,11 +2115,12 @@ function boardSnapshot(){
 }
 
 /* ---------- avvio host e ospite ---------- */
-async function mpHostStart(){
+async function mpHostStart(game){
+  game = game === "coppia" ? "coppia" : "scarabocchi";
   mpClose();
   NET.role = "host"; NET.myId = myPid(); NET.code = newCode(); NET.status = "connecting"; NET.lobbyStep = 1; NET.inviteN = Math.floor(Math.random()*100);
-  M = {game:"scarabocchi", phase:"lobby", host:NET.myId, players:[{id:NET.myId, name:cleanName(savedName() || "Host"), color:COLORS[0], on:true}],
-       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:1, seconds:120, sprint:false, level:"medium", word:null, cat:null, last:null, queue:[], tries:[], view:0};
+  M = {game, phase:"lobby", host:NET.myId, players:[{id:NET.myId, name:cleanName(savedName() || "Host"), color:COLORS[0], on:true}],
+       scores:{[NET.myId]:0}, order:[], turn:0, round:1, rounds:game === "coppia" ? 5 : 1, seconds:game === "coppia" ? 60 : 120, sprint:false, level:"medium", word:null, cat:null, last:null, queue:[], tries:[], view:0};
   prevPhase = "lobby";
   go("mp");
   for(let i = 0; i < 3; i++){
@@ -2021,10 +2149,10 @@ async function mpHostResume(sv){
 function mpResumeAsk(sv, fromCard){
   if($("#quit")) return;
   const n = sv.M.players.length, when = new Date(sv.at).toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
-  const where = sv.M.phase === "lobby" ? "nella sala d'attesa" : `al giro ${sv.M.round} di ${sv.M.rounds}`;
+  const where = sv.M.phase === "lobby" ? "nella sala d'attesa" : sv.M.game === "coppia" ? `al turno ${(sv.M.round-1)*2 + sv.M.turn + 1} di ${sv.M.rounds*2}` : `al giro ${sv.M.round} di ${sv.M.rounds}`;
   const m = document.createElement("div");
   m.id = "quit"; m.className = "modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
-  m.innerHTML = `<div class="sheet"><h2>Riprendere la partita?</h2><p class="hint">Scarabocchi con ${n} giocatori, ${where}, ultima mossa alle ${when}. Gli amici rientrano da soli, senza riscansionare il QR.</p>
+  m.innerHTML = `<div class="sheet"><h2>Riprendere la partita?</h2><p class="hint">${gameName(sv.M.game)} con ${n} giocatori, ${where}, ultima mossa alle ${when}. Gli amici rientrano da soli, senza riscansionare il QR.</p>
     <div class="row"><button class="btn ghost" id="quit-no">${fromCard ? "Nuova partita" : "Chiudila"}</button><button class="btn pink" id="quit-yes">Riprendi</button></div></div>`;
   document.body.appendChild(m);
   m.addEventListener("click", e => {
@@ -2092,8 +2220,9 @@ function showOutcome(s){
   const L = s.last || {}, g = mpPlayer(s.order[s.turn]), h = mpPlayer(L.helper);
   const o = document.createElement("div"); o.className = "outcome " + (L.reason === "guess" ? "ok" : "ko"); o.setAttribute("role","status");
   o.innerHTML = L.reason === "guess"
-    ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato!</div>${h ? `<div class="oc-sub">+${L.pts} anche a ${esc(h.name)}</div>` : ""}${h && MD[h.id] ? `<img src="${MD[h.id]}" alt="">` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
-    : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "skip" ? "Turno saltato" : L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
+    ? s.game === "coppia" ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato in ${L.secs} s!</div>${h ? `<div class="oc-sub">+1 a ${esc(h.name)} per il disegno</div>` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
+    : `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato!</div>${h ? `<div class="oc-sub">+${L.pts} anche a ${esc(h.name)}</div>` : ""}${h && MD[h.id] ? `<img src="${MD[h.id]}" alt="">` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
+    : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "skip" ? "Turno saltato" : L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : L.reason === "time" ? "Tempo scaduto" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
   document.body.appendChild(o);
   const close = () => { o.classList.add("out"); setTimeout(() => o.remove(), 350); animateLB(); };
   o.addEventListener("click", close); setTimeout(close, L.reason === "guess" ? 2300 : 1700);
@@ -2211,6 +2340,18 @@ function triesHTML(){
 }
 function timerHTML(){ return `<div class="mptime" id="mptime">${M.paused != null ? Math.ceil(M.paused/1000) : Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>`; }
 
+function duoSetupHTML(online){
+  return `<div class="opts">
+            <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
+          </div>
+          <details class="rules"><summary><b>Come si gioca</b></summary><ol>
+            <li>10 turni, i ruoli si scambiano: uno disegna, l'altro indovina. 60 secondi a turno.</li>
+            <li>Chi indovina vede il disegno in diretta e può scrivere tutte le risposte che vuole.</li>
+            <li>Indovinata entro 20 secondi: 3 punti. Entro 40: 2 punti. Entro 60: 1 punto. A chi disegna, 1 punto se viene indovinata.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
+          <p class="hint pcount">Sfida a due: entra solo il tuo avversario.</p>
+          <button class="btn pink" id="mp-start" ${online !== 2 ? "disabled" : ""}>${online < 2 ? "Aspetta il tuo avversario" : "Inizia la sfida"}</button>`;
+}
+function duoTriesHTML(){ return (M.tries || []).slice(-8).reverse().map(t => `<li>✗ <b>${esc(t.text)}</b></li>`).join(""); }
 function mpView(){
   if(NET.role === "guest" && (!M || !mpPlayer(NET.myId))) return guestWelcome();
   if(!M) return `<section class="screen"><p class="lead">Nessuna stanza aperta.</p></section>`;
@@ -2226,16 +2367,16 @@ function mpView(){
         else if(NET.status === "error") qr = `<p class="hint">Non riesco ad aprire la stanza. Il gioco con più telefoni funziona dall'app pubblicata sul tuo link, non da questa anteprima.</p><button class="btn ghost" id="mp-retry">Riprova</button>`;
         else qr = `<div class="qrbox"><i class="spin" style="width:34px;height:34px" aria-hidden="true"></i></div><p class="hint">Apro la stanza…</p>`;
         if(NET.lobbyStep !== 2) return `<section class="screen invite">
-          <div style="text-align:center"><span class="eyebrow">Scarabocchi</span><h1 class="invite-line">${INVITE_LINES[NET.inviteN % INVITE_LINES.length]}</h1><p class="lead" style="margin:6px 0 0">Inquadrate il QR con la fotocamera, oppure mandate il link nel gruppo.</p></div>
+          <div style="text-align:center"><span class="eyebrow">${gameName(M.game)}</span><h1 class="invite-line">${INVITE_LINES[NET.inviteN % INVITE_LINES.length]}</h1><p class="lead" style="margin:6px 0 0">Inquadrate il QR con la fotocamera, oppure mandate il link nel gruppo.</p></div>
           <div class="qrcard">${qr}</div>
           <div><span class="eyebrow">Già dentro (${online})</span>${mpPlayersChips()}</div>
           <button class="btn pink stickybtn" id="mp-setup">${online < 2 ? "Imposta la partita" : `Ci siamo tutti: imposta la partita`}</button>
         </section>`;
         return `<section class="screen">
-          <div class="drawhead"><div><span class="eyebrow">Scarabocchi</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
+          <div class="drawhead"><div><span class="eyebrow">${gameName(M.game)}</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
           <div class="field hostme"><button class="selfiebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${PH[me.id] ? av(me) : CAM_ICON}</button><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
-          <div class="opts">
+          ${isDuo() ? duoSetupHTML(online) : `<div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
             <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Quando arriva il primo disegno, chi sta ancora disegnando ha 30 secondi per finire." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
@@ -2248,9 +2389,9 @@ function mpView(){
             <li>Finito il tempo, scopre i disegni uno alla volta, nell'ordine di invio. Da qui non c'è più tempo.</li>
             <li>Chi indovina guarda un disegno e <b>scrive una sola risposta</b>. Giusta: punti e turno finito. Sbagliata: compare una X e arriva il disegno successivo. I disegni già visti non tornano.</li>
             <li>Indovinata sul <b>primo disegno: 2 punti a chi indovina e 2 a chi l'ha disegnato</b>. Sui disegni successivi, 1 e 1.</li>
-            <li>Se nessun disegno viene indovinato o passa, nessun punto. Poi tocca al prossimo.</li></ol><p class="hint">Regole complete: tasto <b>i</b> in alto a destra.</p></details>
+            <li>Se nessun disegno viene indovinato o passa, nessun punto. Poi tocca al prossimo.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
           <p class="hint pcount">Consigliato da 4 a 8 giocatori.</p>
-          <button class="btn pink" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>
+          <button class="btn pink" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>`}
         </section>`;
       }
       return `<section class="screen pass">${selfieAv(me)}
@@ -2258,16 +2399,30 @@ function mpView(){
         ${mpPlayersChips()}</section>`;
     }
     case "ready":
-      if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
+      if(isDuo()){ const d = mpPlayer(drawerId());
+        return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${av(amGuesser() ? me : d, "big-av")}<div><h1>${amGuesser() ? "Tocca a te indovinare" : "Tocca a te disegnare"}</h1>
+        <p class="lead">${amGuesser() ? `${esc(d ? d.name : "")} disegna, tu lo vedi in diretta. Scrivi la parola appena la riconosci: più sei veloce, più punti prendi.` : `${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi.`}</p></div>
+        <div class="duoscale"><span><b>3</b> entro 20 s</span><span><b>2</b> entro 40 s</span><span><b>1</b> entro 60 s</span></div>
+        <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button>
+        <p class="hint" style="text-align:center;margin:0">Può premere Via chiunque dei due.</p></section>`; }
+      if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(me, "big-av")}<div><h1>Tocca a te!</h1>
         <p class="lead">Gli altri disegnano, tu aspetti. Poi scopri i disegni e indovini.</p></div>
         <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button></section>`;
-      return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
+      return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(g, "big-av")}
         <div><p class="lead" style="margin:0 0 6px">Indovina</p><h1>${esc(g.name)}</h1></div>
         <p class="hint">Preparati a disegnare.</p>
         ${NET.role === "host" && !g.on ? `<p class="hint">${esc(g.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il suo turno</button>` : ""}</section>`;
     case "turn": {
+      if(isDuo() && amGuesser()){ const d = mpPlayer(drawerId());
+        return `<section class="screen duoguess">
+          <div class="dtop"><div class="dtw"><span class="eyebrow">${turnLabel()} · disegna ${esc(d ? d.name : "")}</span><div class="duonow" id="duopts">Vale <b>${duoPts()}</b></div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}</div>
+          <form class="field guessform" id="g-guess" autocomplete="off"><input id="gtxt" maxlength="40" placeholder="Scrivi la parola" aria-label="La tua risposta" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"><button class="btn mint" type="submit">Prova</button></form>
+          <div class="liveview empty" id="liveview"><canvas id="livecv" aria-label="Disegno in diretta"></canvas><div class="livewait">${esc(d ? d.name : "")} sta per disegnare<span class="think"><i></i><i></i><i></i></span></div><span class="livetag">● in diretta</span></div>
+          <ul class="tries" id="ctries">${duoTriesHTML()}</ul>
+        </section>`; }
       const sent = M.queue.includes(NET.myId), drawers = M.players.filter(p => p.on && p.id !== guesserId()).length;
       if(amGuesser()) return `<section class="screen pass bigwait">${meBar()}
           <span class="eyebrow">Stanno disegnando per te</span>
@@ -2279,7 +2434,8 @@ function mpView(){
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           ${sentListHTML()}</section>`;
       return `<section class="screen drawscreen">
-          <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
+          ${(() => { const lab = isDuo() ? `${esc(g.name)} ti guarda in diretta` : `Per ${esc(g.name)}`, wide = M.word.length > 14 || Math.max(...M.word.split(/[\s']+/).map(x => x.length)) > 10;
+            return `<div class="dtop ${wide ? "wide" : ""}">${wide ? `<span class="eyebrow dlab">${lab}</span>` : ""}<div class="dtw">${wide ? "" : `<span class="eyebrow">${lab}</span>`}<div class="dword">${esc(M.word)}</div></div>`; })()}${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}${isDuo() ? "" : `<button class="btn pink dsend" id="b-send">Invia</button>`}</div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
           <button class="bfit" id="b-fit" hidden aria-label="Torna alla lavagna intera">${TICONS.fit}</button>
           <div class="toolbar" role="toolbar" aria-label="Strumenti">
@@ -2327,14 +2483,15 @@ function mpView(){
         : L.reason === "skip" ? "Turno saltato dall'host" : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
       const nx = mpPlayer(peekNext()), lastTurn = !nx;
       const canNext = lastTurn ? (amGuesser() || NET.role === "host") : (nx.id === NET.myId || (NET.role === "host" && !nx.on));
+      const dline = isDuo() ? (L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato in ${L.secs} s: +${L.pts}${helper ? `, e +1 a <b>${esc(helper.name)}</b>` : ""}` : L.reason === "time" ? "Tempo scaduto: nessun punto" : line) : line;
       return `<section class="screen resultview">${meBar()}
-        <div class="rhead ${L.reason === "guess" ? "ok" : "ko"}"><span class="eyebrow">La parola era</span><div class="rword">${esc(L.word)}</div><p class="rline">${line}</p></div>
-        ${galleryHTML()}
+        <div class="rhead ${L.reason === "guess" ? "ok" : "ko"}"><span class="eyebrow">${isDuo() ? turnLabel() + " · la parola era" : "La parola era"}</span><div class="rword">${esc(L.word)}</div><p class="rline">${dline}</p></div>
+        ${isDuo() ? (LIVE.s.length ? `<div class="liveview small" id="liveview"><canvas id="livecv" aria-label="Il disegno del turno"></canvas></div>` : "") : galleryHTML()}
         <span class="eyebrow" style="text-align:center">Classifica</span>
         ${lbHTML()}
         <div class="spacer"></div>
         ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost stickybtn" id="mp-next">Vai subito</button>` : ""}`
-          : canNext ? `<button class="btn stickybtn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno</p>`}</section>`;
+          : canNext ? `<button class="btn stickybtn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">${isDuo() ? `Ora tocca a te disegnare. <b>${esc(nx.name)}</b> fa partire il prossimo turno` : `Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno`}</p>`}</section>`;
     }
     case "final": {
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
@@ -2362,7 +2519,7 @@ function guestWelcome(){
   let body;
   if(st === "noroom") body = `<h2>Questa stanza non è più attiva</h2><p class="lead">Il link vale solo per la partita in corso. Chiedi all'host di mostrarti il QR nuovo.</p><button class="btn" id="g-retry">Riprova</button>`;
   else if(st === "lost") body = `<h2>La stanza è chiusa</h2><p class="lead">L'host ha chiuso la partita o il suo telefono non risponde. Se state ancora giocando, chiedigli di tenere l'app aperta e riprova.</p><button class="btn" id="g-retry">Riprova</button>`;
-  else if(st === "full") body = `<h2>Stanza piena</h2><p class="lead">Ci sono già 16 giocatori.</p>`;
+  else if(st === "full") body = `<h2>Stanza piena</h2><p class="lead">${NET.fullMax === 2 ? "È una sfida a due e ci sono già due giocatori." : "Ci sono già 16 giocatori."}</p>`;
   else if(st === "closed") body = `<h2>La partita è finita</h2><p class="lead">L'host ha chiuso la stanza. Grazie di aver giocato!</p>`;
   else if(st === "reconnecting") body = `<p class="lead">Mi ricollego all'host…</p>`;
   else if(st === "error") body = `<h2>Qualcosa non va</h2><p class="lead">Non riesco a collegarmi. Controlla la connessione e riprova.</p><button class="btn" id="g-retry">Riprova</button>`;
@@ -2379,7 +2536,9 @@ function mpRender(force){
   if(S.screen !== "mp") return;
   const drawing = M && M.phase === "turn" && !amGuesser() && !(M.queue||[]).includes(NET.myId);
   const guessing = M && M.phase === "reveal" && M.revealed && amGuesser(), cur = guessing ? M.queue[M.view] : null;
+  const duoG = M && isDuo() && M.phase === "turn" && amGuesser();
   const key = M ? [M.phase, M.turn, M.round, amGuesser(), drawing, guessing ? M.view + "/" + (cur && MD[cur] ? 1 : 0) : ""].join("|") : "none";
+  if(!force && key === mpKey && duoG){ const t = $("#ctries"), h = duoTriesHTML(); if(t && t.innerHTML !== h){ t.innerHTML = h; liveDraw(); } return; } // si scrive e si guarda il disegno: niente ridisegni
   // mentre disegni (o scrivi la risposta) non ridisegno la pagina, altrimenti si cancellerebbe la lavagna
   if(!force && key === mpKey && (drawing || guessing)){ const q = $("#qcount"); if(guessing && q){ const h = guessInfo(); if(q.innerHTML !== h) q.innerHTML = h; } return; }
   if(drawing && key !== mpKey) BOARD = null;
@@ -2399,11 +2558,13 @@ function mpAfterRender(){
     }).catch(() => { const box = $("#qrbox"); if(box) box.innerHTML = `<p class="hint">${esc(joinUrl())}</p>`; });
   }
   if($("#board")) boardInit();
+  if($("#livecv")) liveDraw();
   clearInterval(mpTick); mpTick = null;
   if(M && M.phase === "turn"){
     mpTick = setInterval(() => {
       const el = $("#mptime"); const s = M && M.paused != null ? Math.ceil(M.paused/1000) : Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000));
       if(el && el.textContent !== String(s)){ el.textContent = s; el.classList.toggle("low", s <= 10); if(s <= 5 && s > 0 && !(M && M.paused != null)) sfx("tick"); }
+      const dp = $("#duopts"); if(dp){ const v = `Vale <b>${duoPts()}</b>`; if(dp.innerHTML !== v){ dp.innerHTML = v; dp.classList.remove("drop"); void dp.offsetWidth; dp.classList.add("drop"); } }
     }, 200);
   }
 }
@@ -2414,7 +2575,7 @@ view.addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
   if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
-  else if(id === "mp-start"){ usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
+  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; M.rounds = 5; } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ act({t:"start"}); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
@@ -2428,11 +2589,11 @@ view.addEventListener("click", e => {
   else if(d.selfieDel){ if(NET.role === "host") hostReceive(NET.myId, {t:"photo", img:null}); else { delete PH[NET.myId]; NET.toHost({t:"photo", img:null}); mpRender(true); } }
   else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
   else if(id === "mp-exit"){ mpEndRoom(); go("home"); }
-  else if(id === "mp-retry"){ mpHostStart(); }
+  else if(id === "mp-retry"){ mpHostStart(M && M.game); }
   else if(id === "g-retry"){ location.reload(); }
   else if(id === "mp-setup"){ NET.lobbyStep = 2; render(); window.scrollTo(0, 0); }
   else if(id === "mp-showqr"){ NET.lobbyStep = 1; render(); window.scrollTo(0, 0); }
-  else if(id === "share-link"){ navigator.share({title:"AfterDinner", text:`Vieni a giocare a Scarabocchi con ${mpPlayer(M.host).name}!`, url:joinUrl()}).catch(() => {}); }
+  else if(id === "share-link"){ navigator.share({title:"AfterDinner", text:`Vieni a giocare a ${gameName(M.game)} con ${mpPlayer(M.host).name}!`, url:joinUrl()}).catch(() => {}); }
   else if(id === "copy-link"){ const u = joinUrl(); navigator.clipboard?.writeText(u).then(() => { b.textContent = "Link copiato"; }, () => { b.textContent = u; }); }
   else if(d.ink){ BOARD.ink = d.ink; BOARD.eraser = false; $("#b-eraser").setAttribute("aria-pressed", false); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", x === b)); }
   else if(id === "b-eraser"){ BOARD.eraser = !BOARD.eraser; b.setAttribute("aria-pressed", BOARD.eraser); view.querySelectorAll(".ink").forEach(x => x.setAttribute("aria-pressed", !BOARD.eraser && x.dataset.ink === BOARD.ink)); }
@@ -2451,6 +2612,7 @@ view.addEventListener("submit", e => {
   if(e.target.id !== "g-guess") return;
   e.preventDefault();
   const inp = $("#gtxt"), text = inp.value.trim(); if(!text || !M) return;
+  if(isDuo()){ inp.value = ""; inp.focus({preventScroll:true}); act({t:"dguess", text}); return; } // coppia: si continua a scrivere
   inp.disabled = true; e.target.querySelector("button").disabled = true;
   act({t:"guess", text, view:M.view});
 });
