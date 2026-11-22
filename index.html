@@ -761,7 +761,7 @@ function unlockAudio(){
 }
 /* l'audio resta acceso solo mentre suona: finito l'effetto si spegne, così iPhone non mostra niente sulla Dynamic Island */
 function audioIdle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!musicT && audio && audio.state === "running") audio.suspend().catch(()=>{}); }, ms); }
-["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
+
 /* app in background o schermo spento: tutto zitto; al ritorno riparte */
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} setAudioSession(false); }
@@ -804,12 +804,27 @@ const SFX = {
   fanfare(){ [[392,0],[523,.12],[659,.24],[784,.36]].forEach(([f,t]) => tone(f, t, .14, {type:"square", gain:.06, lp:2200})); [784,988,1175].forEach(f => tone(f, .5, .8, {type:"square", gain:.05, lp:2000})); },
   sad(){ [[392,0],[370,.32],[349,.64]].forEach(([f,t]) => tone(f, t, .3, {type:"sawtooth", gain:.08, lp:1200})); tone(330, .96, .9, {type:"sawtooth", gain:.09, lp:1000, to:300}); }
 };
-function sfx(name, ...a){ if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
+function sfx(name, ...a){ return; // effetti sonori tolti (scelta di Rob: niente icona audio sulla Dynamic Island)
+  if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
 window.__sfxTest = () => Object.keys(SFX).map(k => { try{ ctx(); SFX[k](k === "drumroll" ? .5 : undefined); return k + ":ok"; }catch(e){ return k + ":" + e.message; } });
 function vol(){ return ST().volume/100; }
-function buzz(ms){ if(ST().vibration){ try{ navigator.vibrate?.(ms); }catch(e){} } }
+/* vibrazione: su Android navigator.vibrate; su iPhone (iOS 18+) il "tic" aptico di un interruttore nascosto */
+let hapticEl = null;
+function buzz(ms){
+  if(!ST().vibration) return;
+  try{
+    if(navigator.vibrate){ navigator.vibrate(ms); return; }
+    if(!hapticEl){
+      hapticEl = document.createElement("label"); hapticEl.setAttribute("aria-hidden","true");
+      hapticEl.style.cssText = "position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden";
+      hapticEl.innerHTML = '<input type="checkbox" switch tabindex="-1">';
+      document.body.appendChild(hapticEl);
+    }
+    hapticEl.click();
+  }catch(e){}
+}
 function beep(freq, dur){
-  if(!ST().sfx || !ST().volume) return;
+  return;
   try{
     ctx();
     const o = audio.createOscillator(), gn = audio.createGain();
@@ -834,7 +849,7 @@ function musicTick(){
   musicNote(ch[[0,1,2,1,0,2,1,2][musicStep%8]]*(musicStep%4===3?2:1), t, .5, v);
   musicStep++;
 }
-function startMusic(){ if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
+function startMusic(){ return; if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
 function stopMusic(){ clearInterval(musicT); musicT = null; audioIdle(300); }
 document.addEventListener("pointerdown", () => { if(ST().music && !musicT) startMusic(); });
 document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]):not(#b-send):not(#mp-go):not(.gtile)")) sfx("tap"); }, true);
@@ -921,13 +936,9 @@ function openSettings(){
   m.id="settings"; m.className="modal settings"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
     <div class="set-list">
-      <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
       <div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
         <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">☰ Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">◎ Ruota</button></div></div>
-      ${sw("music","Musica","Sottofondo leggero mentre giocate")}
-      ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
-      ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
-      ${sw("vibration","Vibrazione","Quando si fa punto (solo Android)")}
+      ${sw("vibration","Vibrazione","Un tic quando giri la ruota e nei momenti chiave")}
       ${sw("awake","Schermo sempre acceso","Durante i turni a tempo")}
       ${sw("splash","Animazione iniziale","All'apertura dell'app")}
       <div class="set-row"><span class="lbl"><b>Cancella dati</b><span>Nomi dei giocatori e partita in corso</span></span><button class="iconbtn" id="set-reset">Cancella</button></div>
@@ -1098,10 +1109,8 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 /* niente zoom con due dita né doppio tocco: l'app resta ferma come un'app vera */
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
-let lastTouchEnd = 0;
-document.addEventListener("touchend", e => { const now = Date.now(); if(now - lastTouchEnd < 300 && !e.target.closest("input,textarea,canvas")) e.preventDefault(); lastTouchEnd = now; }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 19:40";
+const APP_VERSION = "22.11 · 19:45";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1715,7 +1724,7 @@ function wheelInit(){
     if(!drag) return;
     let da = ang(e) - drag.a; if(da > 180) da -= 360; if(da < -180) da += 360;
     drag.moved = Math.max(drag.moved, Math.abs(da));
-    const before = sel(); rot = drag.rot - da / step; draw(); if(sel() !== before){ buzz(5); sfx("tap"); }
+    const before = sel(); rot = drag.rot - da / step; draw(); if(sel() !== before){ buzz(8); }
   };
   wrap.onpointerup = wrap.onpointercancel = e => {
     if(!drag) return; const d = drag; drag = null;
