@@ -89,6 +89,15 @@ h2{font-size:1.6rem}
 .players{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
 .player{display:flex;align-items:center;gap:12px;background:var(--night-2);border-radius:16px;padding:10px 12px}
 .av{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;font:700 1.05rem var(--display);color:var(--ink)}
+.av.photo,.big-av.photo{box-shadow:0 0 0 2px var(--paper)}
+.selfiewrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.selfie-cta{width:auto;padding:10px 18px;font-size:1rem}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;cursor:pointer;padding:4px}
+.mebtn{position:relative;border:0;background:none;padding:0;cursor:pointer;flex:none;display:grid}
+.mebtn .cam{position:absolute;right:-6px;bottom:-4px;font-size:.7rem;font-style:normal;background:var(--night-3);border-radius:50%;width:18px;height:18px;display:grid;place-items:center}
+.hostme{display:flex;gap:10px;align-items:center}
+.selfiebtn{width:48px;height:48px;flex:none;border-radius:50%;border:2px dashed var(--night-3);background:var(--night-2);font-size:1.3rem;display:grid;place-items:center;cursor:pointer;padding:0}
+.selfiebtn .av{width:44px;height:44px}
 .player .name{flex:1;font-weight:600;font-size:1.05rem;min-width:0;overflow-wrap:anywhere}
 .x{background:none;border:0;color:var(--muted);font-size:1.4rem;cursor:pointer;padding:4px 8px;border-radius:10px}
 .x:hover{color:var(--pink)}
@@ -664,7 +673,8 @@ const ST = () => S.settings;
 
 function go(screen){ S.screen = screen; save(); render(); window.scrollTo(0,0); }
 function player(id){ return S.players.find(p => p.id === id); }
-function av(p, cls="av"){ return `<span class="${cls}" style="background:${p.color}">${initial(p.name)}</span>`; }
+function av(p, cls="av"){ const ph = S.screen === "mp" && p && PH[p.id];
+  return ph ? `<span class="${cls} photo" style="background:${p.color} url(${ph}) center/cover"></span>` : `<span class="${cls}" style="background:${p.color}">${initial(p.name)}</span>`; }
 
 /* ---------- Schermate ---------- */
 const screens = {
@@ -1316,7 +1326,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 22:50";
+const APP_VERSION = "22.11 · 23:05";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1384,6 +1394,7 @@ const GRACE = USE_LOCAL && QS.has("fast") ? 3000 : 60000;      // tempo per rico
 const ROOM_KEY = "ad.room", ROOM_TTL = 3*3600e3;
 let M = null;          // stato della partita (sull'host è quello vero, sugli altri è una copia)
 let MD = {};           // disegni del turno {idGiocatore: immagine}
+let PH = {};           // selfie facoltativi {idGiocatore: foto piccola}: solo in memoria, spariscono a fine serata
 let mpTick = null, mpEndsLocal = 0, mpKey = "";
 
 function myPid(){
@@ -1476,6 +1487,7 @@ function guestLost(noroom){
   NET.retryT = setTimeout(guestConnect, 3000);
 }
 function mpClose(){
+  PH = {};
   clearTimeout(NET.turnT); clearTimeout(NET.retryT); clearInterval(mpTick); mpTick = null;
   try{ NET.peer && NET.peer.destroy(); }catch(e){}
   try{ NET.bc && NET.bc.close(); }catch(e){}
@@ -1651,6 +1663,11 @@ function hostReceive(pid, msg){
   const p = mpPlayer(pid);
   switch(msg.t){
     case "peek": NET.sendTo(pid, {t:"info", host:mpPlayer(M.host).name, game:"Scarabocchi"}); break;
+    case "photo": // selfie facoltativo: piccolo, solo in memoria, girato a tutti nella stanza
+      if(p && (msg.img === null || (typeof msg.img === "string" && msg.img.startsWith("data:image/") && msg.img.length < 30000))){
+        if(msg.img) PH[pid] = msg.img; else delete PH[pid];
+        mpBroadcast({t:"photo", id:pid, img:msg.img}); mpRender(true);
+      } break;
     case "hello": {
       // stesso nome di un giocatore scollegato: è lui che rientra da un altro "telefono"
       const ghost = !p && M.players.find(x => !x.on && x.id !== M.host && x.name.toLowerCase() === cleanName(msg.name).toLowerCase());
@@ -1672,6 +1689,7 @@ function hostReceive(pid, msg){
         sfx("join"); buzz(20);
       } else { playerBack(p); if(msg.name) p.name = cleanName(msg.name); }
       publish();
+      Object.entries(PH).forEach(([id, img]) => NET.sendTo(pid, {t:"photo", id, img}));
       if(Object.keys(MD).length){ NET.sendTo(pid, {t:"drawings", imgs:{}}); Object.entries(MD).forEach(([id, img]) => NET.sendTo(pid, {t:"draw1", id, img})); }
       break;
     }
@@ -1734,6 +1752,7 @@ function guestReceive(msg){
   else if(msg.t === "state"){ M = msg.s; if(M.phase === "turn") mpEndsLocal = Date.now() + M.left; onState(M); }
   else if(msg.t === "drawings"){ MD = msg.imgs || {}; onDrawings(); }
   else if(msg.t === "draw1"){ MD[msg.id] = msg.img; onDrawings(); }
+  else if(msg.t === "photo"){ if(msg.img) PH[msg.id] = msg.img; else delete PH[msg.id]; mpRender(); }
   else if(msg.t === "rehello"){ if(NET.name) NET.toHost({t:"hello", name:NET.name}); }
   else if(msg.t === "closed"){ NET.status = "closed"; clearTimeout(NET.retryT); try{ sessionStorage.removeItem("ad.joined"); }catch(_){} M = null; mpNotes(); mpRender(true); }
 }
@@ -2003,10 +2022,27 @@ function animateLB(){
   });
 }
 /* in alto su ogni telefono: il tuo nome, i tuoi punti e la tua posizione */
+/* avatar grande in sala d'attesa con il tasto per il selfie (mai obbligatorio) */
+function selfieAv(me){
+  return `<div class="selfiewrap">${av(me, "big-av")}<button class="btn ghost selfie-cta" data-selfie="1">${PH[me.id] ? "📸 Rifai il selfie" : "📸 Aggiungi un selfie"}</button>
+    ${PH[me.id] ? `<button class="linkbtn" data-selfie-del="1">Togli la foto</button>` : `<p class="hint" style="margin:0">Facoltativo: lo vedono solo i giocatori di stasera.</p>`}</div>`;
+}
+/* scatto: fotocamera frontale, ritaglio quadrato 96 px, jpeg leggero. Non viene salvato da nessuna parte */
+function takeSelfie(){
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.setAttribute("capture", "user");
+  inp.onchange = () => { const f = inp.files && inp.files[0]; if(!f) return;
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => { const c = document.createElement("canvas"), n = 96, m = Math.min(img.width, img.height); c.width = c.height = n;
+      c.getContext("2d").drawImage(img, (img.width - m)/2, (img.height - m)/2, m, m, 0, 0, n, n); URL.revokeObjectURL(url);
+      setPhoto(c.toDataURL("image/jpeg", .7)); };
+    img.onerror = () => URL.revokeObjectURL(url); img.src = url; };
+  inp.click();
+}
+function setPhoto(img){ if(NET.role === "host") hostReceive(NET.myId, {t:"photo", img}); else if(NET.toHost){ PH[NET.myId] = img; NET.toHost({t:"photo", img}); mpRender(true); } }
 function meBar(){
   const me = mpPlayer(NET.myId); if(!me || !M || M.phase === "lobby") return "";
   const pos = 1 + M.players.filter(p => (M.scores[p.id]||0) > (M.scores[me.id]||0)).length;
-  return `<div class="mebar">${av(me)}<b>${esc(me.name)}</b><span class="mepts">${M.scores[me.id]||0} pt</span><span class="mepos">${pos}°<small> di ${M.players.length}</small></span></div>`;
+  return `<div class="mebar"><button class="mebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${av(me)}${PH[me.id] ? "" : `<i class="cam">📸</i>`}</button><b>${esc(me.name)}</b><span class="mepts">${M.scores[me.id]||0} pt</span><span class="mepos">${pos}°<small> di ${M.players.length}</small></span></div>`;
 }
 /* ---------- home a ruota: i giochi girano su una circonferenza ---------- */
 let WHEEL = null;
@@ -2110,7 +2146,7 @@ function mpView(){
         </section>`;
         return `<section class="screen">
           <div class="drawhead"><div><span class="eyebrow">Scarabocchi</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
-          <div class="field"><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
+          <div class="field hostme"><button class="selfiebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${PH[me.id] ? av(me) : "📸"}</button><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
           <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
           <div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
@@ -2130,17 +2166,17 @@ function mpView(){
           <button class="btn pink" id="mp-start" ${online < 2 ? "disabled" : ""}>${online < 2 ? `Aspetta almeno un amico` : "Inizia la partita"}</button>
         </section>`;
       }
-      return `<section class="screen pass"><div class="big-av" style="background:${me.color}">${initial(me.name)}</div>
+      return `<section class="screen pass">${selfieAv(me)}
         <div><p class="lead" style="margin:0 0 6px">Sei dentro, ${esc(me.name)}!</p><h2>Aspettiamo che ${esc(host.name)} inizi la partita</h2></div>
         ${mpPlayersChips()}</section>`;
     }
     case "ready":
       if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
-        <div class="big-av" style="background:${me.color}">${initial(me.name)}</div><div><h1>Tocca a te!</h1>
+        ${av(me, "big-av")}<div><h1>Tocca a te!</h1>
         <p class="lead">Gli altri disegnano, tu aspetti. Poi scopri i disegni e indovini.</p></div>
         <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button></section>`;
       return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">Giro ${M.round} di ${M.rounds}</span>
-        <div class="big-av" style="background:${g.color}">${initial(g.name)}</div>
+        ${av(g, "big-av")}
         <div><p class="lead" style="margin:0 0 6px">Indovina</p><h1>${esc(g.name)}</h1></div>
         <p class="hint">Preparati a disegnare.</p>
         ${NET.role === "host" && !g.on ? `<p class="hint">${esc(g.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il suo turno</button>` : ""}</section>`;
@@ -2185,7 +2221,7 @@ function mpView(){
       }
       if(!M.revealed) return `<section class="screen pass bigwait watchwait">${meBar()}
           <span class="eyebrow">Tempo scaduto</span>
-          <div class="big-av">${av(g)}</div>
+          ${av(g, "big-av")}
           <h2>${esc(g.name)} sta per scoprire i disegni</h2>
           <div class="think"><i></i><i></i><i></i></div>
           <p class="hint" style="text-align:center">Zitti e niente gesti!</p></section>`;
@@ -2301,6 +2337,8 @@ view.addEventListener("click", e => {
   else if(id === "mp-next"){ act({t:"next"}); }
   else if(d.zoom){ zoomDrawing(d.zoom); }
   else if(d.hostmenu){ openHostMenu(); }
+  else if(d.selfie){ takeSelfie(); }
+  else if(d.selfieDel){ if(NET.role === "host") hostReceive(NET.myId, {t:"photo", img:null}); else { delete PH[NET.myId]; NET.toHost({t:"photo", img:null}); mpRender(true); } }
   else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
   else if(id === "mp-exit"){ mpEndRoom(); go("home"); }
   else if(id === "mp-retry"){ mpHostStart(); }
