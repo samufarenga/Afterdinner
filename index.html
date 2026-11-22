@@ -708,7 +708,7 @@ const CATALOG = [
   {id:"verofalso", name:"Vero o falso su di me", icon:"truth", color:"#9be21c", players:"4-10", mins:"15-20", phones:"all", desc:"Tre fatti su di te, uno è falso. Chi ci casca?"},
   {id:"chidinoi", name:"Chi di noi?", icon:"people", color:"#ff6fcf", players:"4-12", mins:"15", phones:"both", desc:"Voto segreto su chi del gruppo farebbe cosa."},
   {id:"stima", name:"Stima", icon:"target", color:"#22c4ff", players:"3-10", mins:"15-20", phones:"all", desc:"Domande con un numero per risposta. Vince chi si avvicina."},
-  {id:"porcellino", name:"Il Porcellino", icon:"pig", color:"#e8233f", adult:true, players:"4-10", mins:"20-30", phones:"one", desc:"Domande e sfide per adulti, per quando la serata si scalda."},
+  {id:"porcellino", name:"Porcellino", icon:"pig", color:"#e8233f", adult:true, ready:true, players:"3-12", mins:"20-40", phones:"both", desc:"Domande spinte e verità scomode sul sesso, solo per adulti."},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
 const WHEEL_ON = false; // vista a ruota messa da parte: true per riattivarla
@@ -1200,7 +1200,7 @@ let pressT = null, suppressClick = false;
 function openGame(id){
   document.getElementById("preview")?.remove();
   const g = CATALOG.find(x=>x.id===id), tile = document.querySelector(`.gtile[data-game="${id}"]`);
-  const dest = () => { if(id==="lampo") go("players"); else if(id==="scarabocchi" || id==="coppia"){ const sv = roomLoad(); sv && (sv.M.game || "scarabocchi") === id ? mpResumeAsk(sv, true) : mpHostStart(id); } };
+  const dest = () => { if(id==="lampo") go("players"); else if(id==="porcellino") location.href = "porcellino.html"; else if(id==="scarabocchi" || id==="coppia"){ const sv = roomLoad(); sv && (sv.M.game || "scarabocchi") === id ? mpResumeAsk(sv, true) : mpHostStart(id); } };
   if(!tile || matchMedia("(prefers-reduced-motion: reduce)").matches){ dest(); return; }
   const r = tile.getBoundingClientRect();
   const z = document.createElement("div");
