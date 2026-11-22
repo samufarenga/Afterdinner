@@ -257,7 +257,18 @@ html:has(.modal),html:has(.modal) body{overflow:hidden}
 #ptr.go svg{animation:spin .8s linear infinite}
 .newver{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:96;border:0;border-radius:999px;background:var(--mango);color:var(--ink);font:700 .95rem var(--body);padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.45);width:max-content;max-width:calc(100% - 32px);cursor:pointer;animation:in .3s ease-out}
 .hright{grid-column:3;grid-row:1;justify-self:end;display:flex;gap:8px;align-items:center}
-#info-btn,#snd-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
+#host-btn,.dhost{font-size:1.4rem;width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center;flex:none;line-height:1;letter-spacing:-.05em}
+#host-btn[hidden]{display:none}
+.hostsheet .hlist{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.hitem{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;background:var(--night-2);border:2px solid var(--night-3);border-radius:16px;padding:12px 14px;color:var(--paper);font:inherit;cursor:pointer}
+.hitem b{font:600 1.05rem var(--display);display:flex;align-items:center;gap:8px}
+.hitem b .av{width:26px;height:26px;font-size:.8rem}
+.hitem span{color:var(--muted);font-size:.85rem}
+.hitem em{font-style:normal;font-weight:700;font-size:.85rem;color:var(--mango)}
+.hitem.armed{border-color:var(--mango);animation:popin .25s}
+.hitem.danger b{color:var(--pink)}
+.hitem.danger.armed{border-color:var(--pink)}.hitem.danger em{color:var(--pink)}
+#info-btn,#snd-btn,#host-btn{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center}
 #snd-btn svg{width:22px;height:22px}
 #snd-btn[aria-pressed="false"]{color:var(--muted)}
 #snd-btn[hidden]{display:none}
@@ -552,6 +563,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
     <button class="logo" id="home-btn" aria-label="Torna alla home"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>AfterDinner</span></button>
     <div class="hright">
     <button class="iconbtn" id="board-btn" hidden>Punteggi</button>
+    <button class="iconbtn" id="host-btn" hidden aria-label="Comandi dell'host">⋯</button>
     <button class="iconbtn" id="snd-btn" hidden aria-label="Effetti audio"></button>
     <button class="iconbtn" id="info-btn" hidden aria-label="Regole del gioco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><circle cx="12" cy="7" r=".6" fill="currentColor"/></svg></button>
     <button class="iconbtn" id="menu-btn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
@@ -1227,10 +1239,58 @@ function openRules(){
   $("#rules-ok").focus({preventScroll:true}); m.querySelector(".sheet").scrollTop = 0;
 }
 $("#info-btn").addEventListener("click", openRules);
+/* menu dell'host: l'arbitro sblocca la serata. Ogni voce va toccata due volte (conferma) */
+function hostItems(){
+  if(!M) return [];
+  const g = mpPlayer(guesserId()), nx = M.phase === "result" ? mpPlayer(peekNext()) : null, it = [];
+  if(M.phase === "ready") it.push(["go", `Fai partire il turno di ${g ? g.name : ""}`]);
+  if(M.phase === "turn") it.push(["close", "Chiudi i disegni ora", "Si passa subito a chi indovina"]);
+  if(M.phase === "reveal" && !M.revealed) it.push(["reveal", `Scopri i disegni al posto di ${g ? g.name : ""}`]);
+  if(M.phase === "reveal" && M.revealed && M.view < M.queue.length) it.push(["skipdraw", "Salta questo disegno", "Si passa al disegno dopo"]);
+  if(["ready","turn","reveal"].includes(M.phase)) it.push(["skipturn", "Salta il turno", "Nessun punto a nessuno"]);
+  if(M.phase === "result") it.push(["next", !nx ? "Vai alla classifica finale" : nx.id === NET.myId ? "Vai avanti" : `Vai avanti al posto di ${nx.name}`]);
+  if(M.players.length > 1) it.push(["kick", "Togli un giocatore", "Scegli chi"]);
+  it.push(["end", "Termina partita", "Si va alla classifica finale", "danger"]);
+  return it;
+}
+function hostDo(a, arg){
+  if(NET.role !== "host" || !M) return;
+  if(a === "go"){ hostReceive(guesserId(), {t:"start"}); return; }
+  if(a === "close" && M.phase === "turn"){ toReveal(); }
+  else if(a === "reveal" && M.phase === "reveal"){ M.revealed = true; }
+  else if(a === "skipdraw" && M.phase === "reveal" && M.revealed && M.view < M.queue.length){ M.view++; turnCheck(); }
+  else if(a === "skipturn" && M.phase === "ready"){ M.turn++; toNextTurn(); }
+  else if(a === "skipturn" && (M.phase === "turn" || M.phase === "reveal")){ mpEndTurn({reason:"skip"}); }
+  else if(a === "next" && M.phase === "result"){ clearTimeout(NET.autoT); M.autoAt = null; M.turn++; toNextTurn(); }
+  else if(a === "kick" && arg){ mpRemove(arg); return; }
+  else if(a === "end"){ clearTimeout(NET.autoT); M.autoAt = null; M.phase = "final"; M.lineSeed = Math.floor(Math.random()*1000); }
+  armTurnTimer(); publish();
+}
+function openHostMenu(){
+  if($("#host-sheet")) return;
+  const m = document.createElement("div"); m.id = "host-sheet"; m.className = "modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true"); m.setAttribute("aria-label","Comandi dell'host");
+  const list = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">✕</button><h2>Comandi dell'host</h2><p class="hint" style="margin:0">Tocca una voce, poi tocca di nuovo per confermare.</p>
+    <div class="hlist">${hostItems().map(([a, t, sub, cls]) => `<button class="hitem ${cls || ""}" data-ha="${a}"><b>${esc(t)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</button>`).join("")}</div></div>`;
+  const kickList = () => `<div class="sheet hostsheet"><button class="xclose" aria-label="Chiudi">✕</button><h2>Chi togliamo?</h2><p class="hint" style="margin:0">Tocca un nome, poi tocca di nuovo per confermare.</p>
+    <div class="hlist">${M.players.filter(p => p.id !== M.host).map(p => `<button class="hitem" data-kick-id="${p.id}"><b>${av(p)} ${esc(p.name)}</b><span>${p.on ? "online" : "offline"}</span></button>`).join("")}</div></div>`;
+  m.innerHTML = list(); document.body.appendChild(m);
+  const close = () => m.remove();
+  m.addEventListener("click", e => {
+    if(e.target === m || e.target.closest(".xclose")) return close();
+    const b = e.target.closest(".hitem"); if(!b) return;
+    if(b.dataset.ha === "kick"){ m.innerHTML = kickList(); return; }
+    if(!b.classList.contains("armed")){ m.querySelectorAll(".hitem.armed").forEach(x => { x.classList.remove("armed"); x.querySelector("em")?.remove(); });
+      b.classList.add("armed"); b.insertAdjacentHTML("beforeend", "<em>Tocca di nuovo per confermare</em>"); buzz(10); return; }
+    if(b.dataset.kickId) hostDo("kick", b.dataset.kickId); else hostDo(b.dataset.ha);
+    close();
+  });
+}
+$("#host-btn").addEventListener("click", openHostMenu);
 /* tasto audio nelle partite multi-telefono: ognuno spegne o accende gli effetti sul suo telefono */
 const SND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const SND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>';
-function sndBtn(){ const b = $("#snd-btn"); if(!b) return; b.hidden = S.screen !== "mp"; const on = !!ST().sfx && ST().volume > 0; b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Spegni gli effetti audio" : "Accendi gli effetti audio"); }
+function sndBtn(){ const hb = $("#host-btn"); if(hb) hb.hidden = !(S.screen === "mp" && NET.role === "host" && M && !["lobby","final"].includes(M.phase));
+  const b = $("#snd-btn"); if(!b) return; b.hidden = S.screen !== "mp"; const on = !!ST().sfx && ST().volume > 0; b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Spegni gli effetti audio" : "Accendi gli effetti audio"); }
 $("#snd-btn").addEventListener("click", () => { const st = ST(), on = !!st.sfx && st.volume > 0; st.sfx = !on; if(!on && !st.volume) st.volume = 70; save(); sndBtn(); if(st.sfx) sfx("tap"); });
 /* ogni finestra ha la sua X per chiudere, e mentre è aperta lo sfondo non scorre */
 new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
@@ -1251,7 +1311,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "22.11 · 22:20";
+const APP_VERSION = "22.11 · 22:40";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1923,7 +1983,7 @@ function showOutcome(s){
   const o = document.createElement("div"); o.className = "outcome " + (L.reason === "guess" ? "ok" : "ko"); o.setAttribute("role","status");
   o.innerHTML = L.reason === "guess"
     ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato!</div>${h ? `<div class="oc-sub">+${L.pts} anche a ${esc(h.name)}</div>` : ""}${h && MD[h.id] ? `<img src="${MD[h.id]}" alt="">` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
-    : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
+    : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "skip" ? "Turno saltato" : L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
   document.body.appendChild(o);
   const close = () => { o.classList.add("out"); setTimeout(() => o.remove(), 350); animateLB(); };
   o.addEventListener("click", close); setTimeout(close, L.reason === "guess" ? 2300 : 1700);
@@ -2093,7 +2153,7 @@ function mpView(){
           <p class="lead" style="margin:0">Inviati <b style="color:var(--paper)">${M.queue.length} di ${drawers}</b></p>
           ${sentListHTML()}</section>`;
       return `<section class="screen drawscreen">
-          <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
+          <div class="dtop"><div class="dtw"><span class="eyebrow">Per ${esc(g.name)}</span><div class="dword">${esc(M.word)}</div></div>${NET.role === "host" ? `<button class="iconbtn dhost" data-hostmenu="1" aria-label="Comandi dell'host">⋯</button>` : ""}${timerHTML()}<button class="btn pink dsend" id="b-send">Invia</button></div>
           <div class="boardwrap"><canvas id="board" class="boardcv" aria-label="Lavagna"></canvas>
           <button class="bfit" id="b-fit" hidden aria-label="Torna alla lavagna intera">${TICONS.fit}</button>
           <div class="toolbar" role="toolbar" aria-label="Strumenti">
@@ -2138,7 +2198,7 @@ function mpView(){
     case "result": {
       const L = M.last || {}, helper = mpPlayer(L.helper);
       const line = L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato${helper ? ` col disegno di <b>${esc(helper.name)}</b>` : ""}`
-        : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
+        : L.reason === "skip" ? "Turno saltato dall'host" : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
       const nx = mpPlayer(peekNext()), lastTurn = !nx;
       const canNext = lastTurn ? (amGuesser() || NET.role === "host") : (nx.id === NET.myId || (NET.role === "host" && !nx.on));
       return `<section class="screen resultview">${meBar()}
@@ -2237,6 +2297,7 @@ view.addEventListener("click", e => {
   else if(id === "mp-pass"){ act({t:"pass"}); }
   else if(id === "mp-next"){ act({t:"next"}); }
   else if(d.zoom){ zoomDrawing(d.zoom); }
+  else if(d.hostmenu){ openHostMenu(); }
   else if(id === "mp-again"){ NET.lobbyStep = 2; M.phase = "lobby"; M.last = null; MD = {}; M.queue = []; M.tries = []; publish(); }
   else if(id === "mp-exit"){ mpEndRoom(); go("home"); }
   else if(id === "mp-retry"){ mpHostStart(); }
