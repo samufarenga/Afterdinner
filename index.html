@@ -607,6 +607,7 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .qrbox{background:#fff;border-radius:18px;padding:10px;width:220px;max-width:100%;aspect-ratio:1;display:grid;place-items:center}
 .qrbox svg{width:100%;height:auto;display:block}
 .code{font:700 2.2rem var(--display);letter-spacing:.3em;padding-left:.3em;font-variant-numeric:tabular-nums}
+.botrow{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}.botrow .btn{width:auto;padding:8px 16px;min-height:0;font-size:.9rem}.botrow .hint{margin:0;font-size:.78rem}
 .pchips{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .pchips li{display:flex;align-items:center;gap:8px;background:var(--night-2);border-radius:999px;padding:4px 12px 4px 4px;font-weight:600}
 .pchips li .av{width:28px;height:28px;font-size:.85rem}
@@ -1537,7 +1538,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 11:40";
+const APP_VERSION = "23.11 · 11:50";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2284,6 +2285,134 @@ function boardSnapshot(){
   return c.toDataURL("image/jpeg", .65);
 }
 
+/* ---------- bot di prova (solo per lo sviluppatore) ----------
+   Giocatori finti che vivono sul telefono dell'host: niente rete, rispondono a hostReceive come un amico vero.
+   Per toglierli dall'app basta mettere BOTS_ON = false. */
+const BOTS_ON = true;
+const BOT_NAMES = ["Bot Pino","Bot Gina","Bot Rocco","Bot Tea","Bot Nando","Bot Wanda","Bot Ugo","Bot Lia","Bot Ciro","Bot Nives","Bot Elio","Bot Zita","Bot Dario","Bot Ines","Bot Furio"];
+const isBot = id => typeof id === "string" && id.startsWith("bot-");
+const BOT = {}; // piano di ogni bot: {key, at, done, ...}
+const botPick = a => a[Math.floor(Math.random()*a.length)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+function botAdd(){
+  if(!BOTS_ON || NET.role !== "host" || !M || M.phase !== "lobby") return;
+  if(M.players.length >= (isDuo() ? 2 : 16)) return;
+  const name = BOT_NAMES.find(n => !M.players.some(p => p.name === n)) || "Bot " + (M.players.length + 1);
+  const id = "bot-" + Math.random().toString(36).slice(2, 8);
+  hostReceive(id, {t:"hello", name});
+}
+function botRemoveAll(){
+  if(!M || M.phase !== "lobby") return;
+  M.players = M.players.filter(p => !isBot(p.id)); Object.keys(M.scores).forEach(id => { if(isBot(id)) delete M.scores[id]; });
+  publish();
+}
+/* --- disegni: scarabocchi semplici fatti di tratti, come quelli della lavagna --- */
+const BOT_FONT = {A:"0,6 2,0 4,6|1,3 3,3",B:"0,6 0,0 3,0 4,1 4,2 3,3 0,3|3,3 4,4 4,5 3,6 0,6",C:"4,1 3,0 1,0 0,1 0,5 1,6 3,6 4,5",D:"0,0 0,6 2,6 4,4 4,2 2,0 0,0",
+  E:"4,0 0,0 0,6 4,6|0,3 3,3",F:"4,0 0,0 0,6|0,3 3,3",G:"4,1 3,0 1,0 0,1 0,5 1,6 3,6 4,5 4,3 2,3",H:"0,0 0,6|4,0 4,6|0,3 4,3",I:"1,0 3,0|2,0 2,6|1,6 3,6",
+  J:"4,0 4,5 3,6 1,6 0,5",K:"0,0 0,6|4,0 0,3 4,6",L:"0,0 0,6 4,6",M:"0,6 0,0 2,3 4,0 4,6",N:"0,6 0,0 4,6 4,0",O:"1,0 3,0 4,1 4,5 3,6 1,6 0,5 0,1 1,0",
+  P:"0,6 0,0 3,0 4,1 4,2 3,3 0,3",Q:"1,0 3,0 4,1 4,5 3,6 1,6 0,5 0,1 1,0|2,4 4,6",R:"0,6 0,0 3,0 4,1 4,2 3,3 0,3|2,3 4,6",S:"4,1 3,0 1,0 0,1 0,2 1,3 3,3 4,4 4,5 3,6 1,6 0,5",
+  T:"0,0 4,0|2,0 2,6",U:"0,0 0,5 1,6 3,6 4,5 4,0",V:"0,0 2,6 4,0",W:"0,0 1,6 2,3 3,6 4,0",X:"0,0 4,6|4,0 0,6",Y:"0,0 2,3 4,0|2,3 2,6",Z:"0,0 4,0 0,6 4,6",_:"0.6,6 3.4,6"};
+const jit = v => v + rnd(-.008, .008);
+function botCircle(cx, cy, rx, ry, a0 = 0, a1 = Math.PI*2){ const p = []; for(let i = 0; i <= 22; i++){ const a = a0 + (a1 - a0) * i / 22; p.push([jit(cx + Math.cos(a)*rx), jit(cy + Math.sin(a)*ry)]); } return p; }
+const botLine = (...pts) => pts.map(([x,y]) => [jit(x), jit(y)]);
+const DOODLES = {
+  sole: () => [botCircle(.5,.32,.12,.085), ...Array.from({length:8}, (_, i) => { const a = i*Math.PI/4; return botLine([.5+Math.cos(a)*.17,.32+Math.sin(a)*.12],[.5+Math.cos(a)*.25,.32+Math.sin(a)*.18]); })],
+  casa: () => [botLine([.25,.5],[.25,.25],[.75,.25],[.75,.5],[.25,.5]), botLine([.2,.26],[.5,.08],[.8,.26]), botLine([.45,.5],[.45,.38],[.55,.38],[.55,.5]), botLine([.3,.31],[.4,.31],[.4,.36],[.3,.36],[.3,.31])],
+  albero: () => [botLine([.46,.55],[.46,.38]), botLine([.54,.55],[.54,.38]), botCircle(.5,.27,.17,.12)],
+  faccia: () => [botCircle(.5,.3,.2,.14), botCircle(.43,.27,.015,.01), botCircle(.57,.27,.015,.01), botCircle(.5,.31,.1,.06,.3,Math.PI-.3)],
+  stella: () => [botLine(...Array.from({length:11}, (_, i) => { const a = -Math.PI/2 + i*Math.PI/5, r = i % 2 ? .08 : .2; return [.5+Math.cos(a)*r, .3+Math.sin(a)*r*.72]; }))],
+  cuore: () => [botLine(...Array.from({length:30}, (_, i) => { const t = i/29*Math.PI*2; return [.5 + .012*16*Math.pow(Math.sin(t),3), .3 - .009*(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))]; }))],
+  fiore: () => [botLine([.5,.34],[.5,.6]), botLine([.5,.5],[.6,.44]), ...Array.from({length:5}, (_, i) => { const a = i*Math.PI*2/5; return botCircle(.5+Math.cos(a)*.075,.27+Math.sin(a)*.055,.05,.036); }), botCircle(.5,.27,.03,.022)],
+  pesce: () => [botCircle(.47,.32,.18,.08), botLine([.65,.32],[.8,.24],[.8,.4],[.65,.32]), botCircle(.37,.3,.012,.009)],
+  luna: () => [botCircle(.5,.32,.16,.115,Math.PI*.5,Math.PI*1.5), botCircle(.43,.32,.11,.115,Math.PI*1.5,Math.PI*.5).reverse()],
+  nuvola: () => [botCircle(.38,.34,.09,.06,Math.PI*.5,Math.PI*1.6), botCircle(.5,.28,.11,.075,Math.PI,Math.PI*2), botCircle(.63,.34,.09,.06,Math.PI*1.4,Math.PI*2.5), botLine([.38,.4],[.63,.4])],
+  auto: () => [botLine([.2,.42],[.2,.33],[.32,.33],[.4,.24],[.62,.24],[.7,.33],[.8,.33],[.8,.42],[.2,.42]), botCircle(.33,.43,.05,.035), botCircle(.67,.43,.05,.035)],
+  gatto: () => [botCircle(.5,.32,.16,.11), botLine([.37,.25],[.38,.13],[.46,.22]), botLine([.54,.22],[.62,.13],[.63,.25]), botLine([.3,.33],[.42,.34]), botLine([.58,.34],[.7,.33]), botCircle(.45,.3,.012,.009), botCircle(.55,.3,.012,.009)],
+  pallone: () => [botCircle(.5,.32,.15,.105), botLine([.37,.27],[.63,.37]), botLine([.4,.4],[.6,.24])],
+  spirale: () => [botLine(...Array.from({length:50}, (_, i) => { const a = i*.4, r = .01 + i*.0035; return [.5+Math.cos(a)*r, .32+Math.sin(a)*r*.72]; }))],
+  onda: () => [botLine(...Array.from({length:30}, (_, i) => [.15 + i*.024, .32 + Math.sin(i*.6)*.06])), botLine(...Array.from({length:30}, (_, i) => [.15 + i*.024, .42 + Math.sin(i*.6+1)*.05]))]
+};
+const DOODLE_FOR = {Sole:"sole",Casa:"casa",Albero:"albero",Stella:"stella",Cuore:"cuore",Fiore:"fiore",Pesce:"pesce",Luna:"luna",Nuvola:"nuvola",Automobile:"auto",Gatto:"gatto",Pallone:"pallone"};
+function botText(txt, x0, y0, h){ // lettere a bastoncino: un aiuto per chi indovina, non la parola intera
+  const out = [], cw = h * .66 / 1.4, gap = cw * .45; let x = x0;
+  for(const ch of txt){
+    if(ch === " "){ x += cw; continue; }
+    const f = BOT_FONT[ch]; if(f) f.split("|").forEach(seg => out.push(botLine(...seg.split(" ").map(pt => { const [a,b] = pt.split(",").map(Number); return [x + a/4*cw, y0 + b/6*h]; }))));
+    x += cw + gap;
+  }
+  return out;
+}
+function botStrokes(word){
+  const kind = DOODLE_FOR[word] && Math.random() < .8 ? DOODLE_FOR[word] : botPick(Object.keys(DOODLES));
+  const ink = botPick(INKS);
+  const st = DOODLES[kind]().map(p => ({c:ink, s:5, p}));
+  if(Math.random() < .7){ // aiuto: le prime lettere e un trattino per ogni lettera mancante
+    const w = word.toUpperCase().normalize("NFD").replace(/[^A-Z ]/g, "");
+    const n = Math.random() < .5 ? 1 : 2, hint = w.split("").map((c, i) => c === " " || i < n ? c : "_").join("").slice(0, 14);
+    const h = .07, len = hint.length, cw = h * .66 / 1.4, tw = len * cw * 1.45;
+    botText(hint, Math.max(.04, .5 - tw/2), .72, h).forEach(p => st.push({c:"#1d1b2e", s:4, p}));
+  }
+  return st;
+}
+function botImage(strokes){
+  const c = document.createElement("canvas"), W = 300, H = 420; c.width = W; c.height = H;
+  const g = c.getContext("2d"); g.lineCap = "round"; g.lineJoin = "round";
+  boardPaint(g, W, H, strokes);
+  return c.toDataURL("image/jpeg", .65);
+}
+const botWrongWord = () => { const all = [].concat(...Object.values(DRAW_WORDS)).filter(w => w !== M.word); return botPick(all); };
+/* --- cervello: ogni mezzo secondo ogni bot guarda la partita e decide se fare qualcosa --- */
+function botPlan(id, key, delay, extra){
+  let b = BOT[id];
+  if(!b || b.key !== key){ b = BOT[id] = {key, at:Date.now() + delay, done:false, ...(extra || {})}; }
+  return b;
+}
+function botTick(){
+  if(!BOTS_ON || NET.role !== "host" || !M) return;
+  const now = Date.now();
+  M.players.forEach(p => {
+    if(!isBot(p.id)) return;
+    (NET.seen = NET.seen || {})[p.id] = now; // un bot non va mai offline
+    if(!p.on){ p.on = true; publish(); }
+    const id = p.id, me = (msg) => hostReceive(id, {...msg, pid:id});
+    const base = `${M.round}.${M.turn}.${M.startedAt || 0}.${M.phase}`;
+    const duo = isDuo(), g = guesserId();
+    if(M.phase === "ready"){
+      if(duo ? drawerId() === id : g === id){ const b = botPlan(id, base, rnd(1500, 3000)); if(!b.done && now >= b.at){ b.done = true; me({t:"start"}); } }
+    }
+    else if(M.phase === "turn" && !duo){
+      if(g === id || M.queue.includes(id)) return;
+      const total = M.seconds * 1000, left = M.endsAt - now;
+      const b = botPlan(id, base, rnd(Math.min(12000, total*.2), total*.75), {skip:Math.random() < .1}); // ogni tanto uno non consegna in tempo
+      if(!b.done && !b.skip && (now >= b.at || left < 4000)){ b.done = true; me({t:"send", img:botImage(botStrokes(M.word))}); }
+    }
+    else if(M.phase === "turn" && duo && drawerId() === id){ // coppia: il bot disegna in diretta, un tratto alla volta
+      const b = botPlan(id, base, 800, {all:botStrokes(M.word), n:0});
+      if(now >= b.at && b.n < b.all.length && M.paused == null){ b.n++; b.at = now + rnd(700, 1500); me({t:"live", key:liveKey(), k:0, st:b.all.slice(0, b.n).map(liveCompact), a:1.4}); }
+    }
+    else if(M.phase === "turn" && duo && g === id){ // coppia: il bot prova parole finché indovina (o finisce il tempo)
+      const b = botPlan(id, base, rnd(4000, 8000), {hitAt:Math.random() < .75 ? now + rnd(7000, 50000) : Infinity});
+      if(now >= b.at && M.paused == null){ b.at = now + rnd(4000, 9000); me({t:"dguess", text:now >= b.hitAt ? M.word : botWrongWord()}); }
+    }
+    else if(M.phase === "reveal" && g === id){
+      if(!M.revealed){ const b = botPlan(id, base + ".r", rnd(1500, 2500)); if(!b.done && now >= b.at){ b.done = true; me({t:"reveal"}); } return; }
+      const b = botPlan(id, base + ".v" + M.view, rnd(2500, 4500));
+      if(!b.done && now >= b.at && M.view < M.queue.length){
+        b.done = true;
+        const byHuman = !isBot(M.queue[M.view]), r = Math.random();
+        if(r < (byHuman ? .55 : .35)) me({t:"guess", view:M.view, text:M.word});
+        else if(r < .9) me({t:"guess", view:M.view, text:botWrongWord()});
+        else me({t:"advance", view:M.view});
+      }
+    }
+    else if(M.phase === "result" && peekNext() === id){
+      const b = botPlan(id, base, rnd(4500, 6500)); if(!b.done && now >= b.at){ b.done = true; me({t:"next"}); }
+    }
+  });
+}
+setInterval(botTick, 500);
+const botBtnHTML = () => BOTS_ON && NET.role === "host" && M && M.phase === "lobby" ? `<div class="botrow"><button class="btn ghost" id="bot-add" ${M.players.length >= (isDuo() ? 2 : 16) ? "disabled" : ""}>+ Bot</button>${M.players.some(p => isBot(p.id)) ? `<button class="btn ghost" id="bot-del">Togli i bot</button>` : ""}<span class="hint">Solo per le prove</span></div>` : "";
+
 /* ---------- avvio host e ospite ---------- */
 async function mpHostStart(game){
   game = game === "coppia" ? "coppia" : "scarabocchi";
@@ -2548,13 +2677,13 @@ function mpView(){
         if(NET.lobbyStep !== 2) return `<section class="screen invite">
           <div style="text-align:center"><span class="eyebrow">${gameName(M.game)}</span><h1 class="invite-line">${INVITE_LINES[NET.inviteN % INVITE_LINES.length]}</h1><p class="lead" style="margin:6px 0 0">Inquadrate il QR con la fotocamera, oppure mandate il link nel gruppo.</p></div>
           <div class="qrcard">${qr}</div>
-          <div><span class="eyebrow">Già dentro (${online})</span>${mpPlayersChips()}</div>
+          <div><span class="eyebrow">Già dentro (${online})</span>${mpPlayersChips()}${botBtnHTML()}</div>
           <button class="btn pink stickybtn" id="mp-setup">${online < 2 ? "Imposta la partita" : `Ci siamo tutti: imposta la partita`}</button>
         </section>`;
         return `<section class="screen">
           <div class="drawhead"><div><span class="eyebrow">${gameName(M.game)}</span><h2 style="margin:0">Impostazioni</h2></div><button class="iconbtn" id="mp-showqr">Mostra QR</button></div>
           <div class="field hostme"><button class="selfiebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${PH[me.id] ? av(me) : CAM_ICON}</button><input id="host-name" maxlength="18" value="${esc(me.name)}" aria-label="Il tuo nome" placeholder="Il tuo nome"></div>
-          <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}</div>
+          <div><span class="eyebrow">Nella stanza (${online})</span>${mpPlayersChips()}${botBtnHTML()}</div>
           ${isDuo() ? duoSetupHTML(online) : `<div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
@@ -2767,6 +2896,8 @@ view.addEventListener("click", e => {
   const id = b.id, d = b.dataset;
   if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
   else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; Object.assign(M, {team:0, hits:0, hitSecs:0, recDone:false, record:null, newRecord:false}); } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
+  else if(id === "bot-add"){ botAdd(); }
+  else if(id === "bot-del"){ botRemoveAll(); }
   else if(id === "mp-go"){ act({t:"start"}); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
