@@ -568,6 +568,18 @@ img.mine.small{width:auto;max-width:40%;max-height:24vh;opacity:.9;transform:rot
 .duonow{font:700 1.15rem var(--display);color:var(--mango)}
 .duonow b{font-size:1.45rem;color:var(--paper)}
 .duonow.drop{animation:wordin .5s cubic-bezier(.3,1.4,.5,1)}
+.duoteam{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--night-2);border:2px solid var(--night-3);border-radius:var(--r);padding:16px}
+.dtpts b{font:700 2.6rem var(--display);color:var(--mango);line-height:1}.dtpts small{font:700 1rem var(--display);color:var(--muted)}
+.dtbar{position:relative;width:100%;height:10px;border-radius:99px;background:var(--night)}
+.dtbar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:linear-gradient(90deg,var(--mango),var(--pink));transition:width .8s cubic-bezier(.3,1.2,.5,1)}
+.dtbar em{position:absolute;top:-4px;width:3px;height:18px;border-radius:2px;background:var(--mint);transform:translateX(-50%)}
+.duobig{display:flex;align-items:baseline;justify-content:center;gap:6px}
+.duobig b{font:700 clamp(5rem,30vw,8rem)/1 var(--display);color:var(--mango);text-shadow:0 8px 40px rgba(255,164,27,.35)}
+.duobig small{font:700 1.6rem var(--display);color:var(--muted)}
+.duobig.rec b{color:var(--mint);text-shadow:0 8px 40px rgba(20,212,148,.4)}
+.duostats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.duostats li{background:var(--night-2);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.duostats b{font:700 1.4rem var(--display)}.duostats span{font-size:.75rem;color:var(--muted);line-height:1.2}
 .duoscale{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .duoscale span{background:var(--night-2);border:1px solid var(--night-3);border-radius:999px;padding:5px 12px;font-size:.88rem;color:var(--muted)}
 .duoscale b{color:var(--mango);font-size:1.05rem;margin-right:3px}
@@ -1423,13 +1435,13 @@ const RULES = {
       <li>Valgono i sinonimi stretti (cornetto o brioche) e un piccolo errore di battitura, ma singolare e plurale contano.</li>
       <li>Il turno finisce quando la parola viene indovinata o quando scade il tempo.</li></ol>
     <h3>Punti</h3><ul>
-      <li>Chi indovina entro <b>20 secondi</b> prende <b>3 punti</b>, entro <b>40 secondi 2 punti</b>, entro <b>60 secondi 1 punto</b>.</li>
-      <li>Chi disegna prende <b>1 punto</b> se il suo disegno viene indovinato.</li>
-      <li>Tempo scaduto: nessun punto a nessuno.</li></ul>
+      <li>Si gioca <b>in squadra</b>: i punti sono della coppia, così conviene a tutti e due far indovinare in fretta.</li>
+      <li>Parola indovinata entro <b>20 secondi: 3pt</b>, entro <b>40 secondi: 2pt</b>, entro <b>60 secondi: 1pt</b>.</li>
+      <li>Tempo scaduto: nessun punto.</li></ul>
     <h3>Se qualcuno si scollega</h3><ul>
       <li>Chi si scollega rientra da solo appena torna la connessione. Se chi disegna non torna entro pochi secondi, il turno finisce senza punti.</li>
       <li>Se l'host chiude l'app, quando la riapre riprende la partita da dove era.</li></ul>
-    <h3>Fine partita</h3><ul><li>Dopo l'ultimo turno vince chi ha più punti. A pari punti è pareggio.</li></ul>`
+    <h3>Fine partita</h3><ul><li>Dopo l'ultimo turno compare il punteggio della coppia, accanto al <b>record da battere</b>. Il record è salvato sul telefono di chi organizza, uno per ogni durata (6, 10 o 16 turni).</li></ul>`
 };
 function openRules(forId){
   const id = typeof forId === "string" ? forId : currentRulesGame(); if(!id || !RULES[id] || $("#rules-sheet")) return;
@@ -1513,7 +1525,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 11:10";
+const APP_VERSION = "23.11 · 11:30";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1760,7 +1772,20 @@ function act(msg){ if(NET.role === "host") hostReceive(NET.myId, {...msg, pid:NE
 /* ---------- host: regole e stato ---------- */
 function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== NET.myId) NET.sendTo(p.id, msg); }); }
 function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
+/* coppia: record da battere, salvato sul telefono dell'host, uno per ogni numero di turni */
+function duoRecord(){
+  if(!isDuo() || M.phase !== "final" || M.recDone) return;
+  const turns = M.rounds * 2; let all = {};
+  try{ all = JSON.parse(localStorage.getItem("ad.duoRecords") || "{}") || {}; }catch(_){}
+  const prev = all[turns] || null;
+  M.record = prev; M.newRecord = (M.team || 0) > 0 && (!prev || M.team > prev.pts);
+  if(M.newRecord){ all[turns] = {pts:M.team, names:M.players.map(p => p.name), at:Date.now()}; try{ localStorage.setItem("ad.duoRecords", JSON.stringify(all)); }catch(_){} }
+  M.recDone = true;
+}
+function duoBest(){ try{ return (JSON.parse(localStorage.getItem("ad.duoRecords") || "{}") || {})[M.rounds * 2] || null; }catch(_){ return null; } }
 function publish(){
+  duoRecord();
+  if(isDuo() && M.phase !== "final" && NET.role === "host"){ const b = duoBest(); M.best = b ? b.pts : null; }
   if(M.phase === "result") armAutoFinal(); else { clearTimeout(NET.autoT); M.autoAt = null; }
   if(M.phase === "lobby" && !M.roundsManual && !isDuo()) M.rounds = recRounds(); // finché l'host non sceglie, uso i giri consigliati
   M.left = M.phase === "turn" ? (M.paused != null ? M.paused : Math.max(0, M.endsAt - Date.now())) : null;
@@ -1992,7 +2017,8 @@ function hostReceive(pid, msg){
       const el = Math.max(0, duoElapsed()), secs = Math.max(1, Math.ceil(el/1000));
       if(guessOk(text, M.word)){
         const pts = el <= 20000 ? 3 : el <= 40000 ? 2 : 1, d = drawerId();
-        M.scores[pid] += pts; if(d) M.scores[d] = (M.scores[d] || 0) + 1;
+        M.team = (M.team || 0) + pts; M.hits = (M.hits || 0) + 1; M.hitSecs = (M.hitSecs || 0) + secs; // si gioca in squadra: i punti sono della coppia
+        M.scores[pid] += pts; if(d) M.scores[d] = (M.scores[d] || 0) + pts;
         mpEndTurn({reason:"guess", helper:d, pts, secs, text});
       } else { M.tries.push({text, secs}); if(M.tries.length > 40) M.tries.shift(); M.tryN = (M.tryN || 0) + 1; }
       publish(); break;
@@ -2055,6 +2081,7 @@ function onState(s){
   if(s.phase !== prevPhase && $("#showcase") && (["ready","turn"].includes(s.phase) || (s.phase === "reveal" && amGuesser()))) closeShowcase(); // si torna alla partita quando c'è da fare
   const enteringFinal = s.phase === "final" && prevPhase !== "final";
   prevPhase = s.phase;
+  if(enteringFinal && s.game === "coppia" && s.newRecord) setTimeout(() => confetti(), 1100);
   if(enteringFinal) setTimeout(() => { sfx("drumroll", .9); setTimeout(() => sfx("fanfare"), 950); if(NET.finalLastAt) setTimeout(() => sfx("sad"), NET.finalLastAt * 1000 + 150); }, 300);
   if(NET.role === "guest" && mpPlayer(NET.myId)) NET.wasIn = true;
   mpNotes();
@@ -2352,7 +2379,7 @@ function showOutcome(s){
   const L = s.last || {}, g = mpPlayer(s.order[s.turn]), h = mpPlayer(L.helper);
   const o = document.createElement("div"); o.className = "outcome " + (L.reason === "guess" ? "ok" : "ko"); o.setAttribute("role","status");
   o.innerHTML = L.reason === "guess"
-    ? s.game === "coppia" ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato in ${L.secs} s!</div>${h ? `<div class="oc-sub">+1 a ${esc(h.name)} per il disegno</div>` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
+    ? s.game === "coppia" ? `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">Indovinata in ${L.secs} s!</div><div class="oc-sub">+${L.pts}pt per la coppia</div><div class="oc-word">${esc(L.word)}</div></div>`
     : `<div class="oc-in"><div class="oc-pts">+${L.pts}</div><div class="oc-title">${esc(g ? g.name : "")} ha indovinato!</div>${h ? `<div class="oc-sub">+${L.pts} anche a ${esc(h.name)}</div>` : ""}${h && MD[h.id] ? `<img src="${MD[h.id]}" alt="">` : ""}<div class="oc-word">${esc(L.word)}</div></div>`
     : `<div class="oc-in"><div class="oc-pts">0</div><div class="oc-title">${L.reason === "skip" ? "Turno saltato" : L.reason === "pass" ? "Passo" : L.reason === "nodraw" ? "Nessun disegno" : L.reason === "time" ? "Tempo scaduto" : "Nessuno ha indovinato"}</div><div class="oc-sub">La parola era</div><div class="oc-word">${esc(L.word)}</div></div>`;
   document.body.appendChild(o);
@@ -2390,6 +2417,7 @@ function setPhoto(img){ if(NET.role === "host") hostReceive(NET.myId, {t:"photo"
 function meBar(){
   const me = mpPlayer(NET.myId); if(!me || !M || M.phase === "lobby") return "";
   const pos = 1 + M.players.filter(p => (M.scores[p.id]||0) > (M.scores[me.id]||0)).length;
+  if(isDuo()) return `<div class="mebar"><button class="mebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${av(me)}${PH[me.id] ? "" : `<i class="cam">${CAM_ICON}</i>`}</button><b>${M.players.map(p => esc(p.name)).join(" e ")}</b><span class="mepts">${M.team || 0} pt</span><span class="mepos"><small>in coppia</small></span></div>`;
   return `<div class="mebar"><button class="mebtn" data-selfie="1" aria-label="${PH[me.id] ? "Cambia il selfie" : "Aggiungi un selfie"}">${av(me)}${PH[me.id] ? "" : `<i class="cam">${CAM_ICON}</i>`}</button><b>${esc(me.name)}</b><span class="mepts">${M.scores[me.id]||0} pt</span><span class="mepos">${pos}°<small> di ${M.players.length}</small></span></div>`;
 }
 /* ---------- home a ruota: i giochi girano su una circonferenza ---------- */
@@ -2480,9 +2508,15 @@ function duoSetupHTML(online){
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
             <li>${M.rounds*2} turni, i ruoli si scambiano: uno disegna, l'altro indovina. 60 secondi a turno.</li>
             <li>Chi indovina vede il disegno in diretta e può scrivere tutte le risposte che vuole.</li>
-            <li>Indovinata entro 20 secondi: 3 punti. Entro 40: 2 punti. Entro 60: 1 punto. A chi disegna, 1 punto se viene indovinata.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
+            <li>Si gioca in squadra: indovinata entro 20 secondi 3pt, entro 40 2pt, entro 60 1pt per la coppia. A fine partita c'è il record da battere.</li></ol><p class="hint">Regole complete: tasto <b>Regole</b> in alto a destra.</p></details>
           <p class="hint pcount">Sfida a due: entra solo il tuo avversario.</p>
           <button class="btn pink stickybtn" id="mp-start" ${online !== 2 ? "disabled" : ""}>${online < 2 ? "Aspetta il tuo avversario" : "Inizia la sfida"}</button>`;
+}
+function duoTeamHTML(){
+  const max = M.rounds * 6;
+  return `<div class="duoteam"><span class="eyebrow">Punteggio di coppia</span><div class="dtpts"><b>${M.team || 0}</b><small> pt</small></div>
+    <div class="dtbar"><i style="width:${Math.min(100, (M.team || 0) / max * 100)}%"></i>${M.best != null ? `<em style="left:${Math.min(100, M.best / max * 100)}%" title="Record"></em>` : ""}</div>
+    <p class="hint" style="margin:0">${M.best != null ? `Record da battere: <b>${M.best} pt</b> in ${M.rounds * 2} turni` : `Primo record in ${M.rounds * 2} turni: lo fate voi`}</p></div>`;
 }
 function duoTriesHTML(){ return (M.tries || []).slice(-8).reverse().map(t => `<li>${GLY.no} <b>${esc(t.text)}</b></li>`).join(""); }
 function mpView(){
@@ -2620,17 +2654,25 @@ function mpView(){
         : L.reason === "skip" ? "Turno saltato dall'host" : L.reason === "pass" ? `${esc(g ? g.name : "")} ha passato` : L.reason === "nodraw" ? "Nessun disegno inviato" : "Nessuno ha indovinato";
       const nx = mpPlayer(peekNext()), lastTurn = !nx;
       const canNext = lastTurn ? (amGuesser() || NET.role === "host") : (nx.id === NET.myId || (NET.role === "host" && !nx.on));
-      const dline = isDuo() ? (L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato in ${L.secs} s: +${L.pts}${helper ? `, e +1 a <b>${esc(helper.name)}</b>` : ""}` : L.reason === "time" ? "Tempo scaduto: nessun punto" : line) : line;
+      const dline = isDuo() ? (L.reason === "guess" ? `<b>${esc(g ? g.name : "")}</b> ha indovinato in ${L.secs} s: <b>+${L.pts}pt</b> per la coppia` : L.reason === "time" ? "Tempo scaduto: nessun punto" : line) : line;
       return `<section class="screen resultview">${meBar()}
         <div class="rhead ${L.reason === "guess" ? "ok" : "ko"}"><span class="eyebrow">${isDuo() ? turnLabel() + " · la parola era" : "La parola era"}</span><div class="rword">${esc(L.word)}</div><p class="rline">${dline}</p></div>
         ${isDuo() ? (LIVE.s.length ? `<div class="liveview small" id="liveview"><canvas id="livecv" aria-label="Il disegno del turno"></canvas></div>` : "") : galleryHTML()}
-        <span class="eyebrow" style="text-align:center">Classifica</span>
-        ${lbHTML()}
+        ${isDuo() ? duoTeamHTML() : `<span class="eyebrow" style="text-align:center">Classifica</span>
+        ${lbHTML()}`}
         <div class="spacer"></div>
         ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost stickybtn" id="mp-next">Vai subito</button>` : ""}`
           : canNext ? `<button class="btn stickybtn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">${isDuo() ? `Ora tocca a te disegnare. <b>${esc(nx.name)}</b> fa partire il prossimo turno` : `Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno`}</p>`}</section>`;
     }
     case "final": {
+      if(isDuo()){ const turns = M.rounds * 2, rec = M.record, avg = M.hits ? Math.round(M.hitSecs / M.hits) : null;
+        return `<section class="screen finale duofin">
+          <div style="text-align:center"><span class="eyebrow">Fine partita · ${turns} turni</span><h1 class="rv" style="animation-delay:.4s">${M.newRecord ? "Nuovo record!" : "Punteggio di coppia"}</h1></div>
+          <div class="duobig rv ${M.newRecord ? "rec" : ""}" style="animation-delay:.9s"><b>${M.team || 0}</b><small>pt</small></div>
+          <p class="lead rv" style="text-align:center;margin:0;animation-delay:1.3s">${M.players.map(p => `<b>${esc(p.name)}</b>`).join(" e ")}</p>
+          <ul class="duostats rv" style="animation-delay:1.6s"><li><b>${M.hits || 0}</b><span>indovinate su ${turns}</span></li><li><b>${avg != null ? avg + " s" : "–"}</b><span>tempo medio</span></li><li><b>${M.newRecord ? (rec ? rec.pts : "–") : rec ? rec.pts : "–"}</b><span>${M.newRecord ? "record precedente" : "record da battere"}</span></li></ul>
+          <div class="rv finact" style="animation-delay:2s">${NET.role === "host" ? `<div class="row"><button class="btn pink" id="mp-again">Rivincita</button><button class="btn ghost" id="mp-exit">Chiudi la stanza</button></div>` : `<p class="hint" style="text-align:center">Se ${esc(mpPlayer(M.host).name)} lancia la rivincita, si riparte da qui.</p>`}</div>
+        </section>`; }
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
       const pos = p => 1 + ranked.filter(x => M.scores[x.id] > M.scores[p.id]).length;
       const top = ranked.filter(p => pos(p) === 1);
@@ -2712,7 +2754,7 @@ view.addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
   if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
-  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
+  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; Object.assign(M, {team:0, hits:0, hitSecs:0, recDone:false, record:null, newRecord:false}); } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
   else if(id === "mp-go"){ act({t:"start"}); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
