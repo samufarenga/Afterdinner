@@ -187,8 +187,8 @@ h2{font-size:1.6rem}
 #splash .name{font:700 clamp(2.4rem,12vw,3.4rem) var(--display);color:var(--paper);display:flex;letter-spacing:.01em}
 #splash .name span{display:inline-block;opacity:0;transform:translateY(14px);animation:letter .35s ease-out forwards}
 #splash .name span.d{color:var(--mango)}
-#splash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:row;justify-content:center;align-items:baseline;gap:7px;opacity:0;animation:signIn .6s ease-out 1.2s forwards}
-#splash .sign small{font:500 .66rem var(--display);letter-spacing:.22em;text-transform:uppercase;color:rgba(255,246,230,.5)}
+#splash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;opacity:0;animation:signIn .6s ease-out 1.2s forwards}
+#splash .sign small{font:500 .6rem var(--display);letter-spacing:.22em;text-transform:uppercase;color:rgba(255,246,230,.5);padding-left:.22em}
 #splash .sign b{font:600 .95rem var(--display);letter-spacing:.08em;color:var(--paper);position:relative;padding-bottom:6px}
 #splash .sign b::after{content:"";position:absolute;left:50%;bottom:0;height:2px;width:0;transform:translateX(-50%);border-radius:2px;background:linear-gradient(90deg,var(--mango),var(--pink),var(--mint));animation:signLine .7s ease-out 1.55s forwards}
 @keyframes signIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -1632,7 +1632,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 12:40";
+const APP_VERSION = "23.11 · 13:40";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
