@@ -721,7 +721,7 @@ function topbar(){
 function chips(){
   const c = G.card;
   return `<div class="chips in" style="--d:1">${G.players.map(p => `<div class="chip ${p.out ? "out" : ""} ${p.on === false ? "off" : ""} ${c && c.target === p.id ? "turn" : ""}" data-chip="${p.id}" style="--c:${p.color}">
-    <i>${esc(initial(p.name))}</i><span><b>${esc(p.name)}${p.id === NET.me && G.mode === "all" ? " (tu)" : ""}</b><small>${I.pig} ${p.pts} · ${p.out ? "fuori" : p.passes ? `<span class="snouts">${I.snout.repeat(p.passes)}</span>` : "niente passi"}</small></span></div>`).join("")}</div>`;
+    <i>${esc(initial(p.name))}</i><span><b>${esc(p.name)}${p.id === NET.me && G.mode === "all" ? " (tu)" : ""}</b><small>${I.pig} ${p.pts} · ${p.out ? "fuori" : p.passes ? `<span class="snouts">${I.snout.repeat(p.passes)}</span>` : "niente passo"}</small></span></div>`).join("")}</div>`;
 }
 function cardHTML(c, small){
   const t = c.target && P(c.target);
@@ -759,10 +759,10 @@ const VIEWS = {
     <div class="grow"></div>
     <div class="emblem in">${PIG}<span class="b18">18+</span></div>
     <div class="in" style="--d:1"><span class="eyebrow">Solo per maggiorenni</span><h1 class="big" style="margin-top:8px">Porcellino</h1></div>
-    <p class="lead in" style="--d:2">Domande spinte tra adulti: si gioca solo se tutti avete almeno 18 anni.</p>
+    <p class="lead in" style="--d:2">Domande spinte tra adulti: si gioca solo se avete tutti almeno 18 anni.</p>
     <ul class="rules in" style="--d:3">
-      <li><span>${I.snout}</span><div>Ognuno ha <b>3 passi</b> per tutta la partita, senza dare spiegazioni.</div></li>
-      <li><span>${I.flag}</span><div>Finiti i passi, chi si rifiuta di rispondere <b>perde ed esce</b>.</div></li>
+      <li><span>${I.snout}</span><div>Ognuno ha <b>3 passo</b> durante la partita.</div></li>
+      <li><span>${I.flag}</span><div>Finiti i passo, chi si rifiuta di rispondere <b>perde ed esce</b>.</div></li>
     </ul>
     <div class="grow"></div>
     <button class="btn pulse in" style="--d:4" data-a="adult">Siamo tutti maggiorenni ${I.flame}</button>
@@ -1048,13 +1048,13 @@ function showSheet(kind){
       <li><b>${I.target} Indovina</b>: uno risponde in segreto, gli altri indovinano. +1 a chi risponde e a chi ci prende (+2 se il numero è esatto).</li>
       <li><b>${I.match} Match</b>: ognuno sceglie qualcuno. Se due si scelgono a vicenda: MATCH, +2 a testa.</li>
       <li>Coi telefoni di tutti le risposte restano segrete finché non hanno risposto tutti, poi si scopre tutto, con i nomi.</li>
-      <li><b>${I.snout} 3 passi</b> a testa per tutta la partita, senza spiegazioni. Finiti i passi, chi si rifiuta <b>perde ed esce</b>.</li>
+      <li><b>${I.snout} 3 passo</b> a testa durante la partita. Finiti i passo, chi si rifiuta <b>perde ed esce</b>.</li>
       <li>Vince chi ha più porcellini. A fine partita: Re dei Porcellini, Santarellino, Bocca cucita, Cupido e Porcellino codardo.</li>
     </ul><button class="btn" data-close>Ho capito</button>`;
   else if(kind === "menu") h = `<h2>Menu dell'host</h2>
     <button class="btn ghost" data-a="discard" data-close>${I.refresh} Cambia carta</button><button class="btn ghost danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
   else if(kind === "refuse"){ const c = G && G.card, who = c && c.target && (c.ph === "ask" || c.ph === "secret" || c.ph === "secretOne") ? P(c.target) : P(NET.me);
-    h = `<h2>${amHost() && G.mode === "one" ? `${esc(who ? who.name : "")} si rifiuta?` : "Ti rifiuti?"}</h2><p>I passi sono finiti: chi si rifiuta di rispondere <b>perde ed esce dalla partita</b> come Porcellino codardo ${I.flag}.</p>
+    h = `<h2>${amHost() && G.mode === "one" ? `${esc(who ? who.name : "")} si rifiuta?` : "Ti rifiuti?"}</h2><p>I passo sono finiti: chi si rifiuta di rispondere <b>perde ed esce dalla partita</b> come Porcellino codardo ${I.flag}.</p>
     <div class="row"><button class="btn ghost" data-close>No, rispondo</button><button class="btn danger" data-a="refuse" data-close>Sì, esco</button></div>`; }
   else if(kind === "exit") h = `<h2>Uscire dalla partita?</h2><p>${G && G.mode === "all" ? "La stanza si chiude per tutti." : "La partita finisce qui."}</p>
     <div class="row"><button class="btn ghost" data-close>Resto</button><button class="btn" data-a="exit" data-close>Esci</button></div>`;
