@@ -176,17 +176,20 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .mine .ic{width:20px;height:20px}
 .mine b{font-weight:700;font-size:1rem}
 .mine i{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5;margin:0 2px}
-.mine small{font-size:.75rem;opacity:.7}
+.mine small{font-size:.72rem;opacity:.75;white-space:nowrap;margin-left:3px}
+.mine .st{display:inline-flex;align-items:baseline;gap:2px}
+.mine .st .ic{align-self:center;margin-right:3px}
+@media (max-width:350px){.mine{padding:5px 9px;gap:4px}.mark{font-size:.9rem}.mine small{font-size:.66rem}}
 .pz{justify-self:end;width:40px;height:40px;background:rgba(255,255,255,.12)}
 .pz .ic{width:22px;height:22px}
 .pz.ghosted{opacity:0}
 .stagec{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-bottom:6vh}
 .rule{font:600 .95rem var(--display);letter-spacing:.14em;text-transform:uppercase;padding:7px 16px;border-radius:99px;background:rgba(20,8,2,.3);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
-.sylrow{display:flex;align-items:baseline;justify-content:center;gap:.14em;font:700 clamp(4rem,24vw,7rem) var(--display);line-height:1;max-width:100%}
-.sylrow.long{font-size:clamp(3rem,17vw,5.4rem)}
+.sylrow{display:flex;align-items:baseline;justify-content:center;gap:.14em;font:700 clamp(3.2rem,20vw,7rem) var(--display);line-height:1;max-width:100%}
+.sylrow.long{font-size:clamp(2.4rem,14vw,5.4rem)}
 .sylrow .syl{font:inherit;letter-spacing:.04em}
 .gap{display:inline-flex;gap:.1em;align-items:flex-end;height:.9em;padding-bottom:.02em}
-.gap i{display:block;width:.28em;height:.08em;border-radius:.04em;background:currentColor;opacity:.45}
+.gap i{display:block;width:.24em;height:.08em;border-radius:.04em;background:currentColor;opacity:.45}
 .foot{position:relative;z-index:1;text-align:center;margin:0;font:600 1.05rem var(--display);opacity:.9;min-height:2.6em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .foot small{font:500 .88rem var(--body);opacity:.85}
 .foot .ic{width:22px;height:22px;margin-right:4px}
@@ -207,10 +210,58 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .wi.off{text-decoration:line-through}
 .wi em{font:500 .75rem var(--body);font-style:normal;color:var(--amber)}
 
+
+/* ---------- trailer ---------- */
+.screen.intro{gap:12px}
+.scene{border-radius:28px;padding:20px 18px 18px;background:rgba(30,12,4,.55);box-shadow:inset 0 0 0 1.5px var(--line);text-align:center;cursor:pointer;min-height:330px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.scene.swap{animation:swapIn .5s cubic-bezier(.2,.9,.3,1)}
+@keyframes swapIn{from{opacity:0;transform:translateX(30px)}}
+.scene h2{font-size:1.5rem}
+.scene .lead{font-size:.98rem;max-width:30ch}
+.sc-vis{height:170px;width:100%;display:flex;align-items:center;justify-content:center;gap:16px;position:relative}
+.sc-rule{position:absolute;top:8px;font:600 .72rem var(--display);letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:99px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25)}
+.sc-syl{display:flex;align-items:baseline;gap:.12em;font:700 3.6rem var(--display);animation:sylIn .6s cubic-bezier(.2,1.5,.4,1) both .2s}
+.sc-words{position:absolute;bottom:4px;display:flex;gap:8px}
+.sc-words span{font:600 .9rem var(--display);padding:4px 10px;border-radius:99px;background:rgba(255,122,46,.2);color:var(--amber);opacity:0;animation:wpop .4s cubic-bezier(.2,1.5,.4,1) forwards}
+.sc-words span:nth-child(1){animation-delay:.9s}.sc-words span:nth-child(2){animation-delay:1.4s}.sc-words span:nth-child(3){animation-delay:1.9s}
+@keyframes wpop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+.sc-phone{width:78px;height:140px;border-radius:16px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.3);display:grid;place-items:center;position:relative;overflow:hidden}
+.sc-phone.hot{background:radial-gradient(circle,#ff9a3c,#c2410c);animation:hotpulse 2.2s ease-in-out infinite}
+.sc-phone.ok{background:radial-gradient(circle,#4af09a,#0a5a2e);opacity:0;animation:okshow 3.6s ease forwards}
+@keyframes okshow{0%,45%{opacity:0;transform:scale(.8)}55%,100%{opacity:1;transform:none}}
+.sc-phone .ic-wrap .ic{width:44px;height:44px;color:#fff}
+.sc-mini{font:700 1.6rem var(--display)}
+.sc-tap{position:absolute;left:50%;top:70%;width:34px;height:34px;margin:-17px;border-radius:50%;background:rgba(255,255,255,.7);animation:tap 3.6s ease infinite}
+@keyframes tap{0%,30%{transform:scale(0);opacity:0}38%{transform:scale(1);opacity:1}50%{transform:scale(2.2);opacity:0}100%{opacity:0}}
+.sc-bomb{width:120px;height:120px}
+.sc-bomb .bombsvg{width:100%;height:100%;animation:shake .4s linear infinite;--amp:3}
+.sc-q{font:700 4rem var(--display);color:var(--amber);animation:blink 1.2s ease-in-out infinite}
+.sc-pause{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 2px var(--line);animation:bump 1.6s ease-in-out infinite}
+.sc-pause .ic{width:40px;height:40px;color:var(--or2)}
+@keyframes bump{50%{transform:scale(1.1)}}
+.sc-no{font:700 1.5rem var(--display);color:#fff;background:var(--red);padding:6px 14px;border-radius:14px;transform:rotate(-8deg);animation:stampin .6s cubic-bezier(.2,1.6,.4,1) both .6s}
+@keyframes stampin{from{transform:scale(2.4) rotate(-20deg);opacity:0}}
+.sc-band{position:absolute;top:6px;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:rgba(255,255,255,.08);font:600 .9rem var(--display);box-shadow:0 0 0 2px var(--amber);animation:bump 1.6s ease-in-out infinite}
+.sc-band span{display:inline-flex;align-items:center;gap:4px}.sc-band b{font-size:1.05rem}.sc-band i{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5}
+.sc-rank{position:absolute;bottom:4px;display:flex;flex-direction:column;gap:5px;width:180px}
+.sc-rank div{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06);animation:drop .5s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(var(--d)*200ms + 300ms)}
+.sc-rank div:last-child{box-shadow:inset 0 0 0 1.5px var(--red);background:rgba(255,59,47,.2)}
+.sc-rank .av{width:24px;height:24px;font-size:.75rem;margin-right:4px}
+.dots5{display:flex;justify-content:center;gap:6px}
+.dots5 i{width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.18);transition:all .3s}
+.dots5 i.done{background:var(--or)}
+.dots5 i.on{width:22px;background:var(--amber)}
+.waits{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.wt{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:var(--glass);font:600 .85rem var(--display);opacity:.6;transition:all .3s}
+.wt .av{width:22px;height:22px;font-size:.7rem}
+.wt.ok{opacity:1;background:rgba(47,210,122,.2);box-shadow:inset 0 0 0 1.5px var(--green)}
+.wt.off{text-decoration:line-through}
+
 /* ---------- recap e classifica ---------- */
-.scroller{overflow:hidden;position:relative;border-radius:18px;max-height:calc(100dvh - 330px);min-height:120px;-webkit-mask:linear-gradient(180deg,transparent 0,#000 14px,#000 calc(100% - 22px),transparent 100%);mask:linear-gradient(180deg,transparent 0,#000 14px,#000 calc(100% - 22px),transparent 100%)}
+.scroller{overflow:hidden;position:relative;border-radius:18px;max-height:calc(100dvh - 290px);min-height:120px;-webkit-mask:linear-gradient(180deg,transparent 0,#000 14px,#000 calc(100% - 22px),transparent 100%);mask:linear-gradient(180deg,transparent 0,#000 14px,#000 calc(100% - 22px),transparent 100%)}
 .scroller.free{overflow-y:auto}
 .rank{list-style:none;margin:0;padding:10px 0 18px;display:flex;flex-direction:column;gap:8px}
+@media (max-height:700px){.rank{gap:6px}.rank li{padding:7px 10px!important}.rank .nm small{font-size:.72rem}}
 .rank li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:rgba(30,12,4,.6);box-shadow:inset 0 0 0 1px var(--line)}
 #app[data-fresh="1"] .rank li{animation:drop .55s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(var(--d,0)*110ms + 150ms)}
 @keyframes drop{from{opacity:0;transform:translateY(-26px) scaleY(.7)}}
@@ -465,6 +516,9 @@ function nextOf(id){
   for(let k = 1; k <= all.length; k++){ const p = all[(i + k) % all.length]; if(online(p)) return p.id; }
   return id;
 }
+/* tutorial prima della prima bomba: si parte quando tutti hanno premuto «Sono pronto» */
+function startIntro(){ G.phase = "intro"; G.ready = {}; G.players.forEach(p => { if(typeof isBot === "function" && isBot(p.id)) G.ready[p.id] = true; }); commit(); }
+function checkReady(){ if(G && G.phase === "intro" && G.players.filter(online).every(p => G.ready[p.id])) startGame(); }
 function startGame(){
   G.players.forEach(p => p.bombs = 0);
   Object.assign(G, {phase:"play", i:0, boom:null, fxq:[], resumed:false, recent:[]});
@@ -510,6 +564,12 @@ function hostAct(pid, a, v){
       G.prev = pid; G.holder = nextOf(pid); G.turn++; G.passes++;                       // la sillaba resta la stessa per tutta la bomba
       G.fxq.push({k:"pass", from:pid, to:G.holder});
       return commit();
+    case "ready":
+      if(G.phase !== "intro" || !P(pid)) return;
+      G.ready[pid] = true; commit(); return checkReady();
+    case "go-anyway":
+      if(!isHost || G.phase !== "intro") return;
+      return startGame();
     case "pause":                                    // la pausa la può chiedere chiunque
       if(G.phase !== "play" || !P(pid)) return;
       clearTimeout(fuseT);
@@ -618,7 +678,9 @@ function hostReceive(pid, msg){
     case "hello": {
       const name = cleanName(msg.name);
       if(!p){
-        const ghost = G.players.find(x => x.on === false && x.id !== NET.me && x.name.toLowerCase() === name.toLowerCase());
+        // stesso nome = stessa persona che rientra (in partita sempre, nella lobby se il vecchio telefono tace da 4 s)
+        const ghost = G.players.find(x => x.id !== NET.me && x.name.toLowerCase() === name.toLowerCase() && (G.phase !== "lobby" || x.on === false || Date.now() - (NET.seen[x.id] || 0) > 4000));
+        if(ghost){ const old = NET.conns.get(ghost.id); NET.conns.delete(ghost.id); try{ old && old.close(); }catch(_){} delete NET.seen[ghost.id]; }
         if(ghost){ swapId(ghost.id, pid); ghost.on = true; }
         else {
           if(G.players.length >= MAX_P){ NET.sendTo(pid, {t:"full"}); return; }
@@ -633,7 +695,7 @@ function hostReceive(pid, msg){
     case "bye":
       if(!p) return;
       if(G.phase === "lobby"){ G.players = G.players.filter(x => x.id !== pid); recolor(); } else p.on = false;
-      commit(); break;
+      commit(); checkReady(); break;
     default: if(p && p.on === false){ p.on = true; commit(); }
   }
 }
@@ -696,7 +758,7 @@ setInterval(() => {
     if(changed){
       // se la bomba è in mano a chi è sparito, passa da sola al prossimo
       if(G.phase === "play" && P(G.holder) && P(G.holder).on === false){ G.prev = G.holder; G.holder = nextOf(G.holder); G.turn++; }
-      commit();
+      commit(); checkReady();
     }
   } else if(NET.role === "guest" && UI.joined && NET.toHost){
     if(NET.status === "open") NET.toHost({t:"hb"});
@@ -755,7 +817,7 @@ function tableHTML(opts = {}){
   if(opts.bomb && G.holder){ const hi = ps.findIndex(p => p.id === G.holder); if(hi >= 0){ const [x, y] = seatXY(rot(hi), n); bomb = `<div class="tbomb" style="--x:${x.toFixed(3)};--y:${y.toFixed(3)}">${bombSVG()}</div>`; } }
   return `<div class="table ${opts.mini ? "mini" : ""}">
     <div class="wood"></div>
-    ${G.order !== "rand" ? `<svg class="dir" viewBox="0 0 100 100" aria-hidden="true"><path d="M30 86A42 42 0 0 1 14 30" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4"/><path d="M10 37l4-8 7 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
+    ${G.order !== "rand" ? `<svg class="dir" viewBox="0 0 100 100" aria-hidden="true"><path d="M32.25 88.07A42 42 0 0 1 12.4 31.2" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4"/><path d="M13.47 39.59L11.93 32.25L5.31 35.79" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
     ${ps.map((p, i) => { const [x, y] = seatXY(rot(i), n);
       const cls = [p.id === NET.me ? "me" : "", UI.sel === p.id ? "sel" : "", UI.swapped && UI.swapped.includes(p.id) ? "swapped" : "", opts.swap ? "tappable" : "", online(p) ? "" : "off", opts.bomb && p.id === G.holder ? "hold" : "", p.id === nextId ? "next" : ""].join(" ");
       const tag = opts.swap ? "button" : "div";
@@ -841,6 +903,7 @@ const VIEWS = {
   </div>`; },
   play: () => playView(),
   pause: () => pauseView(),
+  intro: () => introView(),
   boom: () => { const mine = G.boom && G.boom.id === NET.me;
     return `<div class="screen center">${topbar()}<div class="grow"></div>
     <div class="in"><span class="eyebrow">${mine ? "Ti è esplosa in mano" : `Esplosa in mano a ${nm(G.boom.id)}`}</span></div>
@@ -873,7 +936,7 @@ function myRank(){ const me = P(NET.me); return me ? 1 + G.players.filter(p => p
 function band(pause){
   const me = P(NET.me), b = me ? me.bombs : 0;
   return `<header class="band"><div class="mark">After<span>D</span>inner</div>
-    <div class="mine">${I.bomb}<b>${b}</b><i></i><b>${myRank()}°</b><small>su ${G.players.length}</small></div>
+    <div class="mine"><span class="st" title="Le tue bombe">${I.bomb}<b>${b}</b><small>${b === 1 ? "bomba" : "bombe"}</small></span><i></i><span class="st" title="La tua posizione"><b>${myRank()}°</b><small>posto</small></span></div>
     ${pause ? `<button class="ib pz" data-a="pause" aria-label="Pausa">${I.pause}</button>` : `<span class="ib pz ghosted">${I.pause}</span>`}</header>`;
 }
 const gap = n => `<span class="gap">${"<i></i>".repeat(n)}</span>`;
@@ -925,6 +988,63 @@ function wheelInit(){
 }
 function wheelMark(){ const w = $("#wheel"); if(!w) return; w.querySelectorAll(".wi").forEach(el => el.classList.toggle("on", el.dataset.w === UI.wheel)); }
 
+
+/* ---------- il trailer: 5 scene che scorrono da sole, poi «Sono pronto a giocare» ---------- */
+const SCENES = [
+  {t:"Una sillaba per tutti", d:"Tutti vedono la stessa sillaba e dove va messa nella parola. Resta la stessa finché la bomba scoppia.",
+   v:() => `<div class="sc-rule">Alla fine della parola</div><div class="sc-syl"><span class="gap"><i></i><i></i><i></i></span><b>STA</b></div><div class="sc-words"><span>pasta</span><span>festa</span><span>pista</span></div>`},
+  {t:"Hai la bomba? Parla!", d:"Il tuo schermo diventa arancione: di' ad alta voce una parola giusta e tocca ovunque. La bomba passa al prossimo.",
+   v:() => `<div class="sc-phone hot"><div class="sc-mini">STA</div><span class="sc-tap"></span></div><div class="sc-phone ok"><span class="ic-wrap">${I.check}</span></div>`},
+  {t:"Il timer è nascosto", d:"La bomba può esplodere in qualsiasi momento. Nessuno sa quando.",
+   v:() => `<div class="sc-bomb">${bombSVG()}</div><div class="sc-q">?</div>`},
+  {t:"Parola sbagliata?", d:"Decide il tavolo. Chiunque preme pausa e l'host fa tornare la bomba a chi l'ha detta. Niente parole ripetute.",
+   v:() => `<div class="sc-pause">${I.pause}</div><div class="sc-no">Non vale!</div>`},
+  {t:"Chi ha più bombe perde", d:"A chi esplode in mano prende una bomba. In alto vedi sempre le tue bombe e il tuo posto in classifica.",
+   v:() => `<div class="sc-band"><span>${I.bomb}<b>2</b> bombe</span><i></i><span><b>3°</b> posto</span></div><div class="sc-rank">${["#ffb86b","#9be7ff","#ffadc6"].map((c, k) => `<div style="--d:${k}"><span class="av" style="--c:${c}">${"ACM"[k]}</span>${I.bomb.repeat(k)}</div>`).join("")}</div>`}
+];
+const SCENE_MS = 3600;
+function readyList(){
+  return `<div class="waits">${G.players.map(p => `<span class="wt ${G.ready && G.ready[p.id] ? "ok" : ""} ${online(p) ? "" : "off"}">${av(p)}${p.id === NET.me ? "Tu" : esc(p.name)}</span>`).join("")}</div>`;
+}
+function introView(){
+  const me = G.ready && G.ready[NET.me], k = UI.scene || 0, end = k >= SCENES.length, sc = SCENES[Math.min(k, SCENES.length - 1)];
+  const missing = G.players.filter(p => online(p) && !(G.ready && G.ready[p.id])).length;
+  return `<div class="screen intro">
+    <div class="in" style="text-align:center"><span class="eyebrow">Come si gioca</span></div>
+    <div class="scene" data-a="scene-next" id="scene">
+      <div class="sc-vis" id="scvis">${sc.v()}</div>
+      <h2 id="sct">${sc.t}</h2><p class="lead" id="scd">${sc.d}</p>
+    </div>
+    <div class="dots5">${SCENES.map((_, i) => `<i class="${i === Math.min(k, SCENES.length - 1) ? "on" : i < k ? "done" : ""}"></i>`).join("")}</div>
+    <div class="grow"></div>
+    <div id="readybox">${readyBox()}</div>
+  </div>`;
+}
+function readyBox(){
+  const me = G.ready && G.ready[NET.me], k = UI.scene || 0, end = k >= SCENES.length - 1;
+  const missing = G.players.filter(p => online(p) && !(G.ready && G.ready[p.id]));
+  return `${readyList()}
+    <p class="hint" style="margin:10px 0">${missing.length ? `Si parte quando sono tutti pronti: ne ${missing.length === 1 ? "manca" : "mancano"} ${missing.length}.` : "Tutti pronti!"}</p>
+    ${me ? `<button class="btn ghost" disabled>${I.check} Pronto, aspettiamo gli altri</button>`
+      : `<button class="btn ${end ? "pulse" : "ghost"}" data-a="ready">Sono pronto a giocare</button>`}
+    ${amHost() && missing.length && Object.keys(G.ready || {}).length ? `<button class="link" data-a="go-anyway" style="display:block;margin:6px auto 0">Parti lo stesso</button>` : ""}`;
+}
+let sceneT = null;
+function sceneTick(){
+  clearTimeout(sceneT);
+  if(!G || G.phase !== "intro") return;
+  if((UI.scene || 0) >= SCENES.length - 1) return;
+  sceneT = setTimeout(() => { UI.scene = (UI.scene || 0) + 1; showScene(); sceneTick(); }, SCENE_MS);
+}
+function showScene(){
+  const k = Math.min(UI.scene || 0, SCENES.length - 1), sc = SCENES[k], box = $("#scene");
+  if(!box){ render(); return; }
+  box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
+  $("#scvis").innerHTML = sc.v(); $("#sct").textContent = sc.t; $("#scd").textContent = sc.d;
+  app.querySelectorAll(".dots5 i").forEach((d, i) => d.className = i === k ? "on" : i < k ? "done" : "");
+  const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox();
+}
+
 /* ---------- disegno ---------- */
 function setMode(){
   const scr = screenName();
@@ -936,6 +1056,8 @@ function setMode(){
 }
 function render(){
   if(DRAG){ DRAG.dirty = true; return; }      // durante il trascinamento non ridisegno
+  if(screenName() === "intro" && $("#scene") && !UI.sheet){ const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox(); if(G.fx && G.fx.n > lastFx){ lastFx = G.fx.n; playFx(G.fx.l); } return; }
+  if(screenName() !== "intro"){ UI.scene = 0; clearTimeout(sceneT); UI.sceneOn = false; }
   const scr = screenName();
   if(G && G.key && UI.roundKey !== G.key){ UI.roundKey = G.key; UI.roundAt = Date.now(); }
   if(G && G.holder === NET.me && UI.holdTurn !== G.turn){ UI.holdTurn = G.turn; UI.holdAt = Date.now(); }
@@ -951,6 +1073,7 @@ function render(){
   for(const id in keep){ const el = document.getElementById(id); if(el && !fresh){ el.value = keep[id].v; if(keep[id].f) el.focus(); } }
   setMode(); heat();
   if(scr === "lobby") drawQR();
+  if(scr === "intro" && !UI.sceneOn){ UI.sceneOn = true; sceneTick(); }
   if(scr === "pause") wheelInit(); else UI.wheel = null;
   if(scr === "recap" || scr === "end"){ if(fresh) autoScroll(); else { const s = $("#scroller"); if(s){ s.classList.add("free"); s.scrollTop = scTop; } } }
   if(G && G.fx && G.fx.n > lastFx){ lastFx = G.fx.n; playFx(G.fx.l); }
@@ -974,7 +1097,7 @@ function autoScroll(){
     const el = $("#scroller"); if(!el) return;
     const max = el.scrollHeight - el.clientHeight;
     if(max <= 4 || REDUCED){ el.classList.add("free"); return; }
-    const dur = Math.max(2500, max * 22), t0 = performance.now();
+    const dur = Math.max(1800, max * 11), t0 = performance.now();
     const step = now => {
       const e = $("#scroller"); if(!e) return;
       const k = Math.min(1, (now - t0) / dur), ease = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
@@ -983,7 +1106,7 @@ function autoScroll(){
     };
     scrollRaf = requestAnimationFrame(step);
   };
-  setTimeout(go, 600 + G.players.length * 110);
+  setTimeout(go, 500 + Math.min(G.players.length, 6) * 110);
 }
 
 /* ---------- effetti (niente audio né vibrazione: tutto a vista) ---------- */
@@ -1116,6 +1239,8 @@ document.addEventListener("click", async e => {
   switch(a){
     case "pass": break; // gestito al tocco
     case "go-on": send("resume", UI.wheel); break;
+    case "scene-next": if((UI.scene || 0) < SCENES.length - 1){ UI.scene = (UI.scene || 0) + 1; showScene(); sceneTick(); } break;
+    case "ready": send("ready"); break;
     case "exit": closeRoom(); ls.del(SAVE_KEY); location.href = "./"; break;
     case "exit-ask": UI.sheet = "exit"; render(); break;
     case "rules": UI.sheet = "rules"; render(); break;
@@ -1123,7 +1248,7 @@ document.addEventListener("click", async e => {
     case "newgame": ls.del(SAVE_KEY); newRoom(); break;
     case "bot-add": botAdd(); break;
     case "bot-del": botRemoveAll(); break;
-    case "lobby-go": if(G.players.filter(online).length >= MIN_P){ UI.sel = null; startGame(); } break;
+    case "lobby-go": if(G.players.filter(online).length >= MIN_P){ UI.sel = null; startIntro(); } break;
     case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(esc(joinUrl())); } break;
     case "share": if(navigator.share) navigator.share({title:"Bomba", text:"Vieni a giocare a Bomba", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;
     case "reload": {
