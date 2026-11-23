@@ -757,7 +757,7 @@ const CATALOG = [
   {id:"verofalso", name:"Vero o falso su di me", icon:"truth", color:"#9be21c", players:"4-10", mins:"15-20", phones:"all", desc:"Tre fatti su di te, uno è falso. Chi ci casca?"},
   {id:"chidinoi", name:"Chi di noi?", icon:"people", color:"#ff6fcf", players:"4-12", mins:"15", phones:"both", desc:"Voto segreto su chi del gruppo farebbe cosa."},
   {id:"stima", name:"Stima", icon:"target", color:"#22c4ff", players:"3-10", mins:"15-20", phones:"all", desc:"Domande con un numero per risposta. Vince chi si avvicina."},
-  {id:"porcellino", name:"Porcellino", icon:"pig", color:"#e8233f", adult:true, ready:true, players:"3-12", mins:"20-40", phones:"both", desc:"Domande spinte e verità scomode sul sesso, solo per adulti."},
+  {id:"porcellino", name:"Porcellino", icon:"pig", color:"#e8233f", adult:true, ready:true, players:"3-12", mins:"20-40", phones:"both", desc:""},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
 CATALOG.sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0)); // prima i giochi pronti, poi quelli in arrivo (stesso ordine all'interno)
@@ -1290,7 +1290,7 @@ function showPreview(g, ro){
   const ph = g.phones==="one"?"1 telefono":g.phones==="all"?"Tutti i telefoni":"1 o più telefoni";
   const m = document.createElement("div");
   m.id="preview"; m.className="modal preview"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
-  m.innerHTML = `<div class="sheet"><span class="gicon" style="--c:${g.color}">${ICONS[g.icon]}</span><h2>${g.name}</h2><p class="lead" style="margin:0">${g.desc}</p>
+  m.innerHTML = `<div class="sheet"><span class="gicon" style="--c:${g.color}">${ICONS[g.icon]}</span><h2>${g.name}</h2>${g.desc ? `<p class="lead" style="margin:0">${g.desc}</p>` : ""}
     <div class="pmeta"><span>${g.players} giocatori</span><span>${g.mins} min</span><span>${ph}</span></div>
     ${ro ? `<p class="hint" style="margin:0">${g.ready ? "Gioco pronto. Lo avvia solo chi organizza la serata." : "In arrivo: questo gioco è ancora in fase di sviluppo."}</p>` : ""}
     ${RULES[g.id] ? `<button class="linkbtn" data-rules="${g.id}">Leggi le regole</button>` : ""}
@@ -1506,7 +1506,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 10:45";
+const APP_VERSION = "23.11 · 10:50";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
