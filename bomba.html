@@ -178,6 +178,11 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .foot small{font:500 .88rem var(--body);opacity:.85}
 .foot .ic{width:22px;height:22px;margin-right:4px}
 .foot.ready{color:var(--amber);animation:blink 1s ease-in-out infinite}
+.turnban{align-self:center;margin-top:14px;padding:8px 18px;border-radius:99px;font:600 1rem var(--display);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1.5px var(--line);text-align:center}
+.turnban b{color:var(--or2)}
+.turnban.me{background:rgba(70,20,0,.28);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)}
+.turnban.soon{color:#2a0e00;background:linear-gradient(180deg,#ffd27a,#ffb04d);box-shadow:0 0 24px -4px var(--amber);animation:soon 1s ease-in-out infinite}
+@keyframes soon{50%{transform:scale(1.05);box-shadow:0 0 34px 0 var(--amber)}}
 .pbig{display:inline-grid;place-items:center;width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 2px var(--line)}
 .pbig .ic{width:40px;height:40px;color:var(--or2)}
 .wheelbox{position:relative;height:260px;margin:0 auto;max-width:320px}
@@ -313,6 +318,7 @@ const PIN_HASH = "318aee3fed8c9d040d35a7fc1fa776fb31303833aa2de885354ddf3d44d8fb
 const LOCK_ON = !!PIN_HASH && /github\.io$/.test(location.hostname);
 const SAVE_KEY = "ad.bomba", SAVE_TTL = 3 * 3600e3;
 const MIN_P = 3, MAX_P = 12;
+const TURN_BANNER = true; // scritta «Tocca a…» / «Sta per arrivare il tuo turno»: in prova, false per toglierla
 const FAST = USE_LOCAL && QS.has("fast"); // solo per le prove
 const FUSE_MIN = FAST ? 5000 : 15000, FUSE_MAX = FAST ? 7000 : 50000, LIGHT_MS = 1600, BOOM_MS = 3700;
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -423,13 +429,11 @@ function recolor(){ G.players.forEach((p, i) => p.color = COLORS[i % COLORS.leng
 function pickSyl(){
   const lvl = Math.min(2, Math.floor((G.passes + G.i * 2.2) / 7));
   G.recent = G.recent || [];
-  const ks = ["i","f","m"].filter(k => k !== G.pos || Math.random() < .25);   // la regola cambia quasi sempre
-  const pos = ks[Math.floor(Math.random() * ks.length)];
+  const pos = G.pos || "m";                       // la regola resta la stessa finché la bomba scoppia
   let list = SYL[lvl][pos].filter(s => !G.recent.includes(pos + s));
   if(!list.length) list = SYL[lvl][pos];
   const s = list[Math.floor(Math.random() * list.length)];
   G.recent.push(pos + s); G.recent = G.recent.slice(-40);
-  G.pos = pos;
   return s;
 }
 function armFuse(ms){
@@ -456,6 +460,7 @@ function startGame(){
 }
 function lightBomb(starter){
   Object.assign(G, {phase:"play", holder:starter, prev:null, passes:0, turn:(G.turn || 0) + 1, key:Math.random().toString(36).slice(2, 8), resumed:false});
+  { const ks = ["i","f","m"].filter(k => k !== G.pos); G.pos = ks[Math.floor(Math.random() * ks.length)]; } // regola nuova a ogni bomba
   G.syl = pickSyl(); G.last = null;
   G.fxq.push({k:"light"});
   armFuse(LIGHT_MS + FUSE_MIN + Math.random() * (FUSE_MAX - FUSE_MIN));
@@ -835,6 +840,7 @@ function playView(){
   if(mine){
     const nx = G.order === "rand" ? null : P(nextOf(G.holder));
     return `<div class="screen play">${band(true)}
+      ${TURN_BANNER ? `<div class="turnban me">Tocca a te</div>` : ""}
       <div class="stagec">${sylHTML()}</div>
       <p class="foot">Dilla ad alta voce e tocca ovunque${nx ? `<br><small>Passa a ${esc(nx.name)}</small>` : ""}</p>
       <button class="tapzone" data-a="pass" aria-label="Passa la bomba"></button>
@@ -842,8 +848,9 @@ function playView(){
   }
   const amNext = G.order !== "rand" && nextOf(G.holder) === NET.me;
   return `<div class="screen play">${band(true)}
+    ${TURN_BANNER ? `<div class="turnban ${amNext ? "soon" : ""}">${amNext ? "Sta per arrivare il tuo turno" : `Tocca a <b>${holder ? esc(holder.name) : ""}</b>`}</div>` : ""}
     <div class="stagec">${sylHTML()}</div>
-    <p class="foot ${amNext ? "ready" : ""}">${amNext ? "Preparati: tocca a te!" : `${I.bomb} ${holder ? (holder.id === NET.me ? "Tu" : esc(holder.name)) : ""}`}</p>
+    <p class="foot ${amNext ? "ready" : ""}">${TURN_BANNER ? "" : amNext ? "Preparati: tocca a te!" : `${I.bomb} ${holder ? esc(holder.name) : ""}`}</p>
   </div>`;
 }
 function pauseView(){
@@ -971,7 +978,7 @@ function showSheet(kind){
   if(kind === "rules") h = `<h2>Bomba: le regole</h2>
     <ul>
       <li>Ognuno gioca col suo telefono: il telefono non passa mai di mano, passa solo la bomba.</li>
-      <li>Tutti vedono la stessa <b>sillaba</b>. Chi ha la bomba dice ad alta voce una parola che la contiene e <b>tocca lo schermo</b>: la bomba passa al prossimo con una sillaba nuova.</li>
+      <li>Tutti vedono la stessa <b>sillaba</b> e dove va messa nella parola (la regola resta uguale finché la bomba scoppia). Chi ha la bomba dice ad alta voce una parola che la contiene e <b>tocca lo schermo</b>: la bomba passa al prossimo con una sillaba nuova.</li>
       <li>Decide il tavolo: se qualcuno grida <b>«non vale!»</b>, bisogna trovare un'altra parola prima di passare.</li>
       <li>Il timer è <b>nascosto</b>: ogni bomba esplode quando vuole, tra 15 e 50 secondi. La bomba trema sempre di più, ma non dice quanto manca.</li>
       <li>A chi esplode in mano prende <b>una bomba</b> in classifica e riaccende la prossima.</li>
