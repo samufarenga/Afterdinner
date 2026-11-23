@@ -333,7 +333,7 @@ const SAVE_KEY = "ad.bomba", SAVE_TTL = 3 * 3600e3;
 const MIN_P = 3, MAX_P = 12;
 const TURN_BANNER = true; // scritta «Tocca a…» / «Sta per arrivare il tuo turno»: in prova, false per toglierla
 const FAST = USE_LOCAL && QS.has("fast"); // solo per le prove
-const FUSE_MIN = FAST ? 5000 : 15000, FUSE_MAX = FAST ? 7000 : 50000, LIGHT_MS = 1600, BOOM_MS = 3700;
+const FUSE_MIN = FAST ? 5000 : 15000, FUSE_MAX = FAST ? 7000 : 60000, SHORT_MIN = 5000, SHORT_P = 1 / 6, LIGHT_MS = 1600, BOOM_MS = 3700;
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("#app");
 
@@ -476,7 +476,9 @@ function lightBomb(starter){
   { const ks = ["i","f","m"].filter(k => k !== G.pos); G.pos = ks[Math.floor(Math.random() * ks.length)]; } // regola nuova a ogni bomba
   G.syl = pickSyl(); G.last = null;
   G.fxq.push({k:"light"});
-  armFuse(LIGHT_MS + FUSE_MIN + Math.random() * (FUSE_MAX - FUSE_MIN));
+  // di rado (1 bomba su 6) una miccia corta, da 5 a 15 s; di solito a caso tra 15 e 60 s
+  const short = !FAST && Math.random() < SHORT_P;
+  armFuse(LIGHT_MS + (short ? SHORT_MIN + Math.random() * (FUSE_MIN - SHORT_MIN) : FUSE_MIN + Math.random() * (FUSE_MAX - FUSE_MIN)));
   commit();
 }
 function explode(){
@@ -1028,7 +1030,7 @@ function showSheet(kind){
       <li>Tutti vedono la stessa <b>sillaba</b> e dove va messa nella parola . Sillaba e regola restano le stesse finché la bomba scoppia. Chi ha la bomba dice ad alta voce una parola che la contiene e <b>tocca lo schermo</b>: la bomba passa al prossimo.</li>
       <li>Vietato ripetere una parola già detta durante la stessa bomba.</li>
       <li>Decide il tavolo: se qualcuno grida <b>«non vale!»</b>, bisogna trovare un'altra parola prima di passare.</li>
-      <li>Il timer è <b>nascosto</b>: ogni bomba esplode quando vuole, tra 15 e 50 secondi. La bomba trema sempre di più, ma non dice quanto manca.</li>
+      <li>Il timer è <b>nascosto</b>: ogni bomba esplode quando vuole: di solito tra 15 e 60 secondi, ogni tanto dopo appena 5. La bomba trema sempre di più, ma non dice quanto manca.</li>
       <li>A chi esplode in mano prende <b>una bomba</b> in classifica e riaccende la prossima.</li>
       <li>Nessuno viene eliminato. Dopo l'ultima bomba <b>chi ha più bombe perde</b>, chi ne ha meno vince.</li>
       <li>${G && G.order === "rand" ? "Questa partita: la bomba passa a qualcuno a caso." : "Questa partita: la bomba passa al vicino, girando a sinistra intorno al tavolo."}</li>
