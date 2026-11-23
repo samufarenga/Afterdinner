@@ -259,6 +259,8 @@ html.wheelmode #view>.screen{flex:1;min-height:0;gap:12px}
 .gtile{width:100%;aspect-ratio:1;max-width:100%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;text-align:center;background:var(--c);color:var(--ink);border:0;border-radius:32px;padding:26px 22px 24px;font:inherit;cursor:pointer;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.28);-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:transform .15s}
 .gtile.pressing{transform:scale(.96)}
 .gtile .gname{font:700 clamp(1.7rem,8vw,2.3rem) var(--display);line-height:1.05;text-wrap:balance}
+.gtile .ghead{display:flex;flex-direction:column;align-items:center;gap:6px}
+.gtile .gppl{font:700 .72rem var(--body);letter-spacing:.14em;text-transform:uppercase;opacity:.72}
 .gtile .gicon{color:var(--ink);flex:1;min-height:0;width:100%;display:grid;place-items:center;background:none;box-shadow:none;height:auto;border-radius:0}
 .gtile .gicon svg{width:auto;height:78%;max-width:60%;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15))}
 .gtile .gdesc{font-size:1rem;font-weight:500;opacity:.85;max-width:30ch;text-wrap:balance}
@@ -773,6 +775,7 @@ const $ = (s, r=document) => r.querySelector(s);
 const view = $("#view");
 /* simboli disegnati nei colori dell'app (al posto dei caratteri della tastiera) */
 const GLY = {x:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`, no:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>`, ok:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, star:`<svg class="gly" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 16.7l-5.6 3.1 1.3-6.2L3 9.3l6.3-.7z" fill="currentColor"/></svg>`, list:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`, wheel:`<svg class="gly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>`, more:`<svg class="gly" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>`};
+const pplLabel = r => { const [a, b] = String(r).split("-"); return b ? `${a}–${b} giocatori` : `${a} giocatori`; };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const initial = n => esc((Array.from(n.trim())[0] || "?").toUpperCase()); // anche un'emoji intera
 
@@ -814,7 +817,7 @@ const screens = {
 
       ${WHEEL_ON && ST().wheel && list.length ? wheelHTML(list) : `<ul class="ggrid">${list.map(g => `
         <li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-game="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
-          <span class="gname">${g.name}</span>
+          <span class="ghead"><span class="gname">${g.name}</span><span class="gppl">${pplLabel(g.players)}</span></span>
           <span class="gicon">${ICONS[g.icon]}</span>
           <span class="gdesc">${g.desc}</span>
           <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span>
@@ -1310,7 +1313,7 @@ function openShowcase(){
     <section class="screen sc-in"><div class="hero"><h1>I giochi di <span>stasera</span></h1></div>
     <p class="lead" style="text-align:center;margin:0">Puoi curiosare tra i giochi. A sceglierli e farli partire è chi organizza.</p>
     <ul class="ggrid">${CATALOG.map(g => `<li><button class="gtile ${g.ready?"":"locked"}" style="--c:${g.color}" data-sgame="${g.id}" aria-label="${g.name}${g.ready?"":", in arrivo"}">
-      <span class="gname">${g.name}</span><span class="gicon">${ICONS[g.icon]}</span><span class="gdesc">${g.desc}</span>
+      <span class="ghead"><span class="gname">${g.name}</span><span class="gppl">${pplLabel(g.players)}</span></span><span class="gicon">${ICONS[g.icon]}</span><span class="gdesc">${g.desc}</span>
       <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span></button></li>`).join("")}</ul>
     <p class="hint" style="text-align:center">Tocca o tieni premuto un gioco per i dettagli e le regole</p></section>`;
   document.body.appendChild(m); document.documentElement.classList.add("showcasing");
@@ -1510,7 +1513,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 11:00";
+const APP_VERSION = "23.11 · 11:10";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
