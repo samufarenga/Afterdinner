@@ -187,9 +187,9 @@ h2{font-size:1.6rem}
 #splash .name{font:700 clamp(2.4rem,12vw,3.4rem) var(--display);color:var(--paper);display:flex;letter-spacing:.01em}
 #splash .name span{display:inline-block;opacity:0;transform:translateY(14px);animation:letter .35s ease-out forwards}
 #splash .name span.d{color:var(--mango)}
-#splash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;animation:signIn .6s ease-out 1.2s forwards}
-#splash .sign small{font:500 .7rem var(--display);letter-spacing:.3em;text-transform:uppercase;color:rgba(255,246,230,.55)}
-#splash .sign b{font:600 1.08rem var(--display);letter-spacing:.14em;color:var(--paper);position:relative;padding-bottom:6px}
+#splash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:row;justify-content:center;align-items:baseline;gap:7px;opacity:0;animation:signIn .6s ease-out 1.2s forwards}
+#splash .sign small{font:500 .66rem var(--display);letter-spacing:.22em;text-transform:uppercase;color:rgba(255,246,230,.5)}
+#splash .sign b{font:600 .95rem var(--display);letter-spacing:.08em;color:var(--paper);position:relative;padding-bottom:6px}
 #splash .sign b::after{content:"";position:absolute;left:50%;bottom:0;height:2px;width:0;transform:translateX(-50%);border-radius:2px;background:linear-gradient(90deg,var(--mango),var(--pink),var(--mint));animation:signLine .7s ease-out 1.55s forwards}
 @keyframes signIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes signLine{to{width:100%}}
@@ -690,7 +690,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
     <div class="dots"><i></i><i></i><i></i></div>
     <div class="name" id="splash-name"></div>
   </div>
-  <div class="sign"><small>from</small><b>Farenga</b></div>
+  <div class="sign"><b>Farenga Games</b><small>production</small></div>
 </div>
 <canvas id="confetti"></canvas>
 <div class="app">
@@ -745,7 +745,7 @@ function splashReplay(){
   if(document.getElementById("splash") || document.body.classList.contains("guest") || QS.get("room")) return;
   if(NET.role || (S.game && !S.game.over && ["pass","play","who","result","board"].includes(S.screen)) || document.querySelector(".modal")) return;
   const sp = document.createElement("div"); sp.id = "splash"; sp.setAttribute("aria-label","AfterDinner"); sp.setAttribute("role","img");
-  sp.innerHTML = `<div class="wrap"><div class="dots"><i></i><i></i><i></i></div><div class="name"></div></div><div class="sign"><small>from</small><b>Farenga</b></div>`;
+  sp.innerHTML = `<div class="wrap"><div class="dots"><i></i><i></i><i></i></div><div class="name"></div></div><div class="sign"><b>Farenga Games</b><small>production</small></div>`;
   document.body.appendChild(sp); splashRun(sp);
 }
 let splashHidden = 0;
@@ -1545,7 +1545,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 12:25";
+const APP_VERSION = "23.11 · 12:30";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;

@@ -1330,9 +1330,9 @@ function adSplash(){
 #adsplash .name{font:700 clamp(2.4rem,12vw,3.4rem) var(--display);color:var(--paper);display:flex;letter-spacing:.01em}
 #adsplash .name span{display:inline-block;opacity:0;transform:translateY(14px);animation:adLetter .35s ease-out forwards}
 #adsplash .name span.d{color:var(--mango)}
-#adsplash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;animation:adSignIn .6s ease-out 1.2s forwards}
-#adsplash .sign small{font:500 .7rem var(--display);letter-spacing:.3em;text-transform:uppercase;color:rgba(255,246,230,.55)}
-#adsplash .sign b{font:600 1.08rem var(--display);letter-spacing:.14em;color:var(--paper);position:relative;padding-bottom:6px}
+#adsplash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:row;justify-content:center;align-items:baseline;gap:7px;opacity:0;animation:adSignIn .6s ease-out 1.2s forwards}
+#adsplash .sign small{font:500 .66rem var(--display);letter-spacing:.22em;text-transform:uppercase;color:rgba(255,246,230,.5)}
+#adsplash .sign b{font:600 .95rem var(--display);letter-spacing:.08em;color:var(--paper);position:relative;padding-bottom:6px}
 #adsplash .sign b::after{content:"";position:absolute;left:50%;bottom:0;height:2px;width:0;transform:translateX(-50%);border-radius:2px;background:linear-gradient(90deg,var(--mango),var(--pink),var(--mint));animation:adSignLine .7s ease-out 1.55s forwards}
 @keyframes adSignIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes adSignLine{to{width:100%}}
@@ -1341,7 +1341,7 @@ function adSplash(){
 @media (prefers-reduced-motion:reduce){#adsplash{animation:adOut .3s ease-in 1s forwards!important}#adsplash *{opacity:1!important;transform:none!important}}`;
   document.head.appendChild(st);
   const sp = document.createElement("div"); sp.id = "adsplash"; sp.setAttribute("role", "img"); sp.setAttribute("aria-label", "AfterDinner");
-  sp.innerHTML = `<div class="wrap"><div class="addots"><i></i><i></i><i></i></div><div class="name">${[..."AfterDinner"].map((ch, i) => `<span class="${i === 5 ? "d" : ""}" style="animation-delay:${.7 + i * .06}s">${ch}</span>`).join("")}</div></div><div class="sign"><small>from</small><b>Farenga</b></div>`;
+  sp.innerHTML = `<div class="wrap"><div class="addots"><i></i><i></i><i></i></div><div class="name">${[..."AfterDinner"].map((ch, i) => `<span class="${i === 5 ? "d" : ""}" style="animation-delay:${.7 + i * .06}s">${ch}</span>`).join("")}</div></div><div class="sign"><b>Farenga Games</b><small>production</small></div>`;
   const kill = () => sp.remove();
   sp.addEventListener("animationend", e => { if(e.target === sp) kill(); });
   sp.addEventListener("click", kill); setTimeout(kill, 3200);
