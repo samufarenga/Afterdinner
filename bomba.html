@@ -247,6 +247,14 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .sc-rank div{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06);animation:drop .5s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(var(--d)*200ms + 300ms)}
 .sc-rank div:last-child{box-shadow:inset 0 0 0 1.5px var(--red);background:rgba(255,59,47,.2)}
 .sc-rank .av{width:24px;height:24px;font-size:.75rem;margin-right:4px}
+.scene.back{animation-name:swapBack}
+@keyframes swapBack{from{opacity:0;transform:translateX(-30px)}}
+.scene{touch-action:pan-y}
+.scene h2{font-size:1.6rem}.scene .lead{font-size:1.05rem}
+.navrow{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px}
+.nav[hidden]{display:grid!important;visibility:hidden}
+.nav[disabled]{opacity:.3}
+.dots5 i{cursor:pointer}
 .dots5{display:flex;justify-content:center;gap:6px}
 .dots5 i{width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.18);transition:all .3s}
 .dots5 i.done{background:var(--or)}
@@ -416,6 +424,8 @@ const I = {
   dice: sv("dice", `<rect x="3.5" y="3.5" width="17" height="17" rx="4" ${STK}/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>`),
   boom: sv("boom", `<path d="M12 1.8l2.2 5.4 5.2-2.6-1.9 5.6 5.4 1.8-5.4 2 2.4 5.3-5.5-2.2L12 22.2l-2.3-5.1-5.5 2.2 2.4-5.3-5.4-2 5.4-1.8-1.9-5.6 5.2 2.6z" fill="currentColor"/>`),
   pause: sv("pause", `<path d="M3.5 5.2v13.6c0 .8.9 1.3 1.6.9l9.6-6.8c.6-.4.6-1.3 0-1.7L5.1 4.3c-.7-.5-1.6 0-1.6.9z" fill="currentColor"/><rect x="16.2" y="5" width="2.2" height="14" rx="1.1" fill="currentColor"/><rect x="19.9" y="5" width="2.2" height="14" rx="1.1" fill="currentColor"/>`),
+  prev: sv("prev", `<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
+  next: sv("next", `<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
   play: sv("play", `<path d="M6 4.6v14.8c0 .9 1 1.4 1.7.9l11-7.4c.6-.4.6-1.4 0-1.8l-11-7.4C7 3.2 6 3.7 6 4.6z" fill="currentColor"/>`),
   flag: sv("flag", `<path d="M5.5 21.5V3" ${STK}/><path d="M5.5 4.2c3-1.6 5.2 1.4 8.2-.1s4.6-.8 4.6-.8v8.3s-1.6-.7-4.6.8-5.2-1.5-8.2.1z" fill="currentColor"/>`)
 };
@@ -991,18 +1001,18 @@ function wheelMark(){ const w = $("#wheel"); if(!w) return; w.querySelectorAll("
 
 /* ---------- il trailer: 5 scene che scorrono da sole, poi «Sono pronto a giocare» ---------- */
 const SCENES = [
-  {t:"Una sillaba per tutti", d:"Tutti vedono la stessa sillaba e dove va messa nella parola. Resta la stessa finché la bomba scoppia.",
+  {t:"Una sillaba per tutti", d:"Trova una parola che la contiene, nel punto indicato.",
    v:() => `<div class="sc-rule">Alla fine della parola</div><div class="sc-syl"><span class="gap"><i></i><i></i><i></i></span><b>STA</b></div><div class="sc-words"><span>pasta</span><span>festa</span><span>pista</span></div>`},
-  {t:"Hai la bomba? Parla!", d:"Il tuo schermo diventa arancione: di' ad alta voce una parola giusta e tocca ovunque. La bomba passa al prossimo.",
+  {t:"Schermo arancione? Tocca a te", d:"Di' la parola ad alta voce e tocca ovunque.",
    v:() => `<div class="sc-phone hot"><div class="sc-mini">STA</div><span class="sc-tap"></span></div><div class="sc-phone ok"><span class="ic-wrap">${I.check}</span></div>`},
-  {t:"Il timer è nascosto", d:"La bomba può esplodere in qualsiasi momento. Nessuno sa quando.",
+  {t:"Timer nascosto", d:"Può esplodere in qualsiasi momento.",
    v:() => `<div class="sc-bomb">${bombSVG()}</div><div class="sc-q">?</div>`},
-  {t:"Parola sbagliata?", d:"Decide il tavolo. Chiunque preme pausa e l'host fa tornare la bomba a chi l'ha detta. Niente parole ripetute.",
+  {t:"Parola sbagliata o ripetuta?", d:"Pausa: l'host ridà la bomba a chi l'ha detta.",
    v:() => `<div class="sc-pause">${I.pause}</div><div class="sc-no">Non vale!</div>`},
-  {t:"Chi ha più bombe perde", d:"A chi esplode in mano prende una bomba. In alto vedi sempre le tue bombe e il tuo posto in classifica.",
+  {t:"Chi ha più bombe perde", d:"In alto vedi le tue bombe e il tuo posto.",
    v:() => `<div class="sc-band"><span>${I.bomb}<b>2</b> bombe</span><i></i><span><b>3°</b> posto</span></div><div class="sc-rank">${["#ffb86b","#9be7ff","#ffadc6"].map((c, k) => `<div style="--d:${k}"><span class="av" style="--c:${c}">${"ACM"[k]}</span>${I.bomb.repeat(k)}</div>`).join("")}</div>`}
 ];
-const SCENE_MS = 3600;
+const SCENE_MS = 2800;
 function readyList(){
   return `<div class="waits">${G.players.map(p => `<span class="wt ${G.ready && G.ready[p.id] ? "ok" : ""} ${online(p) ? "" : "off"}">${av(p)}${p.id === NET.me ? "Tu" : esc(p.name)}</span>`).join("")}</div>`;
 }
@@ -1011,17 +1021,20 @@ function introView(){
   const missing = G.players.filter(p => online(p) && !(G.ready && G.ready[p.id])).length;
   return `<div class="screen intro">
     <div class="in" style="text-align:center"><span class="eyebrow">Come si gioca</span></div>
-    <div class="scene" data-a="scene-next" id="scene">
+    <div class="scene" data-a="scene-tap" id="scene">
       <div class="sc-vis" id="scvis">${sc.v()}</div>
       <h2 id="sct">${sc.t}</h2><p class="lead" id="scd">${sc.d}</p>
     </div>
-    <div class="dots5">${SCENES.map((_, i) => `<i class="${i === Math.min(k, SCENES.length - 1) ? "on" : i < k ? "done" : ""}"></i>`).join("")}</div>
+    <div class="navrow"><button class="ib nav" data-a="scene-prev" aria-label="Indietro" ${UI.introDone ? "" : "hidden"}>${I.prev}</button>
+      <div class="dots5">${SCENES.map((_, i) => `<i data-scene="${i}" class="${i === Math.min(k, SCENES.length - 1) ? "on" : i < k ? "done" : ""}"></i>`).join("")}</div>
+      <button class="ib nav" data-a="scene-next" aria-label="Avanti" ${UI.introDone ? "" : "hidden"}>${I.next}</button></div>
+    <p class="hint" id="rivedi" ${UI.introDone ? "" : "hidden"} style="margin-top:-4px">Scorri per rivedere</p>
     <div class="grow"></div>
     <div id="readybox">${readyBox()}</div>
   </div>`;
 }
 function readyBox(){
-  const me = G.ready && G.ready[NET.me], k = UI.scene || 0, end = k >= SCENES.length - 1;
+  const me = G.ready && G.ready[NET.me], end = UI.introDone;
   const missing = G.players.filter(p => online(p) && !(G.ready && G.ready[p.id]));
   return `${readyList()}
     <p class="hint" style="margin:10px 0">${missing.length ? `Si parte quando sono tutti pronti: ne ${missing.length === 1 ? "manca" : "mancano"} ${missing.length}.` : "Tutti pronti!"}</p>
@@ -1030,18 +1043,33 @@ function readyBox(){
     ${amHost() && missing.length && Object.keys(G.ready || {}).length ? `<button class="link" data-a="go-anyway" style="display:block;margin:6px auto 0">Parti lo stesso</button>` : ""}`;
 }
 let sceneT = null;
+function goScene(k){
+  if(k < 0 || k > SCENES.length - 1){ if(k > SCENES.length - 1 && !UI.introDone){ UI.introDone = true; showScene(); } return; }
+  const back = k < (UI.scene || 0); UI.scene = k;
+  if(back || k === SCENES.length - 1){ UI.introDone = true; clearTimeout(sceneT); }   // all'ultima scena o tornando indietro l'autoplay si ferma
+  showScene(back); if(!UI.introDone) sceneTick();
+}
+/* a fine trailer si scorre col dito avanti e indietro */
+let swX = null;
+app.addEventListener("pointerdown", e => { if(e.target.closest("#scene")) swX = e.clientX; });
+app.addEventListener("pointerup", e => { if(swX == null) return; const dx = e.clientX - swX; swX = null;
+  if(Math.abs(dx) > 40){ UI.swiped = Date.now(); goScene((UI.scene || 0) + (dx < 0 ? 1 : -1)); } });
 function sceneTick(){
   clearTimeout(sceneT);
   if(!G || G.phase !== "intro") return;
-  if((UI.scene || 0) >= SCENES.length - 1) return;
-  sceneT = setTimeout(() => { UI.scene = (UI.scene || 0) + 1; showScene(); sceneTick(); }, SCENE_MS);
+  if(UI.introDone) return;
+  sceneT = setTimeout(() => { goScene((UI.scene || 0) + 1); }, SCENE_MS);
 }
-function showScene(){
+function showScene(back){
   const k = Math.min(UI.scene || 0, SCENES.length - 1), sc = SCENES[k], box = $("#scene");
   if(!box){ render(); return; }
-  box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
+  box.classList.remove("swap", "back"); void box.offsetWidth; box.classList.add("swap"); if(back) box.classList.add("back");
   $("#scvis").innerHTML = sc.v(); $("#sct").textContent = sc.t; $("#scd").textContent = sc.d;
   app.querySelectorAll(".dots5 i").forEach((d, i) => d.className = i === k ? "on" : i < k ? "done" : "");
+  app.querySelectorAll(".nav").forEach(b => { b.hidden = !UI.introDone; });
+  const rv = $("#rivedi"); if(rv) rv.hidden = !UI.introDone;
+  app.querySelector('[data-a="scene-prev"]')?.toggleAttribute("disabled", k === 0);
+  app.querySelector('[data-a="scene-next"]')?.toggleAttribute("disabled", k === SCENES.length - 1);
   const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox();
 }
 
@@ -1057,7 +1085,7 @@ function setMode(){
 function render(){
   if(DRAG){ DRAG.dirty = true; return; }      // durante il trascinamento non ridisegno
   if(screenName() === "intro" && $("#scene") && !UI.sheet){ const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox(); if(G.fx && G.fx.n > lastFx){ lastFx = G.fx.n; playFx(G.fx.l); } return; }
-  if(screenName() !== "intro"){ UI.scene = 0; clearTimeout(sceneT); UI.sceneOn = false; }
+  if(screenName() !== "intro"){ UI.scene = 0; clearTimeout(sceneT); UI.sceneOn = false; UI.introDone = false; }
   const scr = screenName();
   if(G && G.key && UI.roundKey !== G.key){ UI.roundKey = G.key; UI.roundAt = Date.now(); }
   if(G && G.holder === NET.me && UI.holdTurn !== G.turn){ UI.holdTurn = G.turn; UI.holdAt = Date.now(); }
@@ -1229,6 +1257,7 @@ function doPass(){
 }
 document.addEventListener("pointerdown", e => { if(e.target.closest('[data-a="pass"]')){ e.preventDefault(); doPass(); } }, {passive:false});
 document.addEventListener("click", async e => {
+  const dt = e.target.closest("[data-scene]"); if(dt && UI.introDone){ goScene(+dt.dataset.scene); return; }
   const wi = e.target.closest("[data-w]");
   if(wi){ const w = $("#wheel"), i = G.players.findIndex(p => p.id === wi.dataset.w); if(w && i >= 0) w.scrollTo({top:i * WH, behavior:REDUCED ? "auto" : "smooth"}); return; }
   if(e.target.closest("[data-seat]")) return; // i posti si spostano trascinando
@@ -1239,7 +1268,9 @@ document.addEventListener("click", async e => {
   switch(a){
     case "pass": break; // gestito al tocco
     case "go-on": send("resume", UI.wheel); break;
-    case "scene-next": if((UI.scene || 0) < SCENES.length - 1){ UI.scene = (UI.scene || 0) + 1; showScene(); sceneTick(); } break;
+    case "scene-next": goScene((UI.scene || 0) + 1); break;
+    case "scene-prev": goScene((UI.scene || 0) - 1); break;
+    case "scene-tap": if(Date.now() - (UI.swiped || 0) > 300) goScene((UI.scene || 0) + 1); break;
     case "ready": send("ready"); break;
     case "exit": closeRoom(); ls.del(SAVE_KEY); location.href = "./"; break;
     case "exit-ask": UI.sheet = "exit"; render(); break;
