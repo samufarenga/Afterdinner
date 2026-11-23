@@ -1389,7 +1389,7 @@ const RULES = {
     <p class="hint" style="margin:0">Ognuno gioca col suo telefono: passa la bomba, non il telefono. Da 3 a 12 giocatori.</p>
     <h3>Il turno</h3><ol>
       <li>Tutti vedono la stessa <b>sillaba</b> e dove va messa: all'inizio, alla fine o in mezzo alla parola.</li>
-      <li>Chi ha la bomba (schermo arancione che pulsa) dice ad alta voce una parola giusta e <b>tocca lo schermo</b>: la bomba passa al prossimo con una sillaba nuova.</li>
+      <li>Chi ha la bomba (schermo arancione che pulsa) dice ad alta voce una parola giusta e <b>tocca lo schermo</b>: la bomba passa al prossimo. Sillaba e regola restano le stesse finché la bomba scoppia, e non si può ripetere una parola già detta.</li>
       <li>Decide il tavolo: se la parola non vale, chiunque mette in <b>pausa</b> e l'host sceglie a chi torna la bomba.</li>
       <li>Il timer è <b>nascosto</b>: la bomba esplode quando vuole, tra 15 e 50 secondi.</li>
     </ol>
@@ -1538,7 +1538,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 12:05";
+const APP_VERSION = "23.11 · 12:10";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;

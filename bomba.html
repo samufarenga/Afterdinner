@@ -378,9 +378,9 @@ const SYL = [
   { i:"STA PRE CON TRA PER PRO CAR MAR SPO SCA ACC ALL ATT PAN SOL FER VER GIO CIA POR COL MON BAR CAN FOR PAS TER VEN MAN SAL CAM PIA FIO LUN SCO DIS IMP INT CEN GRA",
     f:"ATO INO ORE ONE URA OSA ETTA TTO LLO OLA ARE ERE IRE ANO ATA ITO ENTE ELLA ESSA ISTA AIO ICO OSO ANZA ORIA ANTE ALE ILE ETO UTO INA ONA OTTO IERE OLO",
     m:"ART ENT OST ANT ORT ELL ATT ACC ESS IST OLL ERR ARR ASS OTT ALL ERT ARI ORI ERO INT ONT AND END OND RTA NTE STE STO LLA TTA CCI GLI CHE SCI" },
-  { i:"STR SCH SPR SGU SBA GNO PSI SFI ZUC GHI CHI QUA SCI GLI TRU BRU FRA GRI SPL SCR SFO CRO",
+  { i:"STR SCH SPR SGU SBA GNO SFI ZUC GHI CHI QUA SCI GLI TRU BRU FRA GRI SCR SFO CRO",
     f:"GLIA GNO ZZA CCHIO GHI SCO STRO NDO ZZO CCIA GGIO MBA LLE RCO RGO PPO NZA TRO CHI CHE GLIO ZIO",
-    m:"STR NTR MPR GHI CCH ZZ GN GL MBR NDR SCH RCH NGH QU CQU PP FF BB GG ZZI SPL RTI MPL" }
+    m:"STR NTR MPR GHI CCH ZZ GN GL MBR NDR SCH RCH QU CQU PP FF BB GG ZZI RTI" }
 ].map(o => ({i:o.i.split(" "), f:o.f.split(" "), m:o.m.split(" ")}));
 const POS = {
   i:{t:"All'inizio della parola", pre:"", post:"_ _ _"},
@@ -440,7 +440,7 @@ const online = p => p.id === G.host || p.on !== false;
 function newPlayer(id, name, n){ return {id, name, bombs:0, on:true, color:COLORS[n % COLORS.length]}; }
 function recolor(){ G.players.forEach((p, i) => p.color = COLORS[i % COLORS.length]); }
 function pickSyl(){
-  const lvl = Math.min(2, Math.floor((G.passes + G.i * 2.2) / 7));
+  const lvl = [0,1,2].includes(G.diff) ? G.diff : 1;   // difficoltà scelta dall'host
   G.recent = G.recent || [];
   const pos = G.pos || "m";                       // la regola resta la stessa finché la bomba scoppia
   let list = SYL[lvl][pos].filter(s => !G.recent.includes(pos + s));
@@ -505,7 +505,7 @@ function hostAct(pid, a, v){
     case "pass":
       if(G.phase !== "play" || pid !== G.holder || +v !== G.turn) return;
       G.last = {id:pid, syl:G.syl, pos:G.pos};      // serve se il tavolo contesta la parola
-      G.prev = pid; G.holder = nextOf(pid); G.turn++; G.passes++; G.syl = pickSyl();
+      G.prev = pid; G.holder = nextOf(pid); G.turn++; G.passes++;                       // la sillaba resta la stessa per tutta la bomba
       G.fxq.push({k:"pass", from:pid, to:G.holder});
       return commit();
     case "pause":                                    // la pausa la può chiedere chiunque
@@ -693,7 +693,7 @@ setInterval(() => {
     G.players.forEach(p => { if(p.id !== NET.me) NET.sendTo(p.id, {t:"hb"}); });
     if(changed){
       // se la bomba è in mano a chi è sparito, passa da sola al prossimo
-      if(G.phase === "play" && P(G.holder) && P(G.holder).on === false){ G.prev = G.holder; G.holder = nextOf(G.holder); G.turn++; G.syl = pickSyl(); }
+      if(G.phase === "play" && P(G.holder) && P(G.holder).on === false){ G.prev = G.holder; G.holder = nextOf(G.holder); G.turn++; }
       commit();
     }
   } else if(NET.role === "guest" && UI.joined && NET.toHost){
@@ -805,6 +805,8 @@ const VIEWS = {
     <div class="in" style="--d:5"><p class="lbl">A chi passa la bomba</p><div class="seg">
       <button class="opt ${G.order !== "rand" ? "on" : ""}" data-set="order" data-v="seat">${I.seat}<b>Al vicino</b><small>Si gira a sinistra intorno al tavolo</small></button>
       <button class="opt ${G.order === "rand" ? "on" : ""}" data-set="order" data-v="rand">${I.dice}<b>A caso</b><small>Nessuno sa chi sarà il prossimo</small></button></div></div>
+    <div class="in" style="--d:6"><p class="lbl">Difficoltà</p><div class="seg three">
+      ${[[0,"Facile","Due lettere comuni"],[1,"Medio","Tre lettere"],[2,"Difficile","Sillabe toste"]].map(([v, l, d]) => `<button class="opt ${(G.diff ?? 1) === v ? "on" : ""}" data-set="diff" data-v="${v}"><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
     <div class="in" style="--d:6"><p class="lbl">Quante bombe</p><div class="seg three">
       ${[[5,"Veloce"],[8,"Normale"],[12,"Lunga"]].map(([t, l]) => `<button class="opt ${G.total === t ? "on" : ""}" data-set="total" data-v="${t}"><b>${t}</b><small>${l}</small></button>`).join("")}</div></div>
     <p class="hint">${n < MIN_P ? `Servono almeno ${MIN_P} giocatori, ne ${MIN_P - n === 1 ? "manca" : "mancano"} ${MIN_P - n}.` : "Quando siete tutti seduti, si parte."}</p>
@@ -937,7 +939,7 @@ function render(){
   if(G && G.holder === NET.me && UI.holdTurn !== G.turn){ UI.holdTurn = G.turn; UI.holdAt = Date.now(); }
   const key = scr + "|" + (G ? G.phase + (G.phase === "lobby" ? "" : G.i) : "");
   const fresh = key !== lastKey; lastKey = key;
-  const sylNew = G && G.syl && G.syl + G.turn !== lastSyl; if(G) lastSyl = (G.syl || "") + G.turn;
+  const sylNew = G && G.syl && G.syl + G.key !== lastSyl; if(G) lastSyl = (G.syl || "") + G.key;
   const keep = {};
   app.querySelectorAll("input[id]").forEach(el => keep[el.id] = {v:el.value, f:document.activeElement === el});
   const sc = $("#scroller"), scTop = sc ? sc.scrollTop : 0;
@@ -1023,7 +1025,8 @@ function showSheet(kind){
   if(kind === "rules") h = `<h2>Bomba: le regole</h2>
     <ul>
       <li>Ognuno gioca col suo telefono: il telefono non passa mai di mano, passa solo la bomba.</li>
-      <li>Tutti vedono la stessa <b>sillaba</b> e dove va messa nella parola (la regola resta uguale finché la bomba scoppia). Chi ha la bomba dice ad alta voce una parola che la contiene e <b>tocca lo schermo</b>: la bomba passa al prossimo con una sillaba nuova.</li>
+      <li>Tutti vedono la stessa <b>sillaba</b> e dove va messa nella parola . Sillaba e regola restano le stesse finché la bomba scoppia. Chi ha la bomba dice ad alta voce una parola che la contiene e <b>tocca lo schermo</b>: la bomba passa al prossimo.</li>
+      <li>Vietato ripetere una parola già detta durante la stessa bomba.</li>
       <li>Decide il tavolo: se qualcuno grida <b>«non vale!»</b>, bisogna trovare un'altra parola prima di passare.</li>
       <li>Il timer è <b>nascosto</b>: ogni bomba esplode quando vuole, tra 15 e 50 secondi. La bomba trema sempre di più, ma non dice quanto manca.</li>
       <li>A chi esplode in mano prende <b>una bomba</b> in classifica e riaccende la prossima.</li>
@@ -1105,7 +1108,7 @@ document.addEventListener("click", async e => {
   if(wi){ const w = $("#wheel"), i = G.players.findIndex(p => p.id === wi.dataset.w); if(w && i >= 0) w.scrollTo({top:i * WH, behavior:REDUCED ? "auto" : "smooth"}); return; }
   if(e.target.closest("[data-seat]")) return; // i posti si spostano trascinando
   const st = e.target.closest("[data-set]");
-  if(st && amHost() && G && G.phase === "lobby"){ const k = st.dataset.set; G[k] = k === "total" ? +st.dataset.v : st.dataset.v; commit(); return; }
+  if(st && amHost() && G && G.phase === "lobby"){ const k = st.dataset.set; G[k] = k === "total" || k === "diff" ? +st.dataset.v : st.dataset.v; commit(); return; }
   const b = e.target.closest("[data-a]"); if(!b) return;
   const a = b.dataset.a;
   switch(a){
@@ -1156,7 +1159,7 @@ document.addEventListener("visibilitychange", () => { if(!document.hidden && amH
 
 /* ---------- avvio ---------- */
 async function newRoom(){
-  G = {phase:"lobby", host:NET.me, order:"seat", total:8, players:[newPlayer(NET.me, cleanName(rawName()) || "Host", 0)], fxq:[], i:0, turn:0};
+  G = {phase:"lobby", host:NET.me, order:"seat", total:8, diff:1, players:[newPlayer(NET.me, cleanName(rawName()) || "Host", 0)], fxq:[], i:0, turn:0};
   if(await openRoom(false)) commit(); else G = null;
 }
 (function boot(){
