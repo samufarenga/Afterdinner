@@ -447,7 +447,7 @@ const norm = (c, v) => c.k === "yn" ? (v === "y" ? "y" : "n") : String(Math.max(
 function hostAct(pid, a, v){
   if(!G) return;
   const isHost = pid === NET.me;
-  if(a === "discard" && isHost && G.phase === "play"){ G.card = drawCard(); return commit(); // in silenzio: nessuno deve sapere che esiste }
+  if(a === "discard" && isHost && G.phase === "play"){ G.card = drawCard(); return commit(); /* in silenzio: nessuno deve sapere che esiste */ }
   if(a === "end" && isHost && G.phase === "play"){ G.phase = "end"; G.card = null; return commit(); }
   if(G.phase !== "play" || !G.card) return;
   const c = G.card, p = P(pid);
