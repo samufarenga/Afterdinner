@@ -1315,13 +1315,46 @@ document.addEventListener("visibilitychange", () => { if(!document.hidden && amH
 (function(){ const bg = $("#bg"); if(REDUCED) return; for(let i = 0; i < 12; i++){ const e = document.createElement("span"); e.className = "spark";
   Object.assign(e.style, {left:Math.random() * 100 + "%", animationDelay:(-Math.random() * 9) + "s", animationDuration:(7 + Math.random() * 6) + "s"}); e.style.setProperty("--dx", (Math.random() * 80 - 40) + "px"); bg.appendChild(e); } })();
 
+
+/* ---------- animazione di AfterDinner per chi entra dal QR (uguale a quella della home) ---------- */
+function adSplash(){
+  try{ if(sessionStorage.getItem("ad.splash." + location.pathname)) return; sessionStorage.setItem("ad.splash." + location.pathname, "1"); }catch(_){}
+  const st = document.createElement("style");
+  st.textContent = `#adsplash{--night:#14173f;--paper:#fff6e6;--mango:#ffa41b;--pink:#ff3d72;--mint:#14d494;--display:"Fredoka",system-ui,sans-serif;position:fixed;inset:0;z-index:200;background:var(--night);display:grid;place-items:center;cursor:pointer;animation:adOut .45s ease-in 2.5s forwards}
+#adsplash .wrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+#adsplash .addots{display:flex;gap:14px}
+#adsplash .addots i{width:26px;height:26px;border-radius:50%;display:block;transform:translateY(-60px) scale(0);animation:adDrop .6s cubic-bezier(.3,1.6,.5,1) forwards,adHop .5s ease-in-out 1.55s 2}
+#adsplash .addots i:nth-child(1){background:var(--mango);animation-delay:.1s,1.55s}
+#adsplash .addots i:nth-child(2){background:var(--pink);animation-delay:.25s,1.65s}
+#adsplash .addots i:nth-child(3){background:var(--mint);animation-delay:.4s,1.75s}
+#adsplash .name{font:700 clamp(2.4rem,12vw,3.4rem) var(--display);color:var(--paper);display:flex;letter-spacing:.01em}
+#adsplash .name span{display:inline-block;opacity:0;transform:translateY(14px);animation:adLetter .35s ease-out forwards}
+#adsplash .name span.d{color:var(--mango)}
+#adsplash .sign{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;animation:adSignIn .6s ease-out 1.2s forwards}
+#adsplash .sign small{font:500 .7rem var(--display);letter-spacing:.3em;text-transform:uppercase;color:rgba(255,246,230,.55)}
+#adsplash .sign b{font:600 1.08rem var(--display);letter-spacing:.14em;color:var(--paper);position:relative;padding-bottom:6px}
+#adsplash .sign b::after{content:"";position:absolute;left:50%;bottom:0;height:2px;width:0;transform:translateX(-50%);border-radius:2px;background:linear-gradient(90deg,var(--mango),var(--pink),var(--mint));animation:adSignLine .7s ease-out 1.55s forwards}
+@keyframes adSignIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes adSignLine{to{width:100%}}
+
+@keyframes adDrop{to{transform:none}}@keyframes adHop{50%{transform:translateY(-14px)}}@keyframes adLetter{to{opacity:1;transform:none}}@keyframes adOut{to{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){#adsplash{animation:adOut .3s ease-in 1s forwards!important}#adsplash *{opacity:1!important;transform:none!important}}`;
+  document.head.appendChild(st);
+  const sp = document.createElement("div"); sp.id = "adsplash"; sp.setAttribute("role", "img"); sp.setAttribute("aria-label", "AfterDinner");
+  sp.innerHTML = `<div class="wrap"><div class="addots"><i></i><i></i><i></i></div><div class="name">${[..."AfterDinner"].map((ch, i) => `<span class="${i === 5 ? "d" : ""}" style="animation-delay:${.7 + i * .06}s">${ch}</span>`).join("")}</div></div><div class="sign"><small>from</small><b>Farenga</b></div>`;
+  const kill = () => sp.remove();
+  sp.addEventListener("animationend", e => { if(e.target === sp) kill(); });
+  sp.addEventListener("click", kill); setTimeout(kill, 3200);
+  document.body.appendChild(sp);
+}
+
 /* ---------- avvio ---------- */
 async function newRoom(){
   G = {phase:"lobby", host:NET.me, order:"seat", total:8, diff:1, players:[newPlayer(NET.me, cleanName(rawName()) || "Host", 0)], fxq:[], i:0, turn:0};
   if(await openRoom(false)) commit(); else G = null;
 }
 (function boot(){
-  if(ROOM){ NET.role = "guest"; NET.code = ROOM; UI.scr = null; render(); return; }
+  if(ROOM){ NET.role = "guest"; NET.code = ROOM; UI.scr = null; render(); adSplash(); return; }
   if(LOCK_ON){ let ok = false; try{ ok = localStorage.getItem("ad.host") === PIN_HASH; }catch(e){} if(!ok){ location.replace("./"); return; } }
   NET.role = "host";
   const s = ls.get(SAVE_KEY, null);
