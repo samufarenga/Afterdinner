@@ -119,7 +119,16 @@ body[data-mode="dead"] #bg{opacity:0}
 .seat .av{width:40px;height:40px;font-size:1.05rem;box-shadow:0 0 0 3px rgba(20,9,4,.9);transition:transform .25s,box-shadow .25s}
 .table.mini .seat .av{width:34px;height:34px;font-size:.92rem}
 .seat b{font-family:var(--display);font-weight:600;font-size:.74rem;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 6px;border-radius:99px;background:rgba(20,9,4,.7)}
-.seat.sel .av{transform:scale(1.18);box-shadow:0 0 0 3px var(--amber),0 0 18px var(--amber)}
+.seat.tappable{cursor:pointer;touch-action:manipulation;padding:6px;margin:-6px}
+.seat.tappable .av{box-shadow:0 0 0 3px rgba(20,9,4,.9),0 0 0 5px rgba(255,194,77,.35)}
+.seat.sel .av{transform:scale(1.2);box-shadow:0 0 0 3px var(--amber),0 0 22px var(--amber);animation:selp 1s ease-in-out infinite}
+@keyframes selp{50%{transform:scale(1.32)}}
+.seat.sel b{background:var(--amber);color:#2a0e00}
+.seat.swapped .av{animation:swp .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes swp{0%{transform:scale(.4) rotate(-180deg)}100%{transform:none}}
+.swaphint{margin:8px 0 0;text-align:center;font:600 .95rem var(--display);color:var(--muted);transition:color .2s}
+.swaphint.on{color:var(--amber)}
+.swaphint b{color:#fff}
 .seat.me b{color:var(--amber)}
 .seat.off{opacity:.4}
 .seat.hold .av{box-shadow:0 0 0 3px var(--or),0 0 22px var(--or)}
@@ -742,7 +751,7 @@ function tableHTML(opts = {}){
     <div class="wood"></div>
     ${G.order !== "rand" ? `<svg class="dir" viewBox="0 0 100 100" aria-hidden="true"><path d="M30 86A42 42 0 0 1 14 30" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4"/><path d="M10 37l4-8 7 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
     ${ps.map((p, i) => { const [x, y] = seatXY(rot(i), n);
-      const cls = [p.id === NET.me ? "me" : "", UI.sel === p.id ? "sel" : "", online(p) ? "" : "off", opts.bomb && p.id === G.holder ? "hold" : "", p.id === nextId ? "next" : ""].join(" ");
+      const cls = [p.id === NET.me ? "me" : "", UI.sel === p.id ? "sel" : "", UI.swapped && UI.swapped.includes(p.id) ? "swapped" : "", opts.swap ? "tappable" : "", online(p) ? "" : "off", opts.bomb && p.id === G.holder ? "hold" : "", p.id === nextId ? "next" : ""].join(" ");
       const tag = opts.swap ? "button" : "div";
       return `<${tag} class="seat ${cls}" style="--x:${x.toFixed(3)};--y:${y.toFixed(3)}" ${opts.swap ? `data-seat="${p.id}"` : ""}>${av(p)}<b>${p.id === NET.me ? "Tu" : esc(p.name)}</b>${opts.scores && p.bombs ? `<span class="k">${p.bombs}</span>` : ""}</${tag}>`; }).join("")}
     ${bomb}
@@ -787,8 +796,8 @@ const VIEWS = {
     <div class="row in" style="--d:2"><button class="btn ghost" data-a="copy">Copia link</button><button class="btn ghost" data-a="share">Condividi</button></div>
     <p class="hint in" style="--d:2">Inquadrate il QR facendo il giro del tavolo verso sinistra: l'ordine d'ingresso diventa l'ordine dei posti.</p>
     <div class="in" style="--d:3"><p class="lbl">Il tuo nome</p><input class="field l" id="hname" value="${esc(me.name)}" maxlength="16" placeholder="Il tuo nome" autocomplete="off"></div>
-    <div class="in" style="--d:4"><p class="lbl">Al tavolo (${n})</p>${tableHTML({swap:true})}${BOTS_ON ? `<div class="row" style="margin-top:10px"><button class="btn ghost" data-a="bot-add" ${n >= MAX_P ? "disabled" : ""}>+ Bot</button>${G.players.some(p => isBot(p.id)) ? `<button class="btn ghost" data-a="bot-del">Togli i bot</button>` : ""}</div><p class="hint" style="margin-top:4px">Bot: solo per le prove</p>` : ""}
-      <p class="hint" style="margin-top:8px">${n > 2 ? (UI.sel ? "Ora tocca chi deve prendere il suo posto." : "Posti sbagliati? Tocca due nomi per scambiarli.") : ""}</p></div>
+    <div class="in" style="--d:4"><p class="lbl">Al tavolo (${n})</p>${tableHTML({swap:true})}
+      <p class="swaphint ${UI.sel ? "on" : ""}">${n < 2 ? "" : UI.sel ? `Ora tocca il nome con cui scambiare <b>${nm(UI.sel)}</b>` : "Tocca due nomi per scambiarli di posto"}</p>${BOTS_ON ? `<div class="row" style="margin-top:10px"><button class="btn ghost" data-a="bot-add" ${n >= MAX_P ? "disabled" : ""}>+ Bot</button>${G.players.some(p => isBot(p.id)) ? `<button class="btn ghost" data-a="bot-del">Togli i bot</button>` : ""}</div><p class="hint" style="margin-top:4px">Bot: solo per le prove</p>` : ""}</div>
     <div class="in" style="--d:5"><p class="lbl">A chi passa la bomba</p><div class="seg">
       <button class="opt ${G.order !== "rand" ? "on" : ""}" data-set="order" data-v="seat">${I.seat}<b>Al vicino</b><small>Si gira a sinistra intorno al tavolo</small></button>
       <button class="opt ${G.order === "rand" ? "on" : ""}" data-set="order" data-v="rand">${I.dice}<b>A caso</b><small>Nessuno sa chi sarà il prossimo</small></button></div></div>
@@ -1042,7 +1051,8 @@ document.addEventListener("click", async e => {
     const id = seat.dataset.seat;
     if(!UI.sel || UI.sel === id) UI.sel = UI.sel === id ? null : id;
     else { const a = G.players.findIndex(p => p.id === UI.sel), b = G.players.findIndex(p => p.id === id);
-      [G.players[a], G.players[b]] = [G.players[b], G.players[a]]; recolor(); UI.sel = null; save(); publish(); }
+      [G.players[a], G.players[b]] = [G.players[b], G.players[a]]; UI.swapped = [UI.sel, id]; UI.sel = null; save(); publish();
+      setTimeout(() => { UI.swapped = null; }, 900); }
     render(); return;
   }
   const st = e.target.closest("[data-set]");
