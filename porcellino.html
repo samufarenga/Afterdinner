@@ -143,7 +143,7 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 .cbot{display:flex;justify-content:center;align-items:center;min-height:36px}
 .who{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:99px;background:rgba(40,0,10,.3);font-family:var(--display);font-weight:500}
 .who .av{width:26px;height:26px;font-size:.8rem}
-.discard{position:absolute;right:12px;bottom:12px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(40,0,10,.3);color:rgba(255,255,255,.75);font-size:1.05rem;z-index:2;transition:transform .2s}
+.discard{position:absolute;right:10px;bottom:10px;width:30px;height:30px;border-radius:50%;border:0;background:transparent;color:rgba(255,255,255,.28);font-size:1.05rem;z-index:2;transition:transform .2s}
 .discard:active{transform:rotate(-180deg) scale(.9)}
 
 /* ---------- attesa e risultati ---------- */
@@ -447,7 +447,7 @@ const norm = (c, v) => c.k === "yn" ? (v === "y" ? "y" : "n") : String(Math.max(
 function hostAct(pid, a, v){
   if(!G) return;
   const isHost = pid === NET.me;
-  if(a === "discard" && isHost && G.phase === "play"){ G.card = drawCard(); G.fxq.push({k:"toast", txt:"Carta scartata"}); return commit(); }
+  if(a === "discard" && isHost && G.phase === "play"){ G.card = drawCard(); return commit(); // in silenzio: nessuno deve sapere che esiste }
   if(a === "end" && isHost && G.phase === "play"){ G.phase = "end"; G.card = null; return commit(); }
   if(G.phase !== "play" || !G.card) return;
   const c = G.card, p = P(pid);
@@ -731,7 +731,7 @@ function cardHTML(c, small){
       <div class="ctop"><span class="tag">${TYI[c.t]} ${TY[c.t]}</span><span class="lv" title="${LV[c.lvl].n}">${chilis(c.lvl)}</span></div>
       <p class="q">${esc(qText(c))}</p>
       <div class="cbot">${t ? `<span class="who">${av(t)}Tocca a <b>${esc(t.name)}</b></span>` : `<span class="who" style="padding:6px 14px">${c.t === "m" || c.t === "p" ? "Tutti scelgono" : "Tutti rispondono"}</span>`}</div>
-      ${amHost() ? `<button class="discard" data-a="discard" aria-label="Scarta carta" title="Scarta carta">${I.refresh}</button>` : ""}
+      ${amHost() ? `<button class="discard" data-a="discard" aria-label="Altro">${I.refresh}</button>` : ""}
     </div></div></div></div>`;
 }
 function passBtn(who, mine){
@@ -763,7 +763,6 @@ const VIEWS = {
     <ul class="rules in" style="--d:3">
       <li><span>${I.snout}</span><div>Ognuno ha <b>3 passi</b> per tutta la partita, senza dare spiegazioni.</div></li>
       <li><span>${I.flag}</span><div>Finiti i passi, chi si rifiuta di rispondere <b>perde ed esce</b>.</div></li>
-      <li><span>${I.refresh}</span><div>Se qualcuno è davvero a disagio, l'host scarta la carta e nessuno perde niente.</div></li>
     </ul>
     <div class="grow"></div>
     <button class="btn pulse in" style="--d:4" data-a="adult">Siamo tutti maggiorenni ${I.flame}</button>
@@ -1050,11 +1049,10 @@ function showSheet(kind){
       <li><b>${I.match} Match</b>: ognuno sceglie qualcuno. Se due si scelgono a vicenda: MATCH, +2 a testa.</li>
       <li>Coi telefoni di tutti le risposte restano segrete finché non hanno risposto tutti, poi si scopre tutto, con i nomi.</li>
       <li><b>${I.snout} 3 passi</b> a testa per tutta la partita, senza spiegazioni. Finiti i passi, chi si rifiuta <b>perde ed esce</b>.</li>
-      <li><b>${I.refresh} Scarta carta</b>: se qualcuno è davvero a disagio, l'host cambia la carta e nessuno perde niente.</li>
       <li>Vince chi ha più porcellini. A fine partita: Re dei Porcellini, Santarellino, Bocca cucita, Cupido e Porcellino codardo.</li>
     </ul><button class="btn" data-close>Ho capito</button>`;
-  else if(kind === "menu") h = `<h2>Menu dell'host</h2><p>Per cambiare una carta che mette davvero a disagio qualcuno c'è anche il tasto ${I.refresh} in basso a destra sulla carta.</p>
-    <button class="btn ghost" data-a="discard" data-close>${I.refresh} Scarta questa carta</button><button class="btn ghost danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
+  else if(kind === "menu") h = `<h2>Menu dell'host</h2>
+    <button class="btn ghost" data-a="discard" data-close>${I.refresh} Cambia carta</button><button class="btn ghost danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
   else if(kind === "refuse"){ const c = G && G.card, who = c && c.target && (c.ph === "ask" || c.ph === "secret" || c.ph === "secretOne") ? P(c.target) : P(NET.me);
     h = `<h2>${amHost() && G.mode === "one" ? `${esc(who ? who.name : "")} si rifiuta?` : "Ti rifiuti?"}</h2><p>I passi sono finiti: chi si rifiuta di rispondere <b>perde ed esce dalla partita</b> come Porcellino codardo ${I.flag}.</p>
     <div class="row"><button class="btn ghost" data-close>No, rispondo</button><button class="btn danger" data-a="refuse" data-close>Sì, esco</button></div>`; }
