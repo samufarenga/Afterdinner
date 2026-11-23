@@ -197,6 +197,10 @@ h2{font-size:1.6rem}
 .people{display:flex;flex-direction:column;align-items:center;gap:8px}
 .people .plabel{font:700 .72rem var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .prow{position:relative;display:flex;justify-content:center;width:100%}
+.bigcrowd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:28px 20px;border-radius:var(--r);background:var(--night-2);border:2px dashed var(--night-3);animation:in .3s ease-out}
+.bigcrowd .gicon{width:84px;height:84px;border-radius:26px;display:grid;place-items:center;background:var(--lilac);color:var(--night)}
+.bigcrowd .gicon svg{width:52px;height:52px}
+.bigcrowd h2{margin:4px 0 0}.bigcrowd .lead{margin:0;text-wrap:balance}
 /* quanti siete: rullo orizzontale, il numero al centro è quello scelto */
 .ppick{position:relative;width:min(100%,340px);height:60px;margin-inline:auto}
 .pp-lens{position:absolute;left:50%;top:50%;width:52px;height:52px;transform:translate(-50%,-50%);border-radius:50%;background:var(--mango);box-shadow:0 6px 20px rgba(255,164,27,.35);pointer-events:none}
@@ -816,8 +820,8 @@ const screens = {
           <span class="badges">${g.adult?`<span class="badge adult">18+</span>`:""}${g.ready?"":`<span class="badge">In arrivo</span>`}</span>
         </button></li>`).join("")}
       </ul>`}
-      ${list.length ? "" : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o togli il filtro.</p>`}
-      ${WHEEL_ON && ST().wheel ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
+      ${list.length ? "" : n > 12 ? `<div class="bigcrowd"><span class="gicon">${ICONS.people}</span><h2>Così tanti amici?</h2><p class="lead">Stiamo preparando giochi pensati per i gruppi grandi, da ${n} persone in su. Arrivano presto!</p></div>` : `<p class="lead" style="text-align:center">Nessun gioco adatto a ${n} persone con questo filtro. Cambia il numero o togli il filtro.</p>`}
+      ${WHEEL_ON && ST().wheel || !list.length ? "" : `<p class="hint" style="text-align:center">Tieni premuto un gioco per i dettagli</p>`}
 
     </section>`;
   },
@@ -1506,7 +1510,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 10:50";
+const APP_VERSION = "23.11 · 11:00";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
