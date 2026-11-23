@@ -535,6 +535,37 @@ function swapId(oldId, newId){
   if(G.boom && G.boom.id === oldId) G.boom.id = newId;
 }
 
+/* ---------- bot di prova (solo per lo sviluppatore): giocatori finti sul telefono dell'host. Si spengono con BOTS_ON = false ---------- */
+const BOTS_ON = true;
+const BOT_NAMES = ["Bot Pino","Bot Gina","Bot Rocco","Bot Tea","Bot Nando","Bot Wanda","Bot Ugo","Bot Lia","Bot Ciro","Bot Nives","Bot Elio"];
+const isBot = id => typeof id === "string" && id.startsWith("bot-");
+const BOT = {};
+const botRnd = (a, b) => a + Math.random() * (b - a);
+function botAdd(){
+  if(!BOTS_ON || !amHost() || !G || G.phase !== "lobby" || G.players.length >= MAX_P) return;
+  const name = BOT_NAMES.find(n => !G.players.some(p => p.name === n)) || "Bot " + (G.players.length + 1);
+  hostReceive("bot-" + Math.random().toString(36).slice(2, 8), {t:"hello", name});
+}
+function botRemoveAll(){ if(G && G.phase === "lobby"){ G.players = G.players.filter(p => !isBot(p.id)); recolor(); commit(); } }
+function botTick(){
+  if(!BOTS_ON || !amHost() || !G) return;
+  const now = Date.now();
+  G.players.forEach(p => {
+    if(!isBot(p.id)) return;
+    NET.seen[p.id] = now; // un bot non va mai offline
+    const id = p.id;
+    const plan = (key, a, b) => { let x = BOT[id]; if(!x || x.key !== key) x = BOT[id] = {key, at:now + botRnd(a, b), done:false}; return x; };
+    if(G.phase === "play" && G.holder === id){ // il bot "dice" la sua parola e passa; ogni tanto ci mette troppo
+      const x = plan("p" + G.turn, 1500, Math.random() < .15 ? 9000 : 5000);
+      if(!x.done && now >= x.at){ x.done = true; hostAct(id, Math.random() < .03 ? "pause" : "pass", G.turn); }
+    } else if(G.phase === "recap" && G.boom && G.boom.id === id){
+      const x = plan("r" + G.i, 3000, 5000);
+      if(!x.done && now >= x.at){ x.done = true; hostAct(id, "next"); }
+    }
+  });
+}
+setInterval(botTick, 400);
+
 /* ---------- rete: host ---------- */
 async function hostOpen(){
   if(USE_LOCAL){
@@ -756,7 +787,7 @@ const VIEWS = {
     <div class="row in" style="--d:2"><button class="btn ghost" data-a="copy">Copia link</button><button class="btn ghost" data-a="share">Condividi</button></div>
     <p class="hint in" style="--d:2">Inquadrate il QR facendo il giro del tavolo verso sinistra: l'ordine d'ingresso diventa l'ordine dei posti.</p>
     <div class="in" style="--d:3"><p class="lbl">Il tuo nome</p><input class="field l" id="hname" value="${esc(me.name)}" maxlength="16" placeholder="Il tuo nome" autocomplete="off"></div>
-    <div class="in" style="--d:4"><p class="lbl">Al tavolo (${n})</p>${tableHTML({swap:true})}
+    <div class="in" style="--d:4"><p class="lbl">Al tavolo (${n})</p>${tableHTML({swap:true})}${BOTS_ON ? `<div class="row" style="margin-top:10px"><button class="btn ghost" data-a="bot-add" ${n >= MAX_P ? "disabled" : ""}>+ Bot</button>${G.players.some(p => isBot(p.id)) ? `<button class="btn ghost" data-a="bot-del">Togli i bot</button>` : ""}</div><p class="hint" style="margin-top:4px">Bot: solo per le prove</p>` : ""}
       <p class="hint" style="margin-top:8px">${n > 2 ? (UI.sel ? "Ora tocca chi deve prendere il suo posto." : "Posti sbagliati? Tocca due nomi per scambiarli.") : ""}</p></div>
     <div class="in" style="--d:5"><p class="lbl">A chi passa la bomba</p><div class="seg">
       <button class="opt ${G.order !== "rand" ? "on" : ""}" data-set="order" data-v="seat">${I.seat}<b>Al vicino</b><small>Si gira a sinistra intorno al tavolo</small></button>
@@ -1026,6 +1057,8 @@ document.addEventListener("click", async e => {
     case "rules": UI.sheet = "rules"; render(); break;
     case "menu": UI.sheet = "menu"; render(); break;
     case "newgame": ls.del(SAVE_KEY); newRoom(); break;
+    case "bot-add": botAdd(); break;
+    case "bot-del": botRemoveAll(); break;
     case "lobby-go": if(G.players.filter(online).length >= MIN_P){ UI.sel = null; startGame(); } break;
     case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(esc(joinUrl())); } break;
     case "share": if(navigator.share) navigator.share({title:"Bomba", text:"Vieni a giocare a Bomba", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;

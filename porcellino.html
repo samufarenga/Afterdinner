@@ -555,6 +555,39 @@ function swapId(oldId, newId){
     for(const k in c.ans) if(c.ans[k] === oldId) c.ans[k] = newId; }
 }
 
+/* ---------- bot di prova (solo per lo sviluppatore): giocatori finti sul telefono dell'host. Si spengono con BOTS_ON = false ---------- */
+const BOTS_ON = true;
+const BOT_NAMES = ["Bot Pino","Bot Gina","Bot Rocco","Bot Tea","Bot Nando","Bot Wanda","Bot Ugo","Bot Lia","Bot Ciro","Bot Nives","Bot Elio"];
+const isBot = id => typeof id === "string" && id.startsWith("bot-");
+const BOT = {};
+const botRnd = (a, b) => a + Math.random() * (b - a);
+const botPick = a => a[Math.floor(Math.random() * a.length)];
+function botAdd(){
+  if(!BOTS_ON || !amHost() || !G || G.phase !== "lobby" || G.players.length >= 12) return;
+  const name = BOT_NAMES.find(n => !G.players.some(p => p.name === n)) || "Bot " + (G.players.length + 1);
+  hostReceive("bot-" + Math.random().toString(36).slice(2, 8), {t:"hello", name});
+}
+function botRemoveAll(){ if(G && G.phase === "lobby"){ G.players = G.players.filter(p => !isBot(p.id)); commit(); } }
+function botTick(){
+  if(!BOTS_ON || !amHost() || !G || G.mode !== "all") return;
+  const now = Date.now(), c = G.card;
+  G.players.forEach(p => {
+    if(!isBot(p.id)) return;
+    NET.seen[p.id] = now; // un bot non va mai offline
+    if(G.phase !== "play" || !c || p.out) return;
+    const id = p.id, key = c.key + "." + c.ph;
+    let b = BOT[id]; if(!b || b.key !== key) b = BOT[id] = {key, at:now + botRnd(2500, 6000), done:false};
+    if(b.done || now < b.at) return;
+    const passOk = p.passes > 0 && Math.random() < .08, ans = () => c.k === "yn" ? botPick(["y","n"]) : Math.floor(botRnd(0, 12));
+    const others = () => active().filter(x => x.id !== id).map(x => x.id);
+    if(c.t === "v" && c.ph === "ask" && c.target === id){ b.done = true; hostAct(id, passOk ? "pass" : "done"); }
+    else if(c.t === "i" && c.ph === "secret" && c.target === id){ b.done = true; hostAct(id, "secret", ans()); }
+    else if(c.ph === "vote" && c.ans[id] === undefined){ b.done = true; if(passOk) hostAct(id, "pass"); else hostAct(id, "vote", c.t === "n" ? botPick(["y","n"]) : botPick(others())); }
+    else if(c.ph === "guess" && c.target !== id && c.ans[id] === undefined){ b.done = true; hostAct(id, "guess", ans()); }
+  });
+}
+setInterval(botTick, 500);
+
 /* ---------- rete: host ---------- */
 async function hostOpen(){
   if(USE_LOCAL){
@@ -807,7 +840,7 @@ const VIEWS = {
     <div class="code in" style="--d:1">${NET.code}</div>
     <div class="row in" style="--d:2"><button class="btn ghost" data-a="copy">Copia link</button><button class="btn ghost" data-a="share">Condividi</button></div>
     <div class="in" style="--d:3"><p class="lbl">Il tuo nome</p><input class="field l" id="hname" value="${esc(me.name)}" maxlength="16" placeholder="Il tuo nome" autocomplete="off"></div>
-    <div class="in" style="--d:4"><p class="lbl">Dentro (${n})</p><div class="waits" style="justify-content:flex-start">${G.players.map(p => `<span class="wt ok">${av(p)}${esc(p.name)}</span>`).join("")}</div></div>
+    <div class="in" style="--d:4"><p class="lbl">Dentro (${n})</p><div class="waits" style="justify-content:flex-start">${G.players.map(p => `<span class="wt ok">${av(p)}${esc(p.name)}</span>`).join("")}</div>${BOTS_ON ? `<div class="row" style="margin-top:10px;align-items:center"><button class="btn ghost" data-a="bot-add" ${n >= 12 ? "disabled" : ""}>+ Bot</button>${G.players.some(p => isBot(p.id)) ? `<button class="btn ghost" data-a="bot-del">Togli i bot</button>` : ""}</div><p class="hint" style="margin-top:4px">Bot: solo per le prove</p>` : ""}</div>
     <div class="grow"></div>
     <p class="hint">${n < 3 ? `Servono almeno 3 giocatori, ne mancano ${3 - n}.` : "Quando ci siete tutti, si parte."}</p>
     <div class="row in" style="--d:5"><button class="btn ghost" data-a="lobby-back">Indietro</button><button class="btn" data-a="lobby-go" ${n >= 3 ? "" : "disabled"}>Si comincia ${I.flame}</button></div>
@@ -1102,6 +1135,8 @@ document.addEventListener("click", async e => {
       UI.scr = null; startGame(); break;
     }
     case "lobby-back": closeRoom(); ls.del(SAVE_KEY); G = null; UI.scr = "setup"; render(); break;
+    case "bot-add": botAdd(); break;
+    case "bot-del": botRemoveAll(); break;
     case "lobby-go": if(G.players.length >= 3) startGame(); break;
     case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(esc(joinUrl())); } break;
     case "share": if(navigator.share) navigator.share({title:"Porcellino", text:"Vieni a giocare a Porcellino (solo maggiorenni)", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;
