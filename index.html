@@ -681,6 +681,93 @@ body.guest header.top{position:relative;z-index:5}
 body.guest header.top .logo{cursor:pointer}
 body.guest:has(.welcome) #info-btn{display:none!important}
 canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
+/* ---------- trailer: come si gioca, prima del primo turno ---------- */
+.screen.intro{gap:12px;min-height:calc(100dvh - 118px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+.spts .row3 small{color:inherit;opacity:.7}
+.scene{border-radius:26px;padding:16px 14px 18px;background:var(--night-2);box-shadow:inset 0 0 0 1.5px var(--night-3);text-align:center;cursor:pointer;min-height:290px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.scene.swap{animation:scIn .42s cubic-bezier(.2,.9,.3,1)}
+.scene.back{animation:scBack .42s cubic-bezier(.2,.9,.3,1)}
+@keyframes scIn{from{opacity:0;transform:translateX(28px)}}
+@keyframes scBack{from{opacity:0;transform:translateX(-28px)}}
+.scene h2{font-size:1.5rem}
+.scene .lead{font-size:1rem;max-width:31ch;margin:0}
+.sc-vis{height:160px;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
+.sp{width:66px;height:118px;border-radius:15px;background:var(--night);box-shadow:inset 0 0 0 3px var(--night-3);padding:7px;box-sizing:border-box;position:relative;flex:none}
+.sp.big{width:92px;height:150px}
+.sp .scr{width:100%;height:100%;border-radius:9px;background:var(--board);display:grid;place-items:center;color:var(--ink);overflow:hidden}
+.scw{font:700 .72rem var(--display);letter-spacing:.04em;color:var(--ink)}
+.sq{font:700 2.4rem var(--display);color:var(--pink);animation:scblink 1.1s ease-in-out infinite}
+@keyframes scblink{50%{opacity:.35}}
+.scat{width:88%;height:auto}
+.scat path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:scdraw 1.7s ease-in-out forwards .2s}
+.scat.still path{animation:none;stroke-dashoffset:0}
+@keyframes scdraw{to{stroke-dashoffset:0}}
+.spill{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);font:700 .78rem var(--display);padding:4px 12px;border-radius:99px;background:var(--mint);color:var(--ink);white-space:nowrap;opacity:0;animation:scpop .35s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--at,2s)}
+.spill.no{background:var(--pink);color:#fff}
+.spill .gly{width:12px;height:12px;vertical-align:-1px;margin-right:2px}
+@keyframes scpop{from{opacity:0;transform:translateX(-50%) scale(.4)}to{opacity:1;transform:translateX(-50%)}}
+.scard{width:62px;height:82px;border-radius:12px;background:var(--board);display:grid;place-items:center;position:relative;opacity:0;animation:scfade .4s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:calc(var(--d,0)*450ms + 150ms)}
+.scard .scat{width:80%}
+.scard b{position:absolute;top:-9px;left:-9px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:700 .8rem var(--display);background:var(--mango);color:var(--ink)}
+.scard.dim{animation-name:scfadedim}
+@keyframes scfade{from{opacity:0;transform:translateY(14px) scale(.85)}to{opacity:1;transform:none}}
+@keyframes scfadedim{from{opacity:0;transform:translateY(14px) scale(.85)}to{opacity:.45;transform:scale(.92)}}
+.sx{position:absolute;inset:0;display:grid;place-items:center;color:var(--pink);opacity:0;animation:scstamp .5s cubic-bezier(.2,1.6,.4,1) forwards .9s}
+.sx .gly{width:48px;height:48px}
+@keyframes scstamp{from{opacity:0;transform:scale(2.2) rotate(-18deg)}to{opacity:1;transform:none}}
+.sfig{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 .8rem var(--display);color:var(--muted);position:relative}
+.sfig .av{width:56px;height:56px;font-size:1.5rem}
+.sbub{position:absolute;top:-30px;font:700 1rem var(--display);padding:3px 10px;border-radius:99px;background:var(--mango);color:var(--ink);opacity:0;animation:scup .6s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--at,.6s)}
+@keyframes scup{from{opacity:0;transform:translateY(16px) scale(.5)}to{opacity:1;transform:none}}
+.sswap{width:34px;height:34px;color:var(--mango);animation:scspin 2.6s ease-in-out infinite}
+@keyframes scspin{0%,30%{transform:none}60%,100%{transform:rotate(180deg)}}
+.slive{position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--pink);animation:scblink 1s infinite}
+.stries{display:flex;flex-direction:column;gap:8px}
+.stries span{font:700 .85rem var(--display);padding:5px 12px;border-radius:99px;display:inline-flex;align-items:center;gap:5px;opacity:0;animation:scfade .35s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--at)}
+.stries .no{background:rgba(255,61,114,.2);color:#ff8fae}
+.stries .ok{background:var(--mint);color:var(--ink)}
+.stries .gly{width:13px;height:13px}
+.spts{display:flex;flex-direction:column;align-items:center;gap:14px;width:230px}
+.spts .row3{display:flex;gap:8px;width:100%}
+.spts .row3 span{flex:1;padding:8px 0;border-radius:14px;background:var(--night);font:700 1.15rem var(--display);display:flex;flex-direction:column;align-items:center;line-height:1.1;animation:sclit 2.7s step-end both}
+.spts .row3 small{font:600 .68rem var(--body);color:var(--muted)}
+.spts .row3 span:nth-child(2){animation-name:sclit2}.spts .row3 span:nth-child(3){animation-name:sclit3}
+@keyframes sclit{0%{background:var(--mango);color:var(--ink)}33%{background:var(--night);color:var(--paper)}}
+@keyframes sclit2{0%{background:var(--night)}33%{background:var(--mango);color:var(--ink)}66%{background:var(--night);color:var(--paper)}}
+@keyframes sclit3{0%{background:var(--night)}66%,100%{background:var(--mango);color:var(--ink)}}
+.spts .row3 span[style]{color:var(--paper)}
+.sbar{width:100%;height:10px;border-radius:99px;background:var(--night);position:relative;overflow:hidden}
+.sbar i{position:absolute;inset:0;border-radius:99px;background:var(--mint);transform-origin:left;animation:scdrain 2.7s linear forwards}
+@keyframes scdrain{to{transform:scaleX(0)}}
+.steam{width:220px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.steam .tb{width:100%;height:16px;border-radius:99px;background:var(--night);position:relative}
+.steam .tb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--mango),var(--pink));width:0;animation:scfill 1.8s cubic-bezier(.3,.7,.3,1) forwards .2s}
+@keyframes scfill{to{width:82%}}
+.steam .tb em{position:absolute;left:62%;top:-6px;bottom:-6px;width:3px;border-radius:2px;background:var(--paper)}
+.steam .tb small{position:absolute;left:62%;top:24px;transform:translateX(-50%);font:600 .7rem var(--body);color:var(--muted)}
+.steam .rec{margin-top:18px;font:700 1rem var(--display);color:var(--mango);display:flex;align-items:center;gap:6px;opacity:0;animation:scfade .45s cubic-bezier(.2,1.5,.4,1) forwards 1.6s}
+.steam .rec .gly{width:20px;height:20px}
+.steam .avs{display:flex;gap:-6px}.steam .avs .av{width:40px;height:40px;box-shadow:0 0 0 3px var(--night-2)}.steam .avs .av+.av{margin-left:-8px}
+.dots5{display:flex;justify-content:center;gap:4px}
+.dots5 button{width:22px;height:22px;padding:0;border:0;background:none;display:grid;place-items:center;cursor:pointer}
+.dots5 i{display:block;width:8px;height:8px;border-radius:99px;background:var(--night-3);transition:all .3s}
+.dots5 .done i{background:rgba(255,164,27,.55)}
+.dots5 .on i{width:22px;background:var(--mango)}
+.schint{text-align:center;margin:0;min-height:1.2em;font-size:.82rem}
+.pchips.rdy{margin:0}
+.pchips.rdy li{opacity:.6;transition:all .3s}
+.pchips.rdy li.ok{opacity:1;background:rgba(20,212,148,.18);box-shadow:inset 0 0 0 1.5px var(--mint)}
+.pchips.rdy li.ok .gly{width:14px;height:14px;color:var(--mint)}
+.pchips.rdy li.off{opacity:.35;text-decoration:line-through}
+.scnav{display:flex;align-items:center;justify-content:center;gap:6px}
+.scarrow{width:32px;height:32px;border-radius:50%;border:0;background:var(--night-2);color:var(--paper);display:grid;place-items:center;cursor:pointer;padding:0;transition:opacity .3s}
+.scarrow svg{width:16px;height:16px}
+.scarrow[disabled]{opacity:.3}
+.scarrow.hide{opacity:0;pointer-events:none}
+.intro .rdyhint{text-align:center;margin:8px 0}
+@media (min-height:760px){.sc-vis{height:210px}.scene{min-height:350px;gap:10px}.sp{width:76px;height:136px}.sp.big{width:108px;height:178px}.scard{width:72px;height:96px}.sfig .av{width:68px;height:68px;font-size:1.8rem}.spts,.steam{transform:scale(1.15)}}
+@media (min-height:880px){.sc-vis{height:240px}.scene{min-height:390px}}
+@media (max-height:700px){.screen.intro{gap:8px}.scene{min-height:228px;padding:10px 12px 12px;gap:4px}.sc-vis{height:122px}.intro .rdyhint{margin:4px 0}.pchips.rdy li{padding:2px 10px 2px 2px}.pchips.rdy li .av{width:24px;height:24px}.spts,.steam{transform:scale(.9)}.sp{height:100px;width:58px}.sp.big{height:118px;width:76px}.scard{width:56px;height:74px}.sfig .av{width:48px;height:48px}.scene h2{font-size:1.3rem}}
 </style>
 </head>
 <body>
@@ -1233,7 +1320,7 @@ view.addEventListener("click", e => {
 function openSettings(){
   if($("#settings")) return;
   const st = ST();
-  const sw = (k, t, sub) => `<label class="set-row" for="set-${k}"><span class="lbl"><b>${t}</b>${sub?`<span>${sub}</span>`:""}</span><input type="checkbox" class="sw" id="set-${k}" data-set="${k}" ${st[k]?"checked":""}></label>`;
+  const sw = (k, t, sub) => `<label class="set-row" for="set-${k}"><span class="lbl"><b>${t}</b>${sub?`<span>${sub}</span>`:""}</span><input type="checkbox" class="scw" id="set-${k}" data-set="${k}" ${st[k]?"checked":""}></label>`;
   const m = document.createElement("div");
   m.id="settings"; m.className="modal settings"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
   m.innerHTML = `<div class="sheet"><h2>Impostazioni</h2>
@@ -1545,7 +1632,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 12:30";
+const APP_VERSION = "23.11 · 12:35";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1792,6 +1879,100 @@ function act(msg){ if(NET.role === "host") hostReceive(NET.myId, {...msg, pid:NE
 /* ---------- host: regole e stato ---------- */
 function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== NET.myId) NET.sendTo(p.id, msg); }); }
 function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
+/* ---------- trailer: prima del primo turno, poche scene che scorrono da sole (2,8 s), poi «Sono pronto a giocare» ---------- */
+/* Come in Bomba: un tocco va avanti, col dito si scorre avanti e indietro; tornando indietro o arrivati in fondo l'autoplay si ferma */
+const SC_MS = 2800;
+const SC_CAT = `<path pathLength="1" d="M18 32A12 12 0 1 0 42 32A12 12 0 1 0 18 32M20 26L21 13L28 21M32 21L39 13L40 26M25 31v1M35 31v1M28 36l2 2 2-2M8 33h12M40 33h12M10 39l10-3M50 39l-10-3"/>`;
+const scCat = (still) => `<svg class="scat${still ? " still" : ""}" viewBox="0 0 60 60" aria-hidden="true">${SC_CAT}</svg>`;
+const scAv = (c, l) => `<span class="av" style="background:${c}">${l}</span>`;
+const SC_ARROW = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const SC_SWAP = `<svg class="sswap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>`;
+const TRAILER = {
+  scarabocchi: [
+    {t:"Uno indovina", d:"Gli altri vedono la parola e la disegnano.",
+     v:() => `<div class="sp"><div class="scr"><b class="sq">?</b></div></div><div class="sp"><div class="scr"><b class="scw">GATTO</b></div></div><div class="sp"><div class="scr"><b class="scw">GATTO</b></div></div>`},
+    {t:"Disegnate in silenzio", d:"Niente lettere né numeri. Poi premi Invia.",
+     v:() => `<div class="sp big"><div class="scr">${scCat()}</div><span class="spill" style="--at:2s">Invia</span></div>`},
+    {t:"Si scoprono uno a uno", d:"Nell'ordine di invio: una risposta per disegno.",
+     v:() => [0,1,2].map(k => `<div class="scard" style="--d:${k}"><b>${k+1}</b>${scCat(1)}</div>`).join("")},
+    {t:"Sbagliato? Il prossimo", d:"I disegni già visti non tornano.",
+     v:() => `<div class="scard dim" style="--d:0">${scCat(1)}<span class="sx">${GLY.no}</span><span class="spill no" style="--at:.5s">cane</span></div><div class="scard" style="--d:3">${scCat(1)}<span class="spill" style="--at:1.9s">${GLY.ok}gatto</span></div>`},
+    {t:"Primo disegno: 2pt", d:"A chi indovina e a chi disegna. Dopo, 1pt.",
+     v:() => `<div class="sfig">${scAv("var(--sky)","A")}<span class="sbub" style="--at:.5s">+2pt</span>indovina</div><div class="sfig">${scAv("var(--mango)","M")}<span class="sbub" style="--at:.9s">+2pt</span>disegna</div>`}
+  ],
+  coppia: [
+    {t:"Uno disegna, uno indovina", d:"A ogni turno vi scambiate i ruoli.",
+     v:() => `<div class="sp"><div class="scr"><b class="scw">GATTO</b></div></div>${SC_SWAP}<div class="sp"><div class="scr"><b class="sq">?</b></div></div>`},
+    {t:"Il disegno è in diretta", d:"Scrivi tutte le risposte che vuoi.",
+     v:() => `<div class="sp big"><div class="scr">${scCat()}</div><i class="slive"></i></div><div class="stries"><span class="no" style="--at:.9s">${GLY.no}cane</span><span class="no" style="--at:1.5s">${GLY.no}topo</span><span class="ok" style="--at:2.1s">${GLY.ok}gatto</span></div>`},
+    {t:"Più veloci, più punti", d:"Il tempo scorre: prima indovini, più vale.",
+     v:() => `<div class="spts"><div class="row3"><span>3pt<small>20 s</small></span><span>2pt<small>40 s</small></span><span>1pt<small>60 s</small></span></div><div class="sbar"><i></i></div></div>`},
+    {t:"Siete una squadra", d:"I punti sono della coppia: battete il record.",
+     v:() => `<div class="steam"><div class="avs">${scAv("var(--sky)","A")}${scAv("var(--pink)","M")}</div><div class="tb"><i></i><em></em><small>Record</small></div><div class="rec">${GLY.star}Nuovo record!</div></div>`}
+  ]
+};
+const trailer = () => TRAILER[M && M.game] || TRAILER.scarabocchi;
+let SC = {k:0, auto:true, on:false, t:null};
+function scFree(){ return !SC.auto || SC.k >= trailer().length - 1; }
+function scNavHTML(){
+  const n = trailer().length, free = scFree();
+  return `<button class="scarrow ${free ? "" : "hide"}" data-sc="${SC.k - 1}" ${SC.k ? "" : "disabled"} aria-label="Scena precedente">${SC_ARROW("M15 5l-7 7 7 7")}</button>
+    <div class="dots5">${trailer().map((_, i) => `<button data-sc="${i}" class="${i === SC.k ? "on" : i < SC.k ? "done" : ""}" aria-label="Scena ${i+1}"><i></i></button>`).join("")}</div>
+    <button class="scarrow ${free ? "" : "hide"}" data-sc="${SC.k + 1}" ${SC.k < n - 1 ? "" : "disabled"} aria-label="Scena successiva">${SC_ARROW("M9 5l7 7-7 7")}</button>`;
+}
+function introView(){
+  const s = trailer()[Math.min(SC.k, trailer().length - 1)];
+  return `<section class="screen intro">
+    <div style="text-align:center"><span class="eyebrow">${gameName(M.game)} · come si gioca</span></div>
+    <div class="scene" id="scene"><div class="sc-vis" id="scvis">${s.v()}</div><h2 id="sct">${s.t}</h2><p class="lead" id="scd">${s.d}</p></div>
+    <div class="scnav" id="scnav">${scNavHTML()}</div>
+    <p class="hint schint" id="schint">${scFree() ? "Scorri per rivedere" : "Tocca per andare avanti"}</p>
+    <div class="spacer"></div>
+    <div id="readybox">${readyBox()}</div>
+  </section>`;
+}
+function readyBox(){
+  const R = M.ready || {}, me = R[NET.myId], end = SC.k >= trailer().length - 1;
+  const missing = M.players.filter(p => p.on && !R[p.id]);
+  return `<ul class="pchips rdy">${M.players.map(p => `<li class="${R[p.id] ? "ok" : ""} ${p.on ? "" : "off"}">${av(p)}<span>${p.id === NET.myId ? "Tu" : esc(p.name)}</span>${R[p.id] ? GLY.ok : ""}</li>`).join("")}</ul>
+    <p class="hint rdyhint">${missing.length ? `Si parte quando siete tutti pronti: ${missing.length === 1 ? "ne manca 1" : `ne mancano ${missing.length}`}.` : "Tutti pronti!"}</p>
+    ${me ? `<button class="btn ghost" disabled style="width:100%">Pronto, aspettiamo gli altri</button>`
+      : `<button class="btn ${end ? "pink" : "ghost"}" id="mp-ready" style="width:100%">Sono pronto a giocare</button>`}
+    ${NET.role === "host" && missing.length && Object.keys(R).length ? `<button class="linkbtn" id="mp-goanyway" style="display:block;margin:6px auto 0">Parti lo stesso</button>` : ""}`;
+}
+function scShow(dir){
+  const box = $("#scene"); if(!box) return;
+  const s = trailer()[SC.k];
+  box.classList.remove("swap", "back"); void box.offsetWidth; box.classList.add(dir < 0 ? "back" : "swap");
+  $("#scvis").innerHTML = s.v(); $("#sct").textContent = s.t; $("#scd").textContent = s.d;
+  $("#scnav").innerHTML = scNavHTML();
+  $("#schint").textContent = scFree() ? "Scorri per rivedere" : "Tocca per andare avanti";
+  const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox();
+}
+function scGo(k, user){
+  const n = trailer().length; k = Math.max(0, Math.min(n - 1, k));
+  if(k === SC.k) return;
+  const dir = k > SC.k ? 1 : -1;
+  if(user && dir < 0) SC.auto = false;   // chi torna indietro vuole rileggere: niente più autoplay
+  SC.k = k; scShow(dir); scTick();
+}
+function scTick(){
+  clearTimeout(SC.t);
+  if(!SC.auto || !M || M.phase !== "intro" || SC.k >= trailer().length - 1) return;
+  SC.t = setTimeout(() => scGo(SC.k + 1), SC_MS);
+}
+function scBind(){
+  const box = $("#scene"); if(!box || box.dataset.b) return; box.dataset.b = "1";
+  let x0 = null, y0 = 0;
+  box.addEventListener("pointerdown", e => { x0 = e.clientX; y0 = e.clientY; });
+  box.addEventListener("pointerup", e => {
+    if(x0 == null) return; const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) scGo(SC.k + (dx < 0 ? 1 : -1), true);
+    else if(Math.abs(dx) < 12 && Math.abs(dy) < 12) scGo(SC.k + 1, true);
+  });
+  box.addEventListener("pointercancel", () => { x0 = null; });
+}
+function introEnd(){ M.phase = "ready"; M.introDone = true; M.ready = null; }
 /* coppia: record da battere, salvato sul telefono dell'host, uno per ogni numero di turni */
 function duoRecord(){
   if(!isDuo() || M.phase !== "final" || M.recDone) return;
@@ -1804,6 +1985,7 @@ function duoRecord(){
 }
 function duoBest(){ try{ return (JSON.parse(localStorage.getItem("ad.duoRecords") || "{}") || {})[M.rounds * 2] || null; }catch(_){ return null; } }
 function publish(){
+  if(NET.role === "host" && M.phase === "intro" && M.players.filter(p => p.on).every(p => (M.ready || {})[p.id])) introEnd(); // si parte quando sono pronti tutti quelli collegati
   duoRecord();
   if(isDuo() && M.phase !== "final" && NET.role === "host"){ const b = duoBest(); M.best = b ? b.pts : null; }
   if(M.phase === "result") armAutoFinal(); else { clearTimeout(NET.autoT); M.autoAt = null; }
@@ -2003,6 +2185,8 @@ function hostReceive(pid, msg){
         if(M.phase === "turn" || M.phase === "reveal") turnCheck(); // il turno va avanti: chi si scollega può rientrare
         publish();
       } break;
+    case "ready": if(M.phase === "intro" && p){ (M.ready = M.ready || {})[pid] = true; publish(); } break;
+    case "goanyway": if(M.phase === "intro" && pid === M.host){ introEnd(); publish(); } break;
     case "start":
       if(M.phase === "ready" && (isDuo() ? pid === drawerId() || (pid === M.host && (msg.skip || msg.force)) : pid === guesserId() || (pid === M.host && msg.skip))){
         if(msg.skip){ M.turn++; toNextTurn(); publish(); break; }
@@ -2098,7 +2282,7 @@ function onState(s){
   if(s.phase === "turn" && prevPhase !== "turn") sfx("go");
   if(s.phase === "result" && (prevPhase === "turn" || prevPhase === "reveal")){ if(s.last && s.last.reason === "guess") { confetti(); buzz([30,40,30]); sfx("correct"); } else if(s.last && s.last.reason === "pass") sfx("pass"); else sfx("timeUp"); }
   if(s.phase === "ready" && prevPhase !== "ready" && (s.game === "coppia" ? s.order.find(id => id !== s.order[s.turn]) === NET.myId : amGuesser())){ buzz([20,40,20]); sfx("join"); }
-  if(s.phase !== prevPhase && $("#showcase") && (["ready","turn"].includes(s.phase) || (s.phase === "reveal" && amGuesser()))) closeShowcase(); // si torna alla partita quando c'è da fare
+  if(s.phase !== prevPhase && $("#showcase") && (["intro","ready","turn"].includes(s.phase) || (s.phase === "reveal" && amGuesser()))) closeShowcase(); // si torna alla partita quando c'è da fare
   const enteringFinal = s.phase === "final" && prevPhase !== "final";
   prevPhase = s.phase;
   if(enteringFinal && s.game === "coppia" && s.newRecord) setTimeout(() => confetti(), 1100);
@@ -2713,6 +2897,7 @@ function mpView(){
         <div><p class="lead" style="margin:0 0 6px">Sei dentro, ${esc(me.name)}!</p><h2>Aspettiamo che ${esc(host.name)} inizi la partita</h2></div>
         ${mpPlayersChips()}</section>`;
     }
+    case "intro": return introView();
     case "ready":
       if(isDuo()){ const d = mpPlayer(drawerId());
         if(amGuesser()) return `<section class="screen pass bigwait">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
@@ -2861,6 +3046,8 @@ function guestWelcome(){
 
 function mpRender(force){
   if(S.screen !== "mp") return;
+  if(!M || M.phase !== "intro"){ if(SC.on){ clearTimeout(SC.t); SC = {k:0, auto:true, on:false, t:null}; } }
+  else if(!force && $("#scene")){ const rb = $("#readybox"), h = readyBox(); if(rb && rb.innerHTML !== h) rb.innerHTML = h; return; } // il trailer non riparte a ogni «pronto»
   const drawing = M && M.phase === "turn" && !amGuesser() && !(M.queue||[]).includes(NET.myId);
   const guessing = M && M.phase === "reveal" && M.revealed && amGuesser(), cur = guessing ? M.queue[M.view] : null;
   const duoG = M && isDuo() && M.phase === "turn" && amGuesser();
@@ -2886,6 +3073,7 @@ function mpAfterRender(){
   }
   if($("#board")) boardInit();
   if($("#livecv")) liveDraw();
+  if($("#scene")){ scBind(); if(!SC.on){ SC.on = true; scTick(); } }
   clearInterval(mpTick); mpTick = null;
   if(M && M.phase === "turn"){
     mpTick = setInterval(() => {
@@ -2902,10 +3090,13 @@ view.addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const id = b.id, d = b.dataset;
   if(d.mpset){ M[d.mpset] = d.mpset === "level" ? d.v : d.mpset === "sprint" ? d.v === "1" : +d.v; if(d.mpset === "rounds") M.roundsManual = true; publish(); }
-  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; Object.assign(M, {team:0, hits:0, hitSecs:0, recDone:false, record:null, newRecord:false}); } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; M.phase = "ready"; publish(); }
+  else if(id === "mp-start"){ if(isDuo()){ if(M.players.filter(p => p.on).length !== 2) return; M.seconds = 60; if(![3,5,8].includes(M.rounds)) M.rounds = 5; Object.assign(M, {team:0, hits:0, hitSecs:0, recDone:false, record:null, newRecord:false}); } usedNewGame(); M.players = M.players.filter(p => p.on); M.order = shuffle(M.players.map(p => p.id)); M.scores = {}; M.players.forEach(p => M.scores[p.id] = 0); M.turn = 0; M.round = 1; if(M.introDone) M.phase = "ready"; else { M.phase = "intro"; M.ready = {}; M.players.forEach(p => { if(isBot(p.id)) M.ready[p.id] = true; }); } publish(); }
   else if(id === "bot-add"){ botAdd(); }
   else if(id === "bot-del"){ botRemoveAll(); }
   else if(id === "mp-go"){ act({t:"start"}); }
+  else if(id === "mp-ready"){ b.disabled = true; act({t:"ready"}); }
+  else if(id === "mp-goanyway"){ act({t:"goanyway"}); }
+  else if(d.sc != null){ scGo(+d.sc, true); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
   else if(id === "mp-skip"){ act({t:"start", skip:true}); }
   else if(id === "mp-adv"){ b.disabled = true; act({t:"advance", view:M.view}); }
