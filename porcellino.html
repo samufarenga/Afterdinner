@@ -281,6 +281,54 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}
 }
+
+/* ---------- trailer: come si gioca, prima della prima carta (come in Bomba e negli Scarabocchi) ---------- */
+.screen.intro{gap:12px}
+.scene{border-radius:28px;padding:18px 16px 18px;background:rgba(40,4,16,.55);box-shadow:inset 0 0 0 1.5px var(--line);text-align:center;cursor:pointer;min-height:300px;display:flex;flex-direction:column;align-items:center;gap:10px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.scene.swap{animation:scIn .42s cubic-bezier(.2,.9,.3,1)}
+.scene.back{animation:scBack .42s cubic-bezier(.2,.9,.3,1)}
+@keyframes scIn{from{opacity:0;transform:translateX(28px)}}
+@keyframes scBack{from{opacity:0;transform:translateX(-28px)}}
+.scene h2{font-size:1.5rem}
+.scene .lead{font-size:1rem;max-width:30ch}
+.sc-vis{height:160px;width:100%;display:flex;align-items:center;justify-content:center;gap:14px;position:relative}
+.sc-lv{display:flex;flex-direction:column;align-items:center;gap:6px;font:600 .78rem var(--display);color:var(--muted);opacity:0;animation:scUp .45s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:calc(var(--d)*550ms + 150ms)}
+.sc-lv .chilis .ic{width:24px;height:24px}
+.sc-lv b{font:700 1rem var(--display);color:var(--paper)}
+@keyframes scUp{from{opacity:0;transform:translateY(16px) scale(.7)}to{opacity:1;transform:none}}
+.sc-types{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px}
+.sc-types span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:rgba(255,79,109,.18);box-shadow:inset 0 0 0 1px var(--line);font:600 .82rem var(--display);opacity:0;animation:scUp .4s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:calc(var(--d)*300ms + 100ms)}
+.sc-types span{white-space:nowrap}.sc-types .ic{width:18px;height:18px;color:#ffb3c4}
+.sc-pigs{display:flex;align-items:flex-end;gap:16px;margin-top:34px}
+.sc-pig{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.sc-pig .av{width:52px;height:52px;font-size:1.4rem}
+.sc-pig em{position:absolute;top:-34px;display:inline-flex;align-items:center;gap:3px;font:700 1rem var(--display);font-style:normal;padding:3px 10px;border-radius:99px;background:linear-gradient(180deg,#ffd86b,#f29a1f);color:#3a0800;opacity:0;animation:scUp .5s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--at)}
+.sc-pig em .ic{width:16px;height:16px;color:#3a0800}
+.sc-crown{position:absolute;top:-66px;width:34px;height:34px;color:var(--gold);opacity:0;animation:scUp .5s cubic-bezier(.2,1.5,.4,1) forwards 1.7s}
+.sc-crown .ic{width:100%;height:100%}
+.sc-sec{display:flex;gap:10px}
+.sc-sec div{width:62px;height:84px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(160deg,#ff3b5c,#9c0f2b);box-shadow:0 10px 20px -10px rgba(255,40,80,.8);position:relative;font:700 1.3rem var(--display)}
+.sc-sec div .ic{width:28px;height:28px;color:#ffe3e8;animation:scHide 2.6s ease forwards}
+.sc-sec div b{position:absolute;opacity:0;animation:scShow 2.6s ease forwards}
+.sc-sec div:nth-child(2) .ic{animation-delay:.08s}.sc-sec div:nth-child(3) .ic{animation-delay:.16s}
+@keyframes scHide{0%,55%{opacity:1;transform:none}70%,100%{opacity:0;transform:scale(.4)}}
+@keyframes scShow{0%,60%{opacity:0;transform:scale(.4)}75%,100%{opacity:1;transform:none}}
+.sc-passo{display:flex;align-items:center;gap:10px}
+.sc-passo span{display:grid;animation:scGone .5s ease forwards;animation-delay:calc(var(--d)*450ms + 500ms)}
+.sc-passo .ic{width:44px;height:44px;color:#ff9fb6}
+@keyframes scGone{to{opacity:.18;transform:scale(.8)}}
+.sc-flag{position:absolute;bottom:14px;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:14px;background:var(--red);font:700 1rem var(--display);transform:rotate(-6deg);opacity:0;animation:scStamp .5s cubic-bezier(.2,1.6,.4,1) forwards 2s}
+.sc-flag .ic{width:18px;height:18px}
+@keyframes scStamp{from{opacity:0;transform:scale(2.2) rotate(-18deg)}to{opacity:1;transform:rotate(-6deg)}}
+.navrow{display:flex;align-items:center;justify-content:center;gap:10px}
+.navrow .ib[disabled]{opacity:.3}
+.dots5{display:flex;justify-content:center;gap:6px}
+.dots5 i{width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.18);transition:all .3s;cursor:pointer}
+.dots5 i.done{background:var(--red)}
+.dots5 i.on{width:22px;background:var(--red2)}
+.wt.off{opacity:.4;text-decoration:line-through}
+@media (max-height:700px){.scene{min-height:250px;padding:12px 12px 14px;gap:6px}.sc-vis{height:128px}.scene h2{font-size:1.3rem}.screen.intro{gap:8px}}
+@media (min-height:800px){.sc-vis{height:210px}.scene{min-height:360px}.sc-passo .ic{width:52px;height:52px}.sc-pig .av{width:60px;height:60px}}
 </style>
 </head>
 <body data-lv="1">
@@ -388,10 +436,12 @@ function needed(){ // chi deve ancora rispondere alla carta di gruppo
    LOGICA (solo sull'host)
    ===================================================================== */
 function newPlayer(id, name, n){ return {id, name, pts:0, passes:3, out:false, on:true, mt:0, color:COLORS[n % COLORS.length]}; }
-function startGame(){
+function startGame(){ startState(); commit(); }
+function startState(){
+  G.introDone = true; G.ready = null;
   Object.assign(G, {phase:"play", i:0, rot:-1, used:G.used || [], card:null, lastT:null, lastT2:null, fxq:[]});
   G.players.forEach(p => Object.assign(p, {pts:0, passes:3, out:false, mt:0}));
-  G.card = drawCard(); commit();
+  G.card = drawCard();
 }
 function drawCard(){
   const lvl = Math.min(G.max, 1 + Math.floor(G.i * G.max / G.total));
@@ -434,6 +484,7 @@ function advance(){
 }
 function give(id, n){ const p = P(id); if(!p || !n) return; p.pts += n; G.fxq.push({k:"pts", id, n}); }
 function commit(){
+  if(amHost() && G && G.phase === "intro" && G.mode === "all" && G.players.filter(p => p.on !== false).every(p => (G.ready || {})[p.id])) startState(); // si parte quando sono pronti tutti quelli collegati
   if(G.fxq && G.fxq.length){ G.fxn = (G.fxn || 0) + 1; G.fx = {n:G.fxn, l:G.fxq}; G.fxq = []; }
   save(); publish(); render();
 }
@@ -448,6 +499,8 @@ function hostAct(pid, a, v){
   if(!G) return;
   const isHost = pid === NET.me;
   if(a === "discard" && isHost && G.phase === "play"){ G.card = drawCard(); return commit(); /* in silenzio: nessuno deve sapere che esiste */ }
+  if(a === "ready" && G.phase === "intro" && P(pid)){ (G.ready = G.ready || {})[pid] = true; return commit(); }
+  if(a === "go-anyway" && isHost && G.phase === "intro"){ startState(); return commit(); }
   if(a === "end" && isHost && G.phase === "play"){ G.phase = "end"; G.card = null; return commit(); }
   if(G.phase !== "play" || !G.card) return;
   const c = G.card, p = P(pid);
@@ -785,8 +838,86 @@ function numOrYn(c, idNum, act){
 }
 const ynTxt = v => v === "y" ? "Sì" : v === "n" ? "No" : v;
 
+/* ---------- il trailer: poche scene che scorrono da sole (2,8 s), poi «Sono pronto a giocare» ----------
+   Come in Bomba e negli Scarabocchi: un tocco va avanti, col dito si scorre; tornando indietro o all'ultima scena l'autoplay si ferma */
+const SCENE_MS = 2800;
+const SCENES_ALL = [
+  {t:"La temperatura sale", d:"Si parte tiepidi, carta dopo carta si scalda.",
+   v:() => [1,2,3].map(n => `<div class="sc-lv" style="--d:${n-1}">${chilis(n)}<b>${LV[n].n}</b></div>`).join("")},
+  {t:"Ogni carta è un gioco", d:"La carta ti dice cosa fare e a chi tocca.",
+   v:() => `<div class="sc-types">${["v","p","n","i","m"].map((k, i) => `<span style="--d:${i}">${TYI[k]}${TY[k]}</span>`).join("")}</div>`},
+  {t:"Risposte segrete", d:"Si scopre tutto quando hanno risposto tutti.", all:true,
+   v:() => `<div class="sc-sec">${["Sì","No","Sì"].map(n => `<div>${I.lock}<b>${n}</b></div>`).join("")}</div>`},
+  {t:"Vince chi ha più porcellini", d:"Ogni risposta ti fa guadagnare porcellini.",
+   v:() => `<div class="sc-pigs">${[["#ff7aa2","A",".4s"],["#ffc94d","M",".9s"],["#9be7ff","S","1.3s"]].map(([c, l, at], i) => `<div class="sc-pig">${i === 1 ? `<span class="sc-crown">${I.crown}</span>` : ""}<span class="av" style="--c:${c}">${l}</span><em style="--at:${at}">+${i === 1 ? 2 : 1}${I.pig}</em></div>`).join("")}</div>`},
+  {t:"Ognuno ha 3 passo", d:"Finiti i passo, chi si rifiuta esce.",
+   v:() => `<div class="sc-passo">${[0,1,2].map(k => `<span style="--d:${k}">${I.snout}</span>`).join("")}</div><span class="sc-flag">${I.flag}Fuori</span>`}
+];
+const scenes = () => SCENES_ALL.filter(s => !s.all || (G && G.mode === "all"));
+const online = p => p.on !== false;
+function startIntro(){
+  Object.assign(G, {phase:"intro", i:0, ready:{}, card:null});
+  G.players.forEach(p => { if(isBot(p.id)) G.ready[p.id] = true; });
+  commit();
+}
+function introView(){
+  const S = scenes(), k = Math.min(UI.scene || 0, S.length - 1), sc = S[k];
+  return `<div class="screen intro">
+    <div style="text-align:center"><span class="eyebrow">Porcellino · come si gioca</span></div>
+    <div class="scene" data-a="scene-tap" id="scene">
+      <div class="sc-vis" id="scvis">${sc.v()}</div>
+      <h2 id="sct">${sc.t}</h2><p class="lead" id="scd">${sc.d}</p>
+    </div>
+    <div id="scnav">${navHTML()}</div>
+    <div class="grow"></div>
+    <div id="readybox">${readyBox()}</div>
+  </div>`;
+}
+function navHTML(){
+  const S = scenes(), k = Math.min(UI.scene || 0, S.length - 1), free = UI.introDone;
+  return `<div class="navrow"><button class="ib nav" data-a="scene-prev" aria-label="Indietro" ${free ? "" : "style=\"visibility:hidden\""} ${k ? "" : "disabled"}>${I.arrow.replace("<svg", '<svg style="transform:scaleX(-1)"')}</button>
+      <div class="dots5">${S.map((_, i) => `<i data-scene="${i}" class="${i === k ? "on" : i < k ? "done" : ""}"></i>`).join("")}</div>
+      <button class="ib nav" data-a="scene-next" aria-label="Avanti" ${free ? "" : "style=\"visibility:hidden\""} ${k < S.length - 1 ? "" : "disabled"}>${I.arrow}</button></div>
+    <p class="hint" style="margin-top:6px">${free ? "Scorri per rivedere" : "Tocca per andare avanti"}</p>`;
+}
+function readyBox(){
+  const end = UI.introDone;
+  if(G.mode === "one") return `<button class="btn ${end ? "pulse" : "ghost"}" data-a="go-anyway">Siamo pronti, si gioca ${I.flame}</button>`;
+  const R = G.ready || {}, me = R[NET.me], missing = G.players.filter(p => online(p) && !R[p.id]);
+  return `<div class="waits">${G.players.map(p => `<span class="wt ${R[p.id] ? "ok" : ""} ${online(p) ? "" : "off"}">${av(p)}${p.id === NET.me ? "Tu" : esc(p.name)}</span>`).join("")}</div>
+    <p class="hint" style="margin:10px 0">${missing.length ? `Si parte quando siete tutti pronti: ${missing.length === 1 ? "ne manca 1" : `ne mancano ${missing.length}`}.` : "Tutti pronti!"}</p>
+    ${me ? `<button class="btn ghost" disabled>${I.check} Pronto, aspettiamo gli altri</button>`
+      : `<button class="btn ${end ? "pulse" : "ghost"}" data-a="ready">Sono pronto a giocare</button>`}
+    ${amHost() && missing.length && Object.keys(R).length ? `<button class="link" data-a="go-anyway" style="display:block;margin:6px auto 0">Parti lo stesso</button>` : ""}`;
+}
+let sceneT = null;
+function goScene(k){
+  const n = scenes().length;
+  if(k < 0 || k > n - 1) return;
+  const back = k < (UI.scene || 0); UI.scene = k;
+  if(back || k === n - 1){ UI.introDone = true; clearTimeout(sceneT); }
+  showScene(back); if(!UI.introDone) sceneTick();
+}
+function sceneTick(){
+  clearTimeout(sceneT);
+  if(!G || G.phase !== "intro" || UI.introDone) return;
+  sceneT = setTimeout(() => goScene((UI.scene || 0) + 1), SCENE_MS);
+}
+function showScene(back){
+  const S = scenes(), k = Math.min(UI.scene || 0, S.length - 1), sc = S[k], box = $("#scene");
+  if(!box){ render(); return; }
+  box.classList.remove("swap", "back"); void box.offsetWidth; box.classList.add(back ? "back" : "swap");
+  $("#scvis").innerHTML = sc.v(); $("#sct").textContent = sc.t; $("#scd").textContent = sc.d;
+  $("#scnav").innerHTML = navHTML();
+  const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox();
+}
+let swX = null, swY = 0;
+document.addEventListener("pointerdown", e => { if(e.target.closest("#scene")){ swX = e.clientX; swY = e.clientY; } });
+document.addEventListener("pointerup", e => { if(swX == null) return; const dx = e.clientX - swX, dy = e.clientY - swY; swX = null;
+  if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){ UI.swiped = Date.now(); goScene((UI.scene || 0) + (dx < 0 ? 1 : -1)); } });
 const VIEWS = {
   boot: () => `<div class="screen center"></div>`,
+  intro: () => introView(),
   opening: () => `<div class="screen center"><div class="emblem in">${PIG}</div><h2 class="in" style="--d:1">Apro la stanza<span class="dots"></span></h2></div>`,
   gate: () => `<div class="screen center">
     <div class="grow"></div>
@@ -1001,6 +1132,8 @@ function endView(){
 
 /* ---------- disegno ---------- */
 function render(){
+  if(screenName() === "intro" && $("#scene") && !UI.sheet){ const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox(); return; } // il trailer non riparte a ogni «pronto»
+  if(screenName() !== "intro" && UI.sceneOn){ UI.scene = 0; UI.introDone = false; UI.sceneOn = false; clearTimeout(sceneT); }
   const scr = screenName();
   const c = G && G.card;
   document.body.dataset.lv = c ? c.lvl : (G && G.phase === "end" ? 3 : 1);
@@ -1015,6 +1148,7 @@ function render(){
   app.innerHTML = VIEWS[scr]();
   for(const id in keep){ const el = document.getElementById(id); if(el && !fresh){ el.value = keep[id].v; if(keep[id].f){ el.focus(); } } }
   if(scr === "lobby") drawQR();
+  if(scr === "intro" && !UI.sceneOn){ UI.sceneOn = true; sceneTick(); }
   if(G && G.fx && G.fx.n > lastFx){ lastFx = G.fx.n; playFx(G.fx.l); }
   if(UI.sheet) showSheet(UI.sheet);
 }
@@ -1110,6 +1244,7 @@ document.addEventListener("click", async e => {
   if(st){ const k = st.dataset.set; UI[k] = k === "mode" ? st.dataset.v : +st.dataset.v; render(); return; }
   const dl = e.target.closest("[data-del]");
   if(dl){ UI.names.splice(+dl.dataset.del, 1); ls.set("ad.porc.names", UI.names); render(); return; }
+  const dt = e.target.closest("[data-scene]"); if(dt && UI.introDone){ goScene(+dt.dataset.scene); return; }
   const b = e.target.closest("[data-a]"); if(!b) return;
   const a = b.dataset.a, c = G && G.card;
   switch(a){
@@ -1131,15 +1266,20 @@ document.addEventListener("click", async e => {
       const ns = []; UI.names.map(cleanName).filter(Boolean).forEach(n => { let x = n, k = 2; while(ns.some(y => y.toLowerCase() === x.toLowerCase())) x = n + " " + k++; ns.push(x); });
       if(ns.length < 3) break;
       ls.set("ad.porc.names", UI.names);
-      G = {phase:"play", mode:"one", max:UI.max, total:UI.total, host:NET.me, players:ns.map((n, i) => newPlayer("p" + i, n, i)), used:[], fxq:[]};
-      UI.scr = null; startGame(); break;
+      G = {phase:"lobby", mode:"one", max:UI.max, total:UI.total, host:NET.me, players:ns.map((n, i) => newPlayer("p" + i, n, i)), used:[], fxq:[], i:0};
+      UI.scr = null; startIntro(); break;
     }
     case "lobby-back": closeRoom(); ls.del(SAVE_KEY); G = null; UI.scr = "setup"; render(); break;
     case "bot-add": botAdd(); break;
     case "bot-del": botRemoveAll(); break;
-    case "lobby-go": if(G.players.length >= 3) startGame(); break;
+    case "lobby-go": if(G.players.length >= 3){ if(G.introDone) startGame(); else startIntro(); } break;
     case "copy": try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){ toast(esc(joinUrl())); } break;
     case "share": if(navigator.share) navigator.share({title:"Porcellino", text:"Vieni a giocare a Porcellino (solo maggiorenni)", url:joinUrl()}).catch(() => {}); else { try{ await navigator.clipboard.writeText(joinUrl()); toast("Link copiato"); }catch(_){} } break;
+    case "scene-next": goScene((UI.scene || 0) + 1); break;
+    case "scene-prev": goScene((UI.scene || 0) - 1); break;
+    case "scene-tap": if(Date.now() - (UI.swiped || 0) > 300) goScene((UI.scene || 0) + 1); break;
+    case "ready": b.disabled = true; send("ready"); break;
+    case "go-anyway": send("go-anyway"); break;
     case "newgame": ls.del(SAVE_KEY); UI.scr = "gate"; render(); break;
     case "resume": {
       const sv = ls.get(SAVE_KEY, null); if(!sv){ UI.scr = "gate"; render(); break; }
