@@ -733,11 +733,21 @@ function guestConnect(){
     peer.on("error", e => { if(NET.peer !== peer) return; guestLost(e.type === "peer-unavailable"); });
     peer.on("disconnected", () => { try{ !peer.destroyed && peer.reconnect(); }catch(e){} });
   }
+  // se in 9 s il collegamento non parte (rete che blocca, server lento), ricomincio da capo con un peer nuovo
+  clearTimeout(NET.dialT);
+  NET.dialT = setTimeout(() => {
+    if((NET.conn && NET.conn.open) || ["noroom","closed","full","lost","error"].includes(NET.status)) return;
+    if(NET.lostAt && Date.now() - NET.lostAt > 5 * 60e3) return;
+    NET.slow = (NET.slow || 0) + 1;
+    const c = NET.conn, p = NET.peer; NET.conn = null; NET.peer = null;
+    try{ c && c.close(); }catch(e){} try{ p && p.destroy(); }catch(e){}
+    render(); guestConnect();
+  }, 9000);
   const peer = NET.peer;
   const dial = () => {
     try{ NET.conn && NET.conn.close(); }catch(e){}
     const conn = peer.connect(PEER_PREFIX + NET.code, {reliable:true}); NET.conn = conn;
-    conn.on("open", () => { if(NET.conn !== conn) return; NET.status = "open"; NET.lostAt = 0; NET.lastHost = Date.now(); NET.toHost({t:"hello", name:NET.name}); render(); });
+    conn.on("open", () => { if(NET.conn !== conn) return; clearTimeout(NET.dialT); NET.slow = 0; NET.status = "open"; NET.lostAt = 0; NET.lastHost = Date.now(); NET.toHost({t:"hello", name:NET.name}); render(); });
     conn.on("data", m => { NET.lastHost = Date.now(); guestReceive(m); });
     conn.on("close", () => { if(NET.conn === conn) guestLost(false); });
   };
@@ -897,7 +907,7 @@ const VIEWS = {
   </div>`,
   connecting: () => `<div class="screen center"><div class="grow"></div><div class="emblem in">${bombSVG()}</div>
     <h2 class="in" style="--d:1">${NET.status === "reconnecting" ? "Mi ricollego" : "Entro nella stanza"}<span class="dots"></span></h2>
-    <p class="lead in" style="--d:2">Tieni il telefono acceso e l'app aperta.</p><div class="grow"></div></div>`,
+    <p class="lead in" style="--d:2">${NET.slow ? "Il collegamento non parte, ci riprovo da solo. Se continua, mettetevi tutti sullo stesso Wi-Fi: con i dati del telefono a volte non ci si vede." : "Tieni il telefono acceso e l'app aperta."}</p><div class="grow"></div></div>`,
   netmsg: () => { const M = {noroom:["Stanza non trovata","Il QR è vecchio o l'host ha chiuso l'app. Chiedi di mostrarti quello nuovo."], full:["Tavolo pieno",`Siete già in ${MAX_P}, il massimo.`], closed:["Partita chiusa","L'host ha chiuso la stanza. Grazie di aver giocato."], lost:["Connessione persa","Non riesco più a raggiungere l'host."]}[NET.status];
     return `<div class="screen center"><div class="grow"></div><div class="emblem in">${bombSVG(false)}</div><h2 class="in" style="--d:1">${M[0]}</h2><p class="lead in" style="--d:2">${M[1]}</p><div class="grow"></div>
     ${NET.status === "closed" || NET.status === "full" ? "" : `<button class="btn in" style="--d:3" data-a="retry">Riprova</button>`}</div>`; },

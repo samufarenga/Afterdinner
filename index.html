@@ -1632,7 +1632,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 13:40";
+const APP_VERSION = "23.11 · 14:15";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1789,13 +1789,23 @@ function guestConnect(){
     peer.on("error", e => { if(NET.peer !== peer) return; guestLost(e.type === "peer-unavailable"); });
     peer.on("disconnected", () => { try{ !peer.destroyed && peer.reconnect(); }catch(e){} });
   }
+  // se in 9 s il collegamento non parte (rete che blocca, server lento), ricomincio da capo con un peer nuovo
+  clearTimeout(NET.dialT);
+  NET.dialT = setTimeout(() => {
+    if((NET.conn && NET.conn.open) || ["noroom","closed","full","lost","error"].includes(NET.status)) return;
+    if(NET.lostAt && Date.now() - NET.lostAt > 5 * 60e3) return;
+    NET.slow = (NET.slow || 0) + 1;
+    const c = NET.conn, p = NET.peer; NET.conn = null; NET.peer = null;
+    try{ c && c.close(); }catch(e){} try{ p && p.destroy(); }catch(e){}
+    mpRender(true); guestConnect();
+  }, 9000);
   const peer = NET.peer;
   const dial = () => {
     try{ NET.conn && NET.conn.close(); }catch(e){}
     const conn = peer.connect(PEER_PREFIX + NET.code, {reliable:true}); NET.conn = conn;
     conn.on("open", () => {
       if(NET.conn !== conn) return;
-      NET.status = "open"; NET.lostAt = 0; NET.lastHost = Date.now(); NET.wasIn = NET.wasIn || !!NET.name;
+      clearTimeout(NET.dialT); NET.slow = 0; NET.status = "open"; NET.lostAt = 0; NET.lastHost = Date.now(); NET.wasIn = NET.wasIn || !!NET.name;
       NET.toHost({t:"peek"}); if(NET.name) NET.toHost({t:"hello", name:NET.name});
       NET.outbox.splice(0).forEach(m => { try{ conn.send(m); }catch(e){} });
       M ? (mpNotes(), mpRender()) : mpRender(true);
@@ -3033,9 +3043,9 @@ function guestWelcome(){
   else if(st === "lost") body = `<h2>La stanza è chiusa</h2><p class="lead">L'host ha chiuso la partita o il suo telefono non risponde. Se state ancora giocando, chiedigli di tenere l'app aperta e riprova.</p><button class="btn" id="g-retry">Riprova</button>`;
   else if(st === "full") body = `<h2>Stanza piena</h2><p class="lead">${NET.fullMax === 2 ? "È una sfida a due e ci sono già due giocatori." : "Ci sono già 16 giocatori."}</p>`;
   else if(st === "closed") body = `<h2>La partita è finita</h2><p class="lead">L'host ha chiuso la stanza. Grazie di aver giocato!</p>`;
-  else if(st === "reconnecting") body = `<p class="lead">Mi ricollego all'host…</p>`;
+  else if(st === "reconnecting") body = `<p class="lead">Mi ricollego all'host…</p>${NET.slow ? `<p class="lead" style="font-size:.95rem;opacity:.8">Il collegamento non parte, ci riprovo da solo. Se continua, mettetevi tutti sullo stesso Wi-Fi: con i dati del telefono a volte non ci si vede.</p>` : ""}`;
   else if(st === "error") body = `<h2>Qualcosa non va</h2><p class="lead">Non riesco a collegarmi. Controlla la connessione e riprova.</p><button class="btn" id="g-retry">Riprova</button>`;
-  else if(NET.name) body = `<p class="lead">Entro nella stanza…</p>`;
+  else if(NET.name) body = `<p class="lead">Entro nella stanza…</p>${NET.slow ? `<p class="lead" style="font-size:.95rem;opacity:.8">Il collegamento non parte, ci riprovo da solo. Se continua, mettetevi tutti sullo stesso Wi-Fi: con i dati del telefono a volte non ci si vede.</p>` : ""}`;
   else body = `<p class="lead">${info ? `<b style="color:var(--paper)">${esc(info.host)}</b> ti invita a giocare a` : "Ti stanno invitando a giocare a"}</p><h1 class="g-game">${info ? esc(info.game) : "AfterDinner"}</h1>
       <form class="field" id="g-form" autocomplete="off"><input id="g-name" maxlength="18" placeholder="Come ti chiami?" aria-label="Il tuo nome" value="${esc(savedName())}"><button class="btn" type="submit">Entra</button></form>`;
   return `<section class="welcome">
