@@ -1673,7 +1673,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "24.11 · 11:50";
+const APP_VERSION = "24.11 · 11:55";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2197,7 +2197,7 @@ function drawWord(){
     if(!pool.length) pool = DRAW_WORDS[lvl].slice();
     NET.deck = shuffle(pool.map(w => ({cat:LEVELS.find(l => l[0] === lvl)[1], word:w})));
   }
-  const c = NET.deck.pop();
+  const c = botDeckPick() || NET.deck.pop();
   u[u.length-1].push(c.word); usedSave(u);
   return c;
 }
@@ -2567,12 +2567,17 @@ function botRemoveAll(){
   M.players = M.players.filter(p => !isBot(p.id)); Object.keys(M.scores).forEach(id => { if(isBot(id)) delete M.scores[id]; });
   publish();
 }
-/* --- disegni: scarabocchi semplici fatti di tratti, come quelli della lavagna --- */
-const BOT_FONT = {A:"0,6 2,0 4,6|1,3 3,3",B:"0,6 0,0 3,0 4,1 4,2 3,3 0,3|3,3 4,4 4,5 3,6 0,6",C:"4,1 3,0 1,0 0,1 0,5 1,6 3,6 4,5",D:"0,0 0,6 2,6 4,4 4,2 2,0 0,0",
-  E:"4,0 0,0 0,6 4,6|0,3 3,3",F:"4,0 0,0 0,6|0,3 3,3",G:"4,1 3,0 1,0 0,1 0,5 1,6 3,6 4,5 4,3 2,3",H:"0,0 0,6|4,0 4,6|0,3 4,3",I:"1,0 3,0|2,0 2,6|1,6 3,6",
-  J:"4,0 4,5 3,6 1,6 0,5",K:"0,0 0,6|4,0 0,3 4,6",L:"0,0 0,6 4,6",M:"0,6 0,0 2,3 4,0 4,6",N:"0,6 0,0 4,6 4,0",O:"1,0 3,0 4,1 4,5 3,6 1,6 0,5 0,1 1,0",
-  P:"0,6 0,0 3,0 4,1 4,2 3,3 0,3",Q:"1,0 3,0 4,1 4,5 3,6 1,6 0,5 0,1 1,0|2,4 4,6",R:"0,6 0,0 3,0 4,1 4,2 3,3 0,3|2,3 4,6",S:"4,1 3,0 1,0 0,1 0,2 1,3 3,3 4,4 4,5 3,6 1,6 0,5",
-  T:"0,0 4,0|2,0 2,6",U:"0,0 0,5 1,6 3,6 4,5 4,0",V:"0,0 2,6 4,0",W:"0,0 1,6 2,3 3,6 4,0",X:"0,0 4,6|4,0 0,6",Y:"0,0 2,3 4,0|2,3 2,6",Z:"0,0 4,0 0,6 4,6",_:"0.6,6 3.4,6"};
+/* --- disegni: il bot ricalca a mano l'emoji della parola (contorno a colori, dettagli scuri), come farebbe un amico --- */
+const BOT_MAP = `animali|Gatto=🐱,Cane=🐶,Pesce=🐟,Ragno=🕷️,Serpente=🐍,Lumaca=🐌,Farfalla=🦋,Granchio=🦀,Balena=🐳,Squalo=🦈,Tartaruga=🐢,Rana=🐸,Uccello=🐦,Gallina=🐔,Mucca=🐮,Maiale=🐷,Pecora=🐑,Cavallo=🐴,Coniglio=🐰,Topo=🐭,Elefante=🐘,Leone=🦁,Scimmia=🐵,Orso=🐻,Ape=🐝,Formica=🐜,Coccodrillo=🐊,Gufo=🦉,Anatra=🦆,Pinguino=🐧,Pulcino=🐤,Gallo=🐓,Cigno=🦢,Pappagallo=🦜,Aquila=🦅,Volpe=🦊,Lupo=🐺,Cervo=🦌,Scoiattolo=🐿️,Criceto=🐹,Pesce rosso=🐠,Polipo=🐙,Delfino=🐬,Foca=🦭,Rinoceronte=🦏,Tigre=🐯,Panda=🐼,Cammello=🐫,Lama=🦙,Gorilla=🦍,Bruco=🐛,Coccinella=🐞,Zanzara=🦟,Mosca=🪰,Verme=🪱,Lucertola=🦎,Mammut=🦣,Renna=🦌,Polpo=🐙,Dinosauro=🦖,Giraffa=🦒,Canguro=🦘,Unicorno=🦄,Drago=🐉,Scorpione=🦂,Pipistrello=🦇,Pavone=🦚,Fenicottero=🦩,Koala=🐨,Zebra=🦓,Ippopotamo=🦛,Riccio=🦔,Aragosta=🦞,Ostrica=🦪,Cavalletta=🦗,Camaleonte=🦎,Medusa=🪼,Scarafaggio=🪳,Gatto nero=🐈‍⬛,Pesce palla=🐡,Cane poliziotto=🐕‍🦺,Corvo=🐦‍⬛
+cibo|Mela=🍎,Banana=🍌,Pizza=🍕,Gelato=🍦,Fungo=🍄,Uovo=🥚,Torta=🍰,Ciambella=🍩,Anguria=🍉,Carota=🥕,Pera=🍐,Ciliegia=🍒,Fragola=🍓,Limone=🍋,Uva=🍇,Ananas=🍍,Pomodoro=🍅,Patata=🥔,Cipolla=🧅,Formaggio=🧀,Panino=🥪,Hamburger=🍔,Biscotto=🍪,Caramella=🍬,Lecca-lecca=🍭,Noce=🌰,Castagna=🌰,Uovo fritto=🍳,Pane=🍞,Cornetto=🥐,Brioche=🥐,Pancake=🥞,Waffle=🧇,Muffin=🧁,Cioccolato=🍫,Budino=🍮,Miele=🍯,Burro=🧈,Salame=🥓,Pollo arrosto=🍗,Bistecca=🥩,Hot dog=🌭,Riso=🍚,Insalata=🥗,Zuppa=🍲,Peperoncino=🌶️,Peperone=🫑,Melanzana=🍆,Broccolo=🥦,Aglio=🧄,Mais=🌽,Fagioli=🫘,Cocco=🥥,Kiwi=🥝,Pesca=🍑,Arancia=🍊,Mandarino=🍊,Mirtillo=🫐,Melone=🍈,Avocado=🥑,Arachide=🥜,Latte=🥛,Tè=🍵,Caffè=☕,Sushi=🍣,Spaghetti=🍝,Popcorn=🍿,Patatine fritte=🍟,Cocktail=🍸,Frullato=🥤,Bibita=🥤,Spiedino=🍢,Torta di compleanno=🎂,Cappuccino=☕,Granita=🍧,Piadina=🫓,Frittata=🍳,Kebab=🥙,Burrito=🌯,Taco=🌮,Ramen=🍜,Biscotto della fortuna=🥠,Fonduta=🫕,Zucchero filato=🍭,Mela caramellata=🍎,Spumante=🍾,Ravioli=🥟
+oggetti|Ombrello=☂️,Occhiali=👓,Chiave=🔑,Cappello=🎩,Scarpa=👟,Candela=🕯️,Forbici=✂️,Tazza=☕,Libro=📖,Orologio=⌚,Lampadina=💡,Pennello=🖌️,Matita=✏️,Sedia=🪑,Chitarra=🎸,Martello=🔨,Aquilone=🪁,Cucchiaio=🥄,Forchetta=🍴,Coltello=🔪,Piatto=🍽️,Letto=🛏️,Porta=🚪,Scala=🪜,Divano=🛋️,Televisore=📺,Telefono=📱,Computer=💻,Cuffie=🎧,Calzino=🧦,Guanto=🧤,Sciarpa=🧣,Maglietta=👕,Pantaloni=👖,Borsa=👜,Anello=💍,Regalo=🎁,Palloncino=🎈,Campana=🔔,Tamburo=🥁,Ancora=⚓,Bandiera=🚩,Lucchetto=🔒,Specchio=🪞,Spazzolino=🪥,Cravatta=👔,Bambola=🪆,Orsacchiotto=🧸,Dado=🎲,Bersaglio=🎯,Moneta=🪙,Portafoglio=👛,Chiave inglese=🔧,Cacciavite=🪛,Vite=🔩,Sega=🪚,Ascia=🪓,Vaso di fiori=🪴,Osso=🦴,Stivali=👢,Cappotto=🧥,Giacca=🧥,Gonna=👗,Vestito=👗,Costume da bagno=🩱,Sandali=👡,Bottone=🔘,Rossetto=💄,Saponetta=🧼,Vasca da bagno=🛁,Water=🚽,Doccia=🚿,Scopa=🧹,Secchio=🪣,Spugna=🧽,Sveglia=⏰,Quadro=🖼️,Cornice=🖼️,Batteria=🔋,Penna=🖊️,Righello=📏,Graffetta=📎,Busta=✉️,Lettera=💌,Giornale=📰,Pacco=📦,Calendario=📅,Globo=🌍,Lente=🔍,Radio=📻,Altoparlante=🔊,Tastiera=⌨️,Mouse=🖱️,Videogioco=🎮,Teiera=🫖,Padella=🍳,Barattolo=🫙,Medaglia=🏅,Trofeo=🏆,Cronometro=⏱️,Racchetta da tennis=🎾,Pallina da tennis=🎾,Torcia=🔦,Lanterna=🏮,Maschera=🎭,Bacchetta magica=🪄,Corona=👑,Spada=🗡️,Microfono=🎤,Pianoforte=🎹,Valigia=🧳,Zaino=🎒,Semaforo=🚦,Calamita=🧲,Clessidra=⏳,Cassaforte=🔐,Calcolatrice=🧮,Joystick=🕹️,Macchina fotografica=📷,Termometro=🌡️,Siringa=💉,Cerotto=🩹,Biberon=🍼,Mappa=🗺️,Bussola=🧭,Telescopio=🔭,Microscopio=🔬,Provetta=🧪,Ingranaggio=⚙️,Diamante=💎,Scudo=🛡️,Arco=🏹,Fionda=🪃,Boomerang=🪃,Canna da pesca=🎣,Salvagente=🛟,Violino=🎻,Tromba=🎺,Sassofono=🎷,Fisarmonica=🪗,Nota musicale=🎵,Ciak=🎬,Telecamera=📹,Pellicola=🎞️,Carte da gioco=🃏,Puzzle=🧩,Yo-yo=🪀,Bacchette cinesi=🥢,Sfera di cristallo=🔮,Lampada di Aladino=🪔,Quadrifoglio=🍀,Piuma=🪶,Maracas=🪇,Cilindro=🎩,Papillon=🎀,Elmo=⛑️,Fedi nuziali=💍,Anello di fidanzamento=💍,Lettera d'amore=💌,Cuore con freccia=💘,Biglietto del cinema=🎟️,Gratta e vinci=🎫,Slot machine=🎰
+natura|Sole=☀️,Albero=🌳,Fiore=🌸,Luna=🌙,Nuvola=☁️,Montagna=⛰️,Cactus=🌵,Stella=⭐,Cuore=❤️,Fuoco=🔥,Pioggia=🌧️,Neve=❄️,Fulmine=⚡,Onda=🌊,Isola=🏝️,Spiaggia=🏖️,Conchiglia=🐚,Foglia=🍃,Erba=🌿,Sasso=🪨,Roccia=🪨,Goccia=💧,Vento=💨,Ghiaccio=🧊,Fiocco di neve=❄️,Sole che tramonta=🌅,Girasole=🌻,Rosa=🌹,Tulipano=🌷,Margherita=🌼,Palma=🌴,Abete=🌲,Quercia=🌳,Tronco=🪵,Nido=🪹,Vulcano=🌋,Arcobaleno=🌈,Cometa=☄️,Pianeta=🪐,Tornado=🌪️,Deserto=🏜️,Cascata=🏞️,Stella cadente=🌠,Anelli di Saturno=🪐,Stella cometa=🌠,Iceberg=🧊,Corallo=🪸,Loto=🪷,Ninfea=🪷,Bambù=🎋,Nebbia fitta=🌫️,Temporale estivo=⛈️,Eclissi=🌑,Fase lunare=🌓,Notte stellata=🌌,Aurora boreale=🌌,Duna=🏜️,Valanga=🏔️,Monte Everest=🏔️,Fuochi d'artificio=🎆
+mezzi|Barca=⛵,Bicicletta=🚲,Automobile=🚗,Treno=🚂,Aereo=✈️,Razzo=🚀,Nave=🚢,Autobus=🚌,Moto=🏍️,Camion=🚚,Astronave=🛸,Camion dei pompieri=🚒,Auto della polizia=🚓,Taxi=🚕,Tram=🚋,Metropolitana=🚇,Canoa=🛶,Slittino=🛷,Mongolfiera=🎈,Paracadute=🪂,Elicottero=🚁,Trattore=🚜,Monopattino=🛴,Ambulanza=🚑,Ruspa=🚜,Satellite=🛰️,Skateboard=🛹,Slitta=🛷,Barca a vela=⛵,Motoscafo=🚤,Kayak=🛶,Transatlantico=🛳️,Disco volante=🛸,Funivia=🚡,Seggiovia=🚠,Pullman=🚌,Auto elettrica=🚙,Monopattino elettrico=🛴,Gondola=🛶,Ruota=🛞,Gara di go-kart=🏎️,Pilota di Formula 1=🏎️,Bandiera a scacchi=🏁
+persone|Mostro=👹,Regina=👸,Astronauta=🧑‍🚀,Sirena=🧜,Pirata=🏴‍☠️,Robot=🤖,Scheletro=💀,Fantasma=👻,Pupazzo di neve=⛄,Mummia=🧟,Vampiro=🧛,Cuoco=🧑‍🍳,Dottore=🧑‍⚕️,Poliziotto=👮,Contadino=🧑‍🌾,Pittore=🧑‍🎨,Cantante=🧑‍🎤,Mago=🧙,Strega=🧙‍♀️,Re=🤴,Principessa=👸,Cowboy=🤠,Ninja=🥷,Supereroe=🦸,Alieno=👽,Zombie=🧟,Angelo=👼,Diavolo=😈,Babbo Natale=🎅,Pagliaccio=🤡,Fata=🧚,Elfo=🧝,Orco=👹,Pompiere=🧑‍🚒,Meccanico=🧑‍🔧,Muratore=👷,Maestra=🧑‍🏫,Infermiere=🧑‍⚕️,Detective=🕵️,Giudice=🧑‍⚖️,Scienziato pazzo=🧑‍🔬,Fotografo=📸,Neonato=👶,Sposa in fuga=👰,Selfie=🤳,Sbadiglio=🥱,Starnuto=🤧,Russare=😴,Incubo=😱,Cuore spezzato=💔,Arrabbiarsi=😡,Ridere a crepapelle=🤣,Piangere di gioia=😂,Fare l'occhiolino=😉,Mandare un bacio=😘,Dare il cinque=🙌,Stringere la mano=🤝,Fare yoga=🧘,Fare jogging=🏃,Spia=🕵️,Influencer=🤳,Ballerina classica=🩰,Giocoliere=🤹,Lottatore di sumo=🤼,Lupo mannaro=🐺,Avere paura del buio=😨,Misurarsi la febbre=🤒,Dentista=🦷,Dente=🦷,Occhio=👁️,Naso=👃,Mano=✋,Piede=🦶,Orecchio=👂,Gemelli=👯
+luoghi|Casa=🏠,Castello=🏰,Ponte=🌉,Tenda da campeggio=⛺,Igloo=🛖,Grattacielo=🏙️,Chiesa=⛪,Ospedale=🏥,Stazione=🚉,Pompa di benzina=⛽,Benzinaio=⛽,Torre=🗼,Giostra=🎠,Tendone del circo=🎪,Fattoria=🏡,Fontana=⛲,Banca=🏦,Scuola=🏫,Ufficio postale=🏤,Stadio=🏟️,Cinema=🎦,Teatro=🎭,Torre Eiffel=🗼,Statua della Libertà=🗽,Ruota panoramica=🎡,Montagne russe=🎢,Acquario=🐠,Matrimonio=💒,Barbiere=💈,Isola deserta=🏝️,Casa stregata=🏚️,Buco nero=🕳️,Fontana di Trevi=⛲,Casinò=🎰,Pista di pattinaggio=⛸️,Baita=🛖,Picnic=🧺,Karaoke=🎤,Ragnatela=🕸️,Alveare=🍯
+sport|Pallone=⚽,Bowling=🎳,Freccette=🎯,Biliardo=🎱,Canestro=🏀,Racchetta=🏸,Tavola da surf=🏄,Sci=🎿,Pattini=⛸️,Piscina=🏊,Golf=⛳,Minigolf=⛳,Ping pong=🏓,Pallavolo=🏐,Rugby=🏉,Hockey su ghiaccio=🏒,Snowboard=🏂,Ciclismo=🚴,Pugilato=🥊,Karate=🥋,Scherma=🤺,Equitazione=🏇,Corsa dei cavalli=🏇,Arrampicata=🧗,Sollevamento pesi=🏋️,Tiro con l'arco=🏹,Tuffo dal trampolino=🤿,Immersione=🤿,Pesca subacquea=🤿,Fare la doccia=🚿,Prendere il sole=🏖️,Pallanuoto=🤽,Curling=🥌,Podio=🥇,Mazza da baseball=⚾,Guantone=🥊,Pattinaggio artistico=⛸️,Ginnastica artistica=🤸,Fare la ruota=🤸,Corpo libero=🤸,Discesa libera=⛷️,Slalom gigante=⛷️,Sci di fondo=⛷️,Windsurf=🏄,Kitesurf=🏄,Rafting=🚣,Remare controcorrente=🚣,Nuotare a farfalla=🏊,Parapendio=🪂,Paracadutista=🪂`;
+const BOT_EMOJI = {}, BOT_CAT = {}, BOT_CATS = {};
+BOT_MAP.split("\n").forEach(line => { const [cat, list] = line.split("|"); BOT_CATS[cat] = []; list.split(",").forEach(x => { const i = x.indexOf("="); if(i < 1) return; const w = x.slice(0, i).trim(), e = x.slice(i + 1).trim(); BOT_EMOJI[w] = e; BOT_CAT[w] = cat; BOT_CATS[cat].push(w); }); });
 const jit = v => v + rnd(-.008, .008);
 function botCircle(cx, cy, rx, ry, a0 = 0, a1 = Math.PI*2){ const p = []; for(let i = 0; i <= 22; i++){ const a = a0 + (a1 - a0) * i / 22; p.push([jit(cx + Math.cos(a)*rx), jit(cy + Math.sin(a)*ry)]); } return p; }
 const botLine = (...pts) => pts.map(([x,y]) => [jit(x), jit(y)]);
@@ -2593,27 +2598,53 @@ const DOODLES = {
   spirale: () => [botLine(...Array.from({length:50}, (_, i) => { const a = i*.4, r = .01 + i*.0035; return [.5+Math.cos(a)*r, .32+Math.sin(a)*r*.72]; }))],
   onda: () => [botLine(...Array.from({length:30}, (_, i) => [.15 + i*.024, .32 + Math.sin(i*.6)*.06])), botLine(...Array.from({length:30}, (_, i) => [.15 + i*.024, .42 + Math.sin(i*.6+1)*.05]))]
 };
-const DOODLE_FOR = {Sole:"sole",Casa:"casa",Albero:"albero",Stella:"stella",Cuore:"cuore",Fiore:"fiore",Pesce:"pesce",Luna:"luna",Nuvola:"nuvola",Automobile:"auto",Gatto:"gatto",Pallone:"pallone"};
-function botText(txt, x0, y0, h){ // lettere a bastoncino: un aiuto per chi indovina, non la parola intera
-  const out = [], cw = h * .66 / 1.4, gap = cw * .45; let x = x0;
-  for(const ch of txt){
-    if(ch === " "){ x += cw; continue; }
-    const f = BOT_FONT[ch]; if(f) f.split("|").forEach(seg => out.push(botLine(...seg.split(" ").map(pt => { const [a,b] = pt.split(",").map(Number); return [x + a/4*cw, y0 + b/6*h]; }))));
-    x += cw + gap;
+const BOT_INKS = [["#1d1b2e",[29,27,46]],["#ff3d72",[255,61,114]],["#3d8bff",[61,139,255]],["#14b886",[20,184,134]],["#ffa41b",[255,164,27]]];
+function botTrace(em){
+  const N = 84, c = document.createElement("canvas"); c.width = c.height = N;
+  const g = c.getContext("2d", {willReadFrequently:true});
+  g.textAlign = "center"; g.textBaseline = "middle";
+  g.font = `${Math.round(N*.78)}px "Apple Color Emoji","Noto Color Emoji","Segoe UI Emoji",sans-serif`;
+  g.fillText(em, N/2, N/2 + N*.04);
+  const d = g.getImageData(0, 0, N, N).data;
+  const A = (x, y) => x >= 0 && y >= 0 && x < N && y < N && d[(y*N + x)*4 + 3] > 120;
+  const L = (x, y) => { const i = (y*N + x)*4; return d[i]*.3 + d[i+1]*.59 + d[i+2]*.11; };
+  const edge = new Uint8Array(N*N); let cnt = 0;
+  for(let y = 0; y < N; y++) for(let x = 0; x < N; x++){
+    if(!A(x, y)) continue;
+    const out = !A(x-1, y) || !A(x+1, y) || !A(x, y-1) || !A(x, y+1);
+    const inner = !out && ((A(x+1, y) && L(x, y) - L(x+1, y) > 60) || (A(x, y+1) && L(x, y) - L(x, y+1) > 60) || (A(x-1, y) && L(x, y) - L(x-1, y) > 60) || (A(x, y-1) && L(x, y) - L(x, y-1) > 60));
+    if(out || inner){ edge[y*N + x] = out ? 1 : 2; cnt++; }
   }
-  return out;
+  if(cnt < 20) return null; // emoji che il telefono non sa disegnare
+  // colore principale della figura, per il contorno
+  let r = 0, gg = 0, b = 0, n = 0;
+  for(let i = 0; i < N*N; i++) if(d[i*4+3] > 200){ const s = d[i*4] + d[i*4+1] + d[i*4+2]; if(s > 80 && s < 700){ r += d[i*4]; gg += d[i*4+1]; b += d[i*4+2]; n++; } }
+  const near = rgb => BOT_INKS.slice(1).reduce((best, k) => { const e = (k[1][0]-rgb[0])**2 + (k[1][1]-rgb[1])**2 + (k[1][2]-rgb[2])**2; return e < best[0] ? [e, k[0]] : best; }, [1e9, "#1d1b2e"])[1];
+  const main = n ? near([r/n, gg/n, b/n]) : "#1d1b2e";
+  const seen = new Uint8Array(N*N), paths = [];
+  const nb = [[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]];
+  for(let s = 0; s < N*N; s++){
+    if(!edge[s] || seen[s]) continue;
+    const kind = edge[s], pts = []; let x = s % N, y = (s / N) | 0;
+    for(;;){
+      seen[y*N + x] = 1; pts.push([x, y]);
+      let moved = false;
+      for(const [dx, dy] of nb){ const nx = x + dx, ny = y + dy, k = ny*N + nx; if(nx >= 0 && ny >= 0 && nx < N && ny < N && edge[k] === kind && !seen[k]){ x = nx; y = ny; moved = true; break; } }
+      if(!moved) break;
+    }
+    if(pts.length >= 5) paths.push({kind, pts});
+  }
+  paths.sort((a, b) => b.pts.length - a.pts.length);
+  const W = .9, j = () => (Math.random() - .5) * .006;
+  return paths.slice(0, 40).map(p => ({c:p.kind === 1 ? main : "#1d1b2e", s:p.kind === 1 ? 5 : 3.5,
+    p:p.pts.filter((_, i) => i % 2 === 0 || i === p.pts.length - 1).map(([x, y]) => [.5 + (x/N - .5)*W + j(),   .44 + (y/N - .5)*W/1.4 + j()])}));
 }
-function botStrokes(word){
-  const kind = DOODLE_FOR[word] && Math.random() < .8 ? DOODLE_FOR[word] : botPick(Object.keys(DOODLES));
-  const ink = botPick(INKS);
-  const st = DOODLES[kind]().map(p => ({c:ink, s:5, p}));
-  if(Math.random() < .7){ // aiuto: le prime lettere e un trattino per ogni lettera mancante
-    const w = word.toUpperCase().normalize("NFD").replace(/[^A-Z ]/g, "");
-    const n = Math.random() < .5 ? 1 : 2, hint = w.split("").map((c, i) => c === " " || i < n ? c : "_").join("").slice(0, 14);
-    const h = .07, len = hint.length, cw = h * .66 / 1.4, tw = len * cw * 1.45;
-    botText(hint, Math.max(.04, .5 - tw/2), .72, h).forEach(p => st.push({c:"#1d1b2e", s:4, p}));
-  }
-  return st;
+
+const BOT_TRACED = {};
+function botCanDraw(word){ const e = BOT_EMOJI[word]; if(!e) return false; if(!(word in BOT_TRACED)) BOT_TRACED[word] = botTrace(e); return !!BOT_TRACED[word]; }
+function botStrokes(word){ // ricalco dell'emoji; se il telefono non ce l'ha, uno scarabocchio qualsiasi (niente lettere: sono vietate)
+  if(botCanDraw(word)) return BOT_TRACED[word].map(s => ({...s, p:s.p.map(([x, y]) => [jit(x), jit(y)])}));
+  const ink = botPick(INKS.slice(1)); return DOODLES[botPick(Object.keys(DOODLES))]().map(p => ({c:ink, s:5, p}));
 }
 function botImage(strokes){
   const c = document.createElement("canvas"), W = 300, H = 420; c.width = W; c.height = H;
@@ -2621,7 +2652,22 @@ function botImage(strokes){
   boardPaint(g, W, H, strokes);
   return c.toDataURL("image/jpeg", .65);
 }
-const botWrongWord = () => { const all = [].concat(...Object.values(DRAW_WORDS)).filter(w => w !== M.word); return botPick(all); };
+/* con i bot in partita si pescano parole che i bot sanno disegnare e riconoscere */
+function botDeckPick(){
+  if(!BOTS_ON || !M || !M.players.some(p => isBot(p.id) && p.on)) return null;
+  for(let i = NET.deck.length - 1; i >= 0; i--) if(botCanDraw(NET.deck[i].word)) return NET.deck.splice(i, 1)[0];
+  const lvl = M.level || "medium", used = new Set(usedLoad().flat());
+  const pool = shuffle(DRAW_WORDS[lvl].filter(w => BOT_EMOJI[w] && !used.has(w)));
+  for(const w of pool) if(botCanDraw(w)) return {cat:LEVELS.find(l => l[0] === lvl)[1], word:w};
+  return null;
+}
+/* risposte sbagliate credibili: parole della stessa famiglia (un animale per un animale), mai due volte la stessa */
+function botWrongWord(tried){
+  const cat = BOT_CAT[M.word], lvl = M.level || "medium";
+  let pool = (cat ? BOT_CATS[cat] : DRAW_WORDS[lvl]).filter(w => w !== M.word && !guessOk(w, M.word) && !(tried || []).includes(w));
+  if(!pool.length) pool = DRAW_WORDS[lvl].filter(w => w !== M.word);
+  return botPick(pool);
+}
 /* --- cervello: ogni mezzo secondo ogni bot guarda la partita e decide se fare qualcosa --- */
 function botPlan(id, key, delay, extra){
   let b = BOT[id];
@@ -2638,37 +2684,46 @@ function botTick(){
     const id = p.id, me = (msg) => hostReceive(id, {...msg, pid:id});
     const base = `${M.round}.${M.turn}.${M.startedAt || 0}.${M.phase}`;
     const duo = isDuo(), g = guesserId();
-    if(rdyOpen() && !(M.rdy || {})[id]){
-      const b = botPlan(id, base + "r", rnd(1500, 5000)); if(!b.done && now >= b.at){ b.done = true; me({t:"rdy"}); }
+    if(M.phase === "intro"){ // il trailer: il bot lo guarda un po' e poi è pronto
+      if(!(M.ready || {})[id]){ const b = botPlan(id, "intro", rnd(4000, 9000)); if(!b.done && now >= b.at){ b.done = true; me({t:"ready"}); } }
     }
-    if(M.phase === "ready"){}
-    else if(M.phase === "turn" && !duo){
+    else if(rdyOpen() && !(M.rdy || {})[id]){ // pausa tra un turno e l'altro: il bot guarda il risultato e poi è pronto
+      const b = botPlan(id, base + "r", rnd(2500, 6000)); if(!b.done && now >= b.at){ b.done = true; me({t:"rdy"}); }
+    }
+    else if(M.phase === "turn" && !duo){ // gruppo: disegna con calma e invia; se la parola è troppo difficile a volte rinuncia
       if(g === id || M.queue.includes(id)) return;
-      const total = M.seconds * 1000, left = M.endsAt - now;
-      const b = botPlan(id, base, rnd(Math.min(12000, total*.2), total*.75), {skip:Math.random() < .1}); // ogni tanto uno non consegna in tempo
-      if(!b.done && !b.skip && (now >= b.at || left < 4000)){ b.done = true; me({t:"send", img:botImage(botStrokes(M.word))}); }
+      const total = M.seconds * 1000, left = M.endsAt - now, can = botCanDraw(M.word);
+      const b = botPlan(id, base, rnd(Math.min(15000, total*.25), total*.7), {skip:can ? Math.random() < .05 : Math.random() < .6});
+      if(!b.done && !b.skip && (now >= b.at || left < 5000)){ b.done = true; me({t:"send", img:botImage(botStrokes(M.word))}); }
     }
-    else if(M.phase === "turn" && duo && drawerId() === id){ // coppia: il bot disegna in diretta, un tratto alla volta
-      const b = botPlan(id, base, 800, {all:botStrokes(M.word), n:0});
-      if(now >= b.at && b.n < b.all.length && M.paused == null){ b.n++; b.at = now + rnd(700, 1500); me({t:"live", key:liveKey(), k:0, st:b.all.slice(0, b.n).map(liveCompact), a:1.4}); }
+    else if(M.phase === "turn" && duo && drawerId() === id){ // coppia: disegna in diretta, un pezzo di tratto alla volta, prima il contorno
+      const b = botPlan(id, base, rnd(1200, 2500), {all:botStrokes(M.word), n:0});
+      const tot = b.all.reduce((s, x) => s + x.p.length, 0), step = Math.max(3, Math.ceil(tot / 36));
+      if(now >= b.at && b.n < tot && M.paused == null){
+        b.n = Math.min(tot, b.n + step); b.at = now + (Math.random() < .12 ? rnd(1200, 2200) : 450); // ogni tanto si ferma a pensare
+        let left = b.n; const st = [];
+        for(const s of b.all){ if(left <= 0) break; st.push({...s, p:s.p.slice(0, left)}); left -= s.p.length; }
+        me({t:"live", key:liveKey(), k:0, st:st.map(liveCompact), a:1.4});
+      }
     }
-    else if(M.phase === "turn" && duo && g === id){ // coppia: il bot prova parole finché indovina (o finisce il tempo)
-      const b = botPlan(id, base, rnd(4000, 8000), {hitAt:Math.random() < .75 ? now + rnd(7000, 50000) : Infinity});
-      if(now >= b.at && M.paused == null){ b.at = now + rnd(4000, 9000); me({t:"dguess", text:now >= b.hitAt ? M.word : botWrongWord()}); }
+    else if(M.phase === "turn" && duo && g === id){ // coppia: prova parole della stessa famiglia finché ci arriva
+      const human = !isBot(drawerId());
+      const b = botPlan(id, base, rnd(6000, 10000), {tried:[], hitAt:Math.random() < (human ? .7 : .85) ? now + rnd(9000, 45000) : Infinity});
+      if(now >= b.at && M.paused == null){
+        b.at = now + rnd(5000, 9000);
+        const w = now >= b.hitAt ? M.word : botWrongWord(b.tried); b.tried.push(w);
+        me({t:"dguess", text:w.toLowerCase()});
+      }
     }
     else if(M.phase === "reveal" && g === id){
       if(!M.revealed){ const b = botPlan(id, base + ".r", rnd(1500, 2500)); if(!b.done && now >= b.at){ b.done = true; me({t:"reveal"}); } return; }
-      const b = botPlan(id, base + ".v" + M.view, rnd(2500, 4500));
+      const t = botPlan(id, base + ".t", 0, {tried:[]}).tried, b = BOT[id + "v"] && BOT[id + "v"].key === base + M.view ? BOT[id + "v"] : (BOT[id + "v"] = {key:base + M.view, at:now + rnd(3000, 6500), done:false});
       if(!b.done && now >= b.at && M.view < M.queue.length){
         b.done = true;
-        const byHuman = !isBot(M.queue[M.view]), r = Math.random();
-        if(r < (byHuman ? .55 : .35)) me({t:"guess", view:M.view, text:M.word});
-        else if(r < .9) me({t:"guess", view:M.view, text:botWrongWord()});
-        else me({t:"advance", view:M.view});
+        const by = M.queue[M.view], good = isBot(by) ? (botCanDraw(M.word) ? .7 : .1) : .5; // un ricalco fatto bene si indovina più spesso
+        if(Math.random() < good) me({t:"guess", view:M.view, text:M.word.toLowerCase()});
+        else { const w = botWrongWord(t); t.push(w); me({t:"guess", view:M.view, text:w.toLowerCase()}); }
       }
-    }
-    else if(M.phase === "result" && peekNext() === id){
-      const b = botPlan(id, base, rnd(4500, 6500)); if(!b.done && now >= b.at){ b.done = true; me({t:"next"}); }
     }
   });
 }

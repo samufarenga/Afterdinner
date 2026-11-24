@@ -646,12 +646,17 @@ function botTick(){
     const id = p.id, key = c.key + "." + c.ph;
     let b = BOT[id]; if(!b || b.key !== key) b = BOT[id] = {key, at:now + botRnd(2500, 6000), done:false};
     if(b.done || now < b.at) return;
-    const passOk = p.passes > 0 && Math.random() < .08, ans = () => c.k === "yn" ? botPick(["y","n"]) : Math.floor(botRnd(0, 12));
-    const others = () => active().filter(x => x.id !== id).map(x => x.id);
+    const passOk = p.passes > 0 && Math.random() < (c.lvl === 3 ? .1 : .04); // si passa di più sulle carte spinte
+    const ans = () => c.k === "yn" ? (Math.random() < .5 ? "y" : "n") : Math.round(Math.random() ** 2 * 15); // numeri piccoli, ogni tanto uno grosso
+    const others = () => { // ognuno ha i suoi "sospettati": si vota quasi sempre le stesse persone, come al tavolo
+      const ids = active().filter(x => x.id !== id).map(x => x.id);
+      const pref = BOT[id + "pref"] = (BOT[id + "pref"] || []).filter(x => ids.includes(x)).concat(ids.filter(x => !(BOT[id + "pref"] || []).includes(x)).sort(() => Math.random() - .5));
+      const r = Math.random(); return [pref[r < .55 ? 0 : r < .8 ? 1 : Math.floor(Math.random() * pref.length)]];
+    };
     if((c.ph === "reveal" || c.ph === "after") && !(c.nx || {})[id]){ b.done = true; hostAct(id, "nx"); }
     else if(c.t === "v" && c.ph === "ask" && c.target === id){ b.done = true; hostAct(id, passOk ? "pass" : "done"); }
     else if(c.t === "i" && c.ph === "secret" && c.target === id){ b.done = true; hostAct(id, "secret", ans()); }
-    else if(c.ph === "vote" && c.ans[id] === undefined){ b.done = true; if(passOk) hostAct(id, "pass"); else hostAct(id, "vote", c.t === "n" ? botPick(["y","n"]) : botPick(others())); }
+    else if(c.ph === "vote" && c.ans[id] === undefined){ b.done = true; if(passOk) hostAct(id, "pass"); else hostAct(id, "vote", c.t === "n" ? (Math.random() < [0, .55, .4, .3][c.lvl || 1] ? "y" : "n") : botPick(others())); }
     else if(c.ph === "guess" && c.target !== id && c.ans[id] === undefined){ b.done = true; hostAct(id, "guess", ans()); }
   });
 }
