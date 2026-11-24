@@ -1061,7 +1061,7 @@ const SCENES = [
   {t:"Chi ha più bombe perde", d:"In alto vedi le tue bombe e il tuo posto.",
    v:() => `<div class="sc-band"><span>${I.bomb}<b>2</b> bombe</span><i></i><span><b>3°</b> posto</span></div><div class="sc-rank">${["#ffb86b","#9be7ff","#ffadc6"].map((c, k) => `<div style="--d:${k}"><span class="av" style="--c:${c}">${"ACM"[k]}</span>${I.bomb.repeat(k)}</div>`).join("")}</div>`}
 ];
-const SCENE_MS = 2800;
+const SCENE_MS = 5000; // ogni scena del trailer resta 5 s (Rob)
 function readyList(){
   return `<div class="waits">${G.players.map(p => `<span class="wt ${G.ready && G.ready[p.id] ? "ok" : ""} ${online(p) ? "" : "off"}">${av(p)}${p.id === NET.me ? "Tu" : esc(p.name)}</span>`).join("")}</div>`;
 }

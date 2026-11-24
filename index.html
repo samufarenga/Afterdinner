@@ -1673,7 +1673,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "24.11 · 12:10";
+const APP_VERSION = "24.11 · 12:25";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1936,7 +1936,7 @@ const estMin = (turns, per) => { const m = (turns * per + 60) / 60; return m < 1
 function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => estMin(n * r, GROUP_TURN(M.seconds)); return [3,2,1].find(r => est(r) <= 30) || 1; }
 /* ---------- trailer: prima del primo turno, poche scene che scorrono da sole (2,8 s), poi «Sono pronto a giocare» ---------- */
 /* Come in Bomba: un tocco va avanti, col dito si scorre avanti e indietro; tornando indietro o arrivati in fondo l'autoplay si ferma */
-const SC_MS = 2800;
+const SC_MS = 5000; // ogni scena del trailer resta 5 s (Rob)
 const SC_CAT = `<path pathLength="1" d="M18 32A12 12 0 1 0 42 32A12 12 0 1 0 18 32M20 26L21 13L28 21M32 21L39 13L40 26M25 31v1M35 31v1M28 36l2 2 2-2M8 33h12M40 33h12M10 39l10-3M50 39l-10-3"/>`;
 const scCat = (still) => `<svg class="scat${still ? " still" : ""}" viewBox="0 0 60 60" aria-hidden="true">${SC_CAT}</svg>`;
 const scAv = (c, l) => `<span class="av" style="background:${c}">${l}</span>`;

@@ -881,7 +881,7 @@ const ynTxt = v => v === "y" ? "Sì" : v === "n" ? "No" : v;
 
 /* ---------- il trailer: poche scene che scorrono da sole (2,8 s), poi «Sono pronto a giocare» ----------
    Come in Bomba e negli Scarabocchi: un tocco va avanti, col dito si scorre; tornando indietro o all'ultima scena l'autoplay si ferma */
-const SCENE_MS = 2800;
+const SCENE_MS = 5000; // ogni scena del trailer resta 5 s (Rob)
 const SCENES_ALL = [
   {t:"La temperatura sale", d:"Si parte tiepidi, carta dopo carta si scalda.",
    v:() => [1,2,3].map(n => `<div class="sc-lv" style="--d:${n-1}">${chilis(n)}<b>${LV[n].n}</b></div>`).join("")},
