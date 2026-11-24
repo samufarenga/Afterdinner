@@ -914,7 +914,7 @@ const CATALOG = [
 ];
 CATALOG.sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0)); // prima i giochi pronti, poi quelli in arrivo (stesso ordine all'interno)
 const WHEEL_ON = false; // vista a ruota messa da parte: true per riattivarla
-const DEFAULT_SETTINGS = {wheel:false, sfx:true, silentOk:false, music:false, volume:70, vibration:true, splash:true, awake:true};
+const DEFAULT_SETTINGS = {wheel:false, sfx:true, silentOk:false, music:false, gameMusic:true, volume:70, vibration:true, splash:true, awake:true};
 const STORE_KEY = "dopocena.v1"; // chiave invariata per non perdere le partite salvate
 
 const $ = (s, r=document) => r.querySelector(s);
@@ -926,6 +926,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const initial = n => esc((Array.from(n.trim())[0] || "?").toUpperCase()); // anche un'emoji intera
 
 let S = load() || fresh();
+if(S.settings && S.settings.gameMusic === undefined) S.settings.gameMusic = true; // novità: la musica nei giochi parte accesa
 function fresh(){ return {screen:"home", players:[], rounds:2, seconds:60, game:null, settings:{...DEFAULT_SETTINGS}}; }
 function load(){ try{ const v = JSON.parse(localStorage.getItem(STORE_KEY)); return v && v.players ? v : null; }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
@@ -1190,14 +1191,14 @@ function unlockAudio(){
 }
 ["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 /* l'audio resta acceso solo mentre suona: finito l'effetto si spegne, così iPhone non mostra niente sulla Dynamic Island */
-function audioIdle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!musicT && audio && audio.state === "running") audio.suspend().catch(()=>{}); }, ms); }
+function audioIdle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!musicT && !gameT && audio && audio.state === "running") audio.suspend().catch(()=>{}); }, ms); }
 
 /* app in background o schermo spento: tutto zitto; al ritorno riparte */
 document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState === "hidden"){ stopMusic(); try{ audio && audio.suspend(); }catch(e){} setAudioSession(false); }
-  else { if(ST().music) startMusic(); }
+  if(document.visibilityState === "hidden"){ stopMusic(); gameMusicStop(); try{ audio && audio.suspend(); }catch(e){} setAudioSession(false); }
+  else { if(ST().music) startMusic(); gameMusicSync(); }
 });
-window.addEventListener("pagehide", () => { stopMusic(); try{ audio && audio.suspend(); }catch(e){} });
+window.addEventListener("pagehide", () => { stopMusic(); gameMusicStop(); try{ audio && audio.suspend(); }catch(e){} });
 /* effetti sonori sintetizzati: niente file da scaricare */
 function tone(f, at, dur, o = {}){
   const a = audio, t = a.currentTime + at, osc = a.createOscillator(), g = a.createGain();
@@ -1232,6 +1233,7 @@ const SFX = {
   sprint(){ for(let i = 0; i < 3; i++){ tone(700, i*.18, .09, {type:"square", gain:.06, lp:2500}); tone(1050, i*.18+.09, .09, {type:"square", gain:.06, lp:2500}); } },
   drumroll(d){ for(let t = 0; t < d; t += .045) noise(t, .04, {type:"highpass", from:1500, gain:.05 + .07*(t/d)}); },
   fanfare(){ [[392,0],[523,.12],[659,.24],[784,.36]].forEach(([f,t]) => tone(f, t, .14, {type:"square", gain:.06, lp:2200})); [784,988,1175].forEach(f => tone(f, .5, .8, {type:"square", gain:.05, lp:2000})); },
+  ready(){ tone(784, 0, .09, {type:"sine", gain:.12}); tone(1175, .08, .22, {type:"sine", gain:.12}); },
   sad(){ [[392,0],[370,.32],[349,.64]].forEach(([f,t]) => tone(f, t, .3, {type:"sawtooth", gain:.08, lp:1200})); tone(330, .96, .9, {type:"sawtooth", gain:.09, lp:1000, to:300}); }
 };
 function sfx(name, ...a){ if(!ST().sfx || !ST().volume) return; try{ ctx(); SFX[name](...a); audioIdle(name === "sad" || name === "fanfare" ? 2600 : 1500); }catch(e){ console.warn("sfx", name, e); } }
@@ -1267,7 +1269,27 @@ function musicTick(){
 }
 function startMusic(){ if(musicT || !ST().music) return; try{ ctx(); musicT = setInterval(musicTick, 280); }catch(e){} }
 function stopMusic(){ clearInterval(musicT); musicT = null; audioIdle(300); }
-document.addEventListener("pointerdown", () => { if(ST().music && !musicT) startMusic(); });
+document.addEventListener("pointerdown", () => { setTimeout(gameMusicSync, 30); if(ST().music && !musicT && !gameWants()) startMusic(); });
+/* musica dentro i giochi: un giro allegro e leggero nelle pause (sala d'attesa, trailer, «pronti», risultati, finale),
+   zitta mentre si disegna e si indovina. Si spegne col tasto dell'audio in alto a sinistra */
+let gameT = null, gameStep = 0;
+const GCH = [[174.6,220,261.6],[146.8,174.6,220],[116.5,146.8,174.6],[130.8,164.8,196]]; // Fa, Re-, Sib, Do
+const GPAT = [0,2,1,2,0,2,1,3];
+function gameWants(){
+  return S.screen === "mp" && !!M && ["lobby","intro","ready","result","final"].includes(M.phase) && !!ST().sfx && ST().volume > 0 && ST().gameMusic !== false && audioUnlocked && document.visibilityState === "visible";
+}
+function gameTick(){
+  if(!audio || audio.state !== "running"){ try{ ctx(); }catch(e){} return; }
+  const ch = GCH[Math.floor(gameStep / 8) % GCH.length], k = gameStep % 8, t = audio.currentTime + .05, v = .045 * vol();
+  if(k === 0 || k === 3 || k === 6) musicNote(ch[0] / 2, t, k === 0 ? .55 : .3, v * 1.5);         // basso
+  const n = GPAT[k], f = n === 3 ? ch[0] * 2 : ch[n] * 2;
+  tone(f, .05, .22, {type:"triangle", gain:.045 * (k % 2 ? .7 : 1), lp:2400});                   // arpeggio
+  if(k % 2) noise(.05, .04, {type:"highpass", from:6000, gain:.018});                                // charleston leggero
+  gameStep++;
+}
+function gameMusicStart(){ if(gameT) return; if(musicT) stopMusic(); try{ ctx(); }catch(e){ return; } gameT = setInterval(gameTick, 270); }
+function gameMusicStop(){ if(!gameT) return; clearInterval(gameT); gameT = null; audioIdle(400); }
+function gameMusicSync(){ if(gameWants()) gameMusicStart(); else gameMusicStop(); }
 document.addEventListener("click", e => { if(e.target.closest("button:not([disabled]):not(#b-send):not(#mp-go):not(.gtile)")) sfx("tap"); }, true);
 
 function confetti(n=90){
@@ -1368,7 +1390,8 @@ function openSettings(){
       ${WHEEL_ON ? `<div class="set-row"><span class="lbl"><b>Giochi in home</b><span>Come vedi i giochi nella schermata iniziale</span></span>
         <div class="viewsw" role="group" aria-label="Vista dei giochi"><button type="button" data-view="list" aria-pressed="${!st.wheel}">${GLY.list} Lista</button><button type="button" data-view="wheel" aria-pressed="${!!st.wheel}">${GLY.wheel} Ruota</button></div></div>` : ""}
       <div class="set-row"><span class="lbl"><b>Volume</b></span><input type="range" id="set-volume" min="0" max="100" step="5" value="${st.volume}" aria-label="Volume"></div>
-      ${sw("music","Musica","Sottofondo leggero mentre giocate")}
+      ${sw("music","Musica in home","Sottofondo leggero nella schermata iniziale")}
+      ${sw("gameMusic","Musica nei giochi","Nelle pause tra un turno e l'altro")}
       ${sw("sfx","Effetti sonori","Timer, punti, aperture")}
       ${sw("silentOk","Suona anche col silenzioso","Su iPhone compare l'icona audio in alto")}
       ${sw("vibration","Vibrazione","Solo Android: un tic quando giri la ruota")}
@@ -1652,8 +1675,8 @@ $("#host-btn").addEventListener("click", openHostMenu);
 const SND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const SND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>';
 function sndBtn(){ const hb = $("#host-btn"); if(hb) hb.hidden = !(S.screen === "mp" && NET.role === "host" && M && !["lobby","final"].includes(M.phase));
-  const b = $("#snd-btn"); if(!b) return; b.hidden = S.screen !== "mp"; const on = !!ST().sfx && ST().volume > 0; b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Spegni gli effetti audio" : "Accendi gli effetti audio"); }
-$("#snd-btn").addEventListener("click", () => { const st = ST(), on = !!st.sfx && st.volume > 0; st.sfx = !on; if(!on && !st.volume) st.volume = 70; save(); sndBtn(); if(st.sfx) sfx("tap"); });
+  const b = $("#snd-btn"); if(!b) return; b.hidden = S.screen !== "mp"; const on = !!ST().sfx && ST().volume > 0; b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? "Spegni musica ed effetti" : "Accendi musica ed effetti"); }
+$("#snd-btn").addEventListener("click", () => { const st = ST(), on = !!st.sfx && st.volume > 0; st.sfx = !on; if(!on && !st.volume) st.volume = 70; save(); sndBtn(); if(st.sfx) sfx("tap"); gameMusicSync(); });
 /* ogni finestra ha la sua X per chiudere, e mentre è aperta lo sfondo non scorre */
 new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
   if(!(m instanceof HTMLElement) || !m.classList.contains("modal")) return;
@@ -1673,7 +1696,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "24.11 · 12:55";
+const APP_VERSION = "24.11 · 13:05";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -2471,7 +2494,7 @@ function boardInit(){
     if(BOARD.pts.size === 0) BOARD.noDraw = false; // si torna a disegnare solo dopo aver alzato tutte le dita
   };
 }
-if(/[?&]local/.test(location.search)) window.T = {boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }, get M(){ return M; }, get LIVE(){ return LIVE; }, hostDo:(a) => hostDo(a), endNow:() => { M.endsAt = Date.now() + 200; armTurnTimer(); }, rerender:() => mpRender(true), setWord:w => { M.word = w; publish(); mpRender(true); }}; // solo per le prove
+if(/[?&]local/.test(location.search)) window.T = {get snd(){ return {game:!!gameT, audio:audio && audio.state}; }, sfxTest:() => window.__sfxTest(), boardInit, boardFit:() => boardFit(), boardSnapshot:() => boardSnapshot(), get B(){ return BOARD; }, get M(){ return M; }, get LIVE(){ return LIVE; }, hostDo:(a) => hostDo(a), endNow:() => { M.endsAt = Date.now() + 200; armTurnTimer(); }, rerender:() => mpRender(true), setWord:w => { M.word = w; publish(); mpRender(true); }}; // solo per le prove
 /* coppia: il disegno va in diretta a chi indovina. Si mandano solo i tratti cambiati, ogni 250 ms */
 let LIVE = {key:null, s:[], a:1.6};
 const liveKey = (s = M) => s ? `${s.round}.${s.turn}.${s.startedAt || 0}` : null;
@@ -3203,6 +3226,7 @@ function mpRender(force){
   render();
 }
 function mpAfterRender(){
+  gameMusicSync();
   if(S.screen !== "mp") return;
   $("#board-btn").hidden = true;
   if(NET.role === "guest"){ $("#back-btn").hidden = true; $("#menu-btn").hidden = true; }
@@ -3237,9 +3261,9 @@ view.addEventListener("click", e => {
   else if(id === "bot-add"){ botAdd(); }
   else if(id === "bot-del"){ botRemoveAll(); }
   else if(id === "mp-go"){ act({t:"start"}); }
-  else if(id === "mp-rdy"){ b.disabled = true; act({t:"rdy"}); }
+  else if(id === "mp-rdy"){ b.disabled = true; sfx("ready"); act({t:"rdy"}); }
   else if(id === "mp-rdygo"){ act({t:"rdygo"}); }
-  else if(id === "mp-ready"){ b.disabled = true; act({t:"ready"}); }
+  else if(id === "mp-ready"){ b.disabled = true; sfx("ready"); act({t:"ready"}); }
   else if(id === "mp-goanyway"){ act({t:"goanyway"}); }
   else if(d.sc != null){ scGo(+d.sc, true); }
   else if(id === "mp-reveal"){ b.disabled = true; sfx("pop"); act({t:"reveal"}); }
