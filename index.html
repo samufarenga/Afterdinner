@@ -903,7 +903,7 @@ const CATALOG = [
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
   {id:"catena", name:"Disegno a catena", icon:"pencil", color:"#14d494", players:"4-10", mins:"15-20", phones:"all", desc:"Frase, disegno, frase: guarda come si deforma il messaggio."},
-  {id:"bomba", name:"Bomba", icon:"bomb", color:"#ff7a2e", ready:true, players:"3-12", mins:"10", phones:"all", desc:"Una sillaba, una parola detta al volo, un tocco: la bomba passa al prossimo prima che esploda."},
+  {id:"bomba", name:"Bomba", icon:"bomb", color:"#ff7a2e", ready:true, players:"3-12", mins:"10-25", phones:"all", desc:"Una sillaba, una parola detta al volo, un tocco: la bomba passa al prossimo prima che esploda."},
   {id:"fronte", name:"Fronte", icon:"head", color:"#3d8bff", players:"3-10", mins:"10-15", phones:"one", desc:"Telefono sulla fronte: gli altri ti aiutano a indovinare."},
   {id:"termometro", name:"Termometro", icon:"gauge", color:"#ffd21f", players:"4-10", mins:"20", phones:"one", desc:"Un indizio, una scala, una lancetta da piazzare nel punto giusto."},
   {id:"verofalso", name:"Vero o falso su di me", icon:"truth", color:"#9be21c", players:"4-10", mins:"15-20", phones:"all", desc:"Tre fatti su di te, uno è falso. Chi ci casca?"},
@@ -1673,7 +1673,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "24.11 · 11:55";
+const APP_VERSION = "24.11 · 12:05";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
