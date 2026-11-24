@@ -438,6 +438,8 @@ const I = {
   bomb: sv("bomb", `<circle cx="10.5" cy="14" r="7.5" fill="#22242e"/><ellipse cx="7.8" cy="11" rx="2.2" ry="1.4" transform="rotate(-35 7.8 11)" fill="#fff" opacity=".35"/><rect x="11" y="4.6" width="4.4" height="3.4" rx="1" transform="rotate(30 13.2 6.3)" fill="#3a3d4a"/><path d="M14.6 5.2c1.2-2.4 3.2-3.2 5.2-2.4" fill="none" stroke="#c9a46a" stroke-width="1.4" stroke-linecap="round"/><circle cx="20" cy="2.8" r="1.6" fill="#ffc24d"/>`),
   check: sv("check", `<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`),
   crown: sv("crown", `<path d="M3 8.2l4.6 4L12 4.8l4.4 7.4L21 8.2l-1.9 10.6H4.9z" fill="currentColor"/><path d="M5 21h14" ${STK}/>`),
+  snd: sv("snd", `<path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.6a7.4 7.4 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`),
+  mute: sv("mute", `<path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z" fill="currentColor"/><path d="m16 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`),
   more: sv("more", `<circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/>`),
   mouth: sv("mouth", `<path d="M4 9.5c2.4-2 5-3 8-3s5.6 1 8 3c-1.3 5-4.4 8-8 8s-6.7-3-8-8z" ${STK}/><path d="M5.5 10.5c4.3 1.6 8.7 1.6 13 0" ${STK}/>`),
   tap: sv("tap", `<path d="M9 11V5.5a1.6 1.6 0 0 1 3.2 0V10l4.6.8a2.4 2.4 0 0 1 2 2.7l-.7 4.6A3.4 3.4 0 0 1 14.7 21h-3.4a3.4 3.4 0 0 1-2.8-1.5L5.3 15a1.6 1.6 0 0 1 2.4-2.1z" ${STK}/><path d="M6.6 6.2a4.8 4.8 0 0 1 8 0" ${STK}/>`),
@@ -898,7 +900,7 @@ function fuses(){
 function topbar(){
   const host = amHost() && G && G.phase !== "lobby" && G.phase !== "end";
   return `<header class="top"><div class="brand">${I.bomb}<span>Bomba</span></div>${fuses()}
-    <div class="tools"><button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">${I.more}</button>` : ""}</div></header>`;
+    <div class="tools">${soundBtn()}<button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">${I.more}</button>` : ""}</div></header>`;
 }
 /* posti al tavolo: in cerchio, si parte da te in basso e si gira a sinistra (senso orario visto dall'alto) */
 function seatXY(i, n){ const a = Math.PI / 2 + i * 2 * Math.PI / n; return [Math.cos(a), Math.sin(a)]; }
@@ -1011,7 +1013,7 @@ const VIEWS = {
     ${rankHTML(false)}
     <div class="grow"></div>
     <div class="rdybox">${readyList()}
-      <p class="hint" style="margin:8px 0 10px">${miss.length ? `${miss.length === 1 ? "Manca" : "Mancano"} <b>${andList(miss.map(p => p.id === NET.me ? {name:"tu"} : p))}</b>` : canLight ? "Tutti pronti: accendi tu la bomba" : `Tutti pronti: la accende <b>${nm(st)}</b><span class="dots"></span>`}</p>
+      <p class="hint" style="margin:8px 0 10px">${miss.length ? `${miss.length === 1 ? "Manca:" : "Mancano:"} <b>${andList(miss.map(p => p.id === NET.me ? {name:"tu"} : p))}</b>` : canLight ? "Tutti pronti: accendi tu la bomba" : `Tutti pronti: la accende <b>${nm(st)}</b><span class="dots"></span>`}</p>
       ${!me ? `<button class="btn pulse" data-a="rready">${I.check} ${G.resumed ? "Pronto a ripartire" : "Pronto per la prossima bomba"}</button>`
         : canLight ? `<button class="btn pulse" data-a="next">${I.bomb} ${G.resumed ? "Riaccendi la bomba" : "Accendi la bomba"}</button>`
         : `<button class="btn ghost" disabled>${I.check} Pronto${miss.length ? ", aspettiamo gli altri" : ""}</button>`}
@@ -1071,7 +1073,7 @@ function pauseView(){
   if(UI.wheel == null || !P(UI.wheel)) UI.wheel = G.last && P(G.last.id) ? G.last.id : G.holder;
   return `<div class="screen play">${band(false)}
     <div class="in" style="text-align:center;margin-top:8px"><span class="pbig">${I.pause}</span>
-      <h1 class="big" style="margin-top:10px">Pausa</h1><p class="lead">${by ? `L'ha chiesta ${by.id === NET.me ? "tu" : esc(by.name)}` : ""}. Il timer è fermo.</p></div>
+      <h1 class="big" style="margin-top:10px">Pausa</h1><p class="lead">${by ? `L'ha chiesta ${by.id === NET.me ? "tu" : esc(by.name)}` : ""}. Il timer è fermo.</p><button class="link" data-a="sound" style="margin-top:2px">${SND.on() ? "Spegni l'audio" : "Accendi l'audio"}</button></div>
     ${amHost() ? `<div class="in" style="--d:1;margin-top:18px"><p class="lbl" style="text-align:center">A chi torna la bomba?</p>
       <div class="wheelbox"><div class="wheel" id="wheel">${G.players.map(p => `<div class="wi ${online(p) ? "" : "off"}" data-w="${p.id}">${av(p)}<span>${p.id === NET.me ? "Tu" : esc(p.name)}</span>${p.id === G.holder ? `<em>ha la bomba</em>` : G.last && p.id === G.last.id ? `<em>ha appena passato</em>` : ""}</div>`).join("")}</div></div>
       <p class="hint" style="margin-top:8px">Se la parola non valeva, torna a chi l'ha detta: stessa sillaba, deve trovarne un'altra.</p></div>
@@ -1176,6 +1178,7 @@ function setMode(){
 }
 function render(){
   if(DRAG){ DRAG.dirty = true; return; }      // durante il trascinamento non ridisegno
+  soundSync();
   if(screenName() === "intro" && $("#scene") && !UI.sheet){ const rb = $("#readybox"); if(rb) rb.innerHTML = readyBox(); if(G.fx && G.fx.n > lastFx){ lastFx = G.fx.n; playFx(G.fx.l); } return; }
   if(screenName() !== "intro"){ UI.scene = 0; clearTimeout(sceneT); UI.sceneOn = false; UI.introDone = false; }
   const scr = screenName();
@@ -1238,15 +1241,79 @@ function fxEl(cls, html, style, life){
 }
 function toast(html){ fxEl("toast", html, null, 2300); }
 function okFlash(){ fxEl("okflash", I.check, null, 800); }
+
+/* ---------- suoni: sintetizzati al volo, niente file. Il ticchettio è costante: non accelera mai e non dice quanto manca ---------- */
+const SND = (() => {
+  let ac = null, unlocked = false, tickT = null, tickN = 0, idleT = null;
+  const on = () => ls.get("ad.bomba.sound", true) !== false;
+  const gst = () => { try{ return JSON.parse(localStorage.getItem("dopocena.v1"))?.settings || {}; }catch(e){ return {}; } };
+  const vol = () => { const v = gst().volume; return typeof v === "number" ? Math.max(0, Math.min(1, v / 100)) : .8; };
+  const ctx = () => { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if(ac.state !== "running") ac.resume().catch(() => {}); return ac; };
+  const session = () => { try{ if(navigator.audioSession) navigator.audioSession.type = gst().silentOk ? "playback" : "ambient"; }catch(e){} };
+  function unlock(){ if(unlocked || !on()) return; session(); try{ const a = ctx(), b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); unlocked = true; }catch(e){} }
+  ["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, unlock, {passive:true, capture:true}));
+  function idle(ms){ clearTimeout(idleT); idleT = setTimeout(() => { if(!tickT && ac && ac.state === "running") ac.suspend().catch(() => {}); }, ms); }
+  function tone(f, at, dur, o = {}){
+    const a = ac, t = a.currentTime + at, osc = a.createOscillator(), g = a.createGain();
+    osc.type = o.type || "triangle"; osc.frequency.setValueAtTime(f, t); if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime((o.gain || .15) * vol() + .0001, t + (o.attack || .006)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    let node = osc; if(o.lp){ const fl = a.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = o.lp; osc.connect(fl); node = fl; }
+    node.connect(g).connect(a.destination); osc.start(t); osc.stop(t + dur + .02);
+  }
+  function noise(at, dur, o = {}){
+    const a = ac, t = a.currentTime + at, n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
+    src.buffer = buf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.from || 800, t); if(o.to) fl.frequency.exponentialRampToValueAtTime(o.to, t + dur); fl.Q.value = o.q || 1;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime((o.gain || .12) * vol() + .0001, t + (o.attack || .005)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    src.connect(fl).connect(g).connect(a.destination); src.start(t); src.stop(t + dur);
+  }
+  const FX = {
+    tick(){ noise(0, .035, {type:"highpass", from:3200, gain:.22}); tone(2100, 0, .03, {type:"square", gain:.03, lp:4000}); },
+    tock(){ noise(0, .04, {type:"bandpass", from:1300, q:2, gain:.2}); tone(1100, 0, .04, {type:"square", gain:.025, lp:2500}); },
+    light(){ noise(0, .12, {type:"highpass", from:2500, gain:.25}); noise(.08, 1.3, {type:"bandpass", from:3500, to:5000, q:.7, gain:.1, attack:.1}); tone(160, 0, .2, {type:"sine", gain:.12, to:90}); },
+    pass(){ noise(0, .22, {type:"bandpass", from:600, to:2600, q:1.2, gain:.2, attack:.03}); },
+    get(){ tone(880, 0, .07, {type:"sine", gain:.14}); tone(1320, .06, .12, {type:"sine", gain:.12}); },
+    ok(){ tone(988, 0, .06, {type:"sine", gain:.1}); },
+    boom(){ noise(0, 1.8, {type:"lowpass", from:1800, to:90, q:.8, gain:.9, attack:.004}); noise(0, .25, {type:"highpass", from:1200, gain:.5}); tone(70, 0, 1.4, {type:"sine", gain:.6, to:32}); tone(45, .05, 1.8, {type:"triangle", gain:.4, to:25}); },
+    alarm(){ for(let i = 0; i < 3; i++){ tone(880, i * .26, .12, {type:"square", gain:.07, lp:2600}); tone(660, i * .26 + .13, .12, {type:"square", gain:.07, lp:2600}); } },
+    beep(){ tone(660, 0, .16, {type:"sine", gain:.2}); },
+    go(){ tone(990, 0, .35, {type:"sine", gain:.22}); tone(1485, 0, .35, {type:"sine", gain:.08}); },
+    ready(){ tone(784, 0, .08, {type:"sine", gain:.12}); tone(1175, .07, .18, {type:"sine", gain:.12}); },
+    end(){ [[392,0],[523,.13],[659,.26],[784,.39]].forEach(([f, t]) => tone(f, t, .16, {type:"square", gain:.05, lp:2200})); }
+  };
+  function play(name, ms){ if(!on() || document.hidden) return; try{ ctx(); FX[name](); idle(ms || 1500); }catch(e){} }
+  /* ticchettio: tic-tac a ritmo fisso (2 colpi al secondo) solo sul telefono di chi ha la bomba */
+  function tickSync(want){
+    if(want && on() && !document.hidden){ if(tickT) return; tickN = 0; try{ ctx(); }catch(e){} tickT = setInterval(() => { try{ ctx(); FX[tickN++ % 2 ? "tock" : "tick"](); }catch(e){} }, 500); }
+    else if(tickT){ clearInterval(tickT); tickT = null; idle(800); }
+  }
+  document.addEventListener("visibilitychange", () => { if(document.hidden){ tickSync(false); try{ ac && ac.suspend(); }catch(e){} } });
+  return { play, tickSync, on, set(v){ ls.set("ad.bomba.sound", !!v); if(v){ unlocked = false; unlock(); play("ok"); } else tickSync(false); } };
+})();
+/* suoni legati ai cambi di fase */
+let sndPhase = null;
+function soundSync(){
+  if(!G) return;
+  const ph = G.phase;
+  SND.tickSync(ph === "play" && G.holder === NET.me && UI.passed !== G.turn);
+  if(ph === sndPhase) return;
+  const prev = sndPhase; sndPhase = ph;
+  if(prev == null) return;
+  if(ph === "pause") SND.play("alarm", 1200);
+  else if(ph === "count"){ SND.play("beep"); setTimeout(() => G && G.phase === "count" && SND.play("beep"), 1000); setTimeout(() => G && G.phase === "count" && SND.play("go"), 2000); }
+  else if(ph === "end") SND.play("end", 1800);
+}
+const soundBtn = () => `<button class="ib snd" data-a="sound" aria-label="${SND.on() ? "Spegni l'audio" : "Accendi l'audio"}">${SND.on() ? I.snd : I.mute}</button>`;
 function playFx(list){
   (list || []).forEach(f => {
     if(f.k === "toast") toast(esc(f.txt));
-    else if(f.k === "light") fxEl("lightup", `${bombSVG()}<b>Miccia accesa!</b><span class="hint">${G.holder === NET.me ? "Parti tu" : `Parte ${nm(G.holder)}`}</span>`, null, 1650);
+    else if(f.k === "light") SND.play("light", 1800), fxEl("lightup", `${bombSVG()}<b>Miccia accesa!</b><span class="hint">${G.holder === NET.me ? "Parti tu" : `Parte ${nm(G.holder)}`}</span>`, null, 1650);
     else if(f.k === "pass"){
       if(f.from === NET.me && UI.passed !== G.turn - 1) okFlash();   // l'host vede il suo lampo anche se è passato da qui
-      if(f.to === NET.me) fxEl("passfly", bombSVG(), {"--tx":"0px", "--ty":"0px"}, 700);
+      if(f.to === NET.me){ fxEl("passfly", bombSVG(), {"--tx":"0px", "--ty":"0px"}, 700); SND.play("get"); }
     }
-    else if(f.k === "boom") explosion(f.id === NET.me, nm(f.id));
+    else if(f.k === "boom"){ SND.tickSync(false); setTimeout(() => SND.play("boom", 2600), 650); explosion(f.id === NET.me, nm(f.id)); }
   });
 }
 function explosion(mine, name){
@@ -1356,7 +1423,7 @@ app.addEventListener("pointercancel", endDrag);
 function doPass(){
   if(!G || G.phase !== "play" || G.holder !== NET.me || UI.passed === G.turn) return;
   if(Date.now() - UI.holdAt < 500) return;                 // niente passaggi per sbaglio
-  UI.passed = G.turn; okFlash();
+  UI.passed = G.turn; okFlash(); SND.tickSync(false); SND.play("pass");
   if(amHost()) send("pass", G.turn); else { send("pass", G.turn); render(); }
 }
 document.addEventListener("pointerdown", e => { if(e.target.closest('[data-a="pass"]')){ e.preventDefault(); doPass(); } }, {passive:false});
@@ -1372,10 +1439,12 @@ document.addEventListener("click", async e => {
   switch(a){
     case "pass": break; // gestito al tocco
     case "go-on": send("resume", UI.wheel); break;
+    case "sound": SND.set(!SND.on()); render(); toast(SND.on() ? "Audio acceso" : "Audio spento"); break;
     case "scene-next": goScene((UI.scene || 0) + 1); break;
     case "scene-prev": goScene((UI.scene || 0) - 1); break;
     case "scene-tap": if(Date.now() - (UI.swiped || 0) > 300) goScene((UI.scene || 0) + 1); break;
-    case "ready": send("ready"); break;
+    case "ready": SND.play("ready"); send("ready"); break;
+    case "rready": SND.play("ready"); send("rready"); break;
     case "exit": closeRoom(); ls.del(SAVE_KEY); location.href = "./"; break;
     case "exit-ask": UI.sheet = "exit"; render(); break;
     case "rules": UI.sheet = "rules"; render(); break;
