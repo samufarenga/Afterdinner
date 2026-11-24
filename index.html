@@ -1673,7 +1673,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "24.11 · 12:05";
+const APP_VERSION = "24.11 · 12:10";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -3147,7 +3147,9 @@ function mpView(){
       const ranked = [...M.players].sort((a,b) => M.scores[b.id] - M.scores[a.id] || a.name.localeCompare(b.name));
       const pos = p => 1 + ranked.filter(x => M.scores[x.id] > M.scores[p.id]).length;
       const top = ranked.filter(p => pos(p) === 1);
-      const podium = ranked.slice(0, 3), middle = ranked.slice(3, ranked.length > 3 ? -1 : 3), last = ranked.length > 3 ? ranked[ranked.length-1] : null;
+      // la frase cattiva per l'ultimo c'è sempre (anche in 3), purché l'ultimo sia uno solo: a pari punti nessuno è ultimo
+      const n = ranked.length, lastP = ranked[n-1], last = n >= 2 && pos(lastP) === n && M.scores[lastP.id] < M.scores[ranked[0].id] ? lastP : null;
+      const podium = ranked.slice(0, last ? Math.min(3, n - 1) : 3), middle = ranked.slice(podium.length, last ? n - 1 : n);
       const line = last ? LAST_LINES[(M.lineSeed || 0) % LAST_LINES.length].replace("{n}", `<b>${esc(last.name)}</b>`) : "";
       const medal = ["oro","argento","bronzo"]; NET.finalLastAt = 0;
       let t = .4;
