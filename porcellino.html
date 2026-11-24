@@ -53,13 +53,13 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 @keyframes pop{from{opacity:0;transform:scale(.6) translateY(10px)}to{opacity:1;transform:none}}
 
 /* ---------- barra in alto ---------- */
-.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;min-height:44px}
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:44px}
 .brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:1.05rem}
 .brand svg{width:28px;height:28px;color:var(--red2);filter:drop-shadow(0 0 8px rgba(255,59,92,.6))}
-.tools{display:flex;justify-content:flex-end;gap:8px}
-.ib{width:38px;height:38px;border-radius:50%;border:0;background:var(--glass);box-shadow:inset 0 0 0 1.5px var(--line);font-family:var(--display);font-weight:700;display:grid;place-items:center;transition:transform .15s,background .2s}
+.tools{display:flex;justify-content:flex-end;gap:6px}
+.ib{width:36px;height:36px;border-radius:50%;border:0;background:var(--glass);box-shadow:inset 0 0 0 1.5px var(--line);font-family:var(--display);font-weight:700;display:grid;place-items:center;transition:transform .15s,background .2s}
 .ib:active{transform:scale(.9)}
-.thermo{display:flex;align-items:center;width:min(42vw,190px)}
+.thermo{display:flex;align-items:center;width:100%;max-width:190px;justify-self:center}
 .thermo .bulb{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;background:radial-gradient(circle at 35% 30%,#ff7a8f,var(--heat) 55%,#8a0a24);box-shadow:0 0 16px var(--heat);z-index:1;animation:bulb 2.4s ease-in-out infinite;transition:background 1s,box-shadow 1s}
 @keyframes bulb{50%{transform:scale(1.08);box-shadow:0 0 26px var(--heat)}}
 .thermo .tube{flex:1;height:10px;margin-left:-6px;border-radius:0 99px 99px 0;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
@@ -423,6 +423,73 @@ function loadScript(src, globalName){
 let G = null;                 // partita
 const UI = { scr:"boot", mode:"all", max:3, total:25, names: ls.get("ad.porc.names", ["", "", ""]), sel:[], selKey:"", cdDone:{}, err:"", joined:false, sheet:null };
 const NET = { role:null, code:null, me:myPid(), name:"", peer:null, conns:new Map(), conn:null, bc:null, status:"idle", seen:{}, lastHost:0, lostAt:0, retryT:null };
+/* ---------- audio: musica lounge leggera ed effetti sintetizzati (niente file). Le scelte sono quelle di AfterDinner:
+   stesso tasto e stesse impostazioni (volume, silenzioso). Su iPhone parte solo dopo un tocco ---------- */
+const AS = () => { try{ const v = JSON.parse(localStorage.getItem("dopocena.v1") || "null"); return Object.assign({sfx:true, gameMusic:true, volume:70, silentOk:false}, v && v.settings); }catch(e){ return {sfx:true, gameMusic:true, volume:70, silentOk:false}; } };
+function asSave(k, val){ try{ const v = JSON.parse(localStorage.getItem("dopocena.v1") || "null"); if(v && v.settings){ v.settings[k] = val; localStorage.setItem("dopocena.v1", JSON.stringify(v)); } else localStorage.setItem("ad.porc.snd", JSON.stringify({[k]:val})); }catch(e){} }
+const sndOn = () => { const a = AS(); let own = {}; try{ own = JSON.parse(localStorage.getItem("ad.porc.snd") || "{}"); }catch(e){} return (own.sfx ?? a.sfx) !== false && a.volume > 0; };
+let AU = null, auOk = false, musT = null, musStep = 0, auIdle = null;
+const vol = () => AS().volume / 100;
+function actx(){ AU = AU || new (window.AudioContext || window.webkitAudioContext)(); if(AU.state !== "running") AU.resume().catch(() => {}); return AU; }
+function auUnlock(){
+  if(auOk) return;
+  try{ if(navigator.audioSession) navigator.audioSession.type = AS().silentOk ? "playback" : "ambient"; }catch(e){}
+  try{ const a = actx(), b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); auOk = true; }catch(e){}
+  setTimeout(musSync, 50);
+}
+["pointerdown","touchend","keydown"].forEach(ev => document.addEventListener(ev, auUnlock, {passive:true, capture:true}));
+function tone(f, at, dur, o = {}){
+  const a = AU, t = a.currentTime + at, osc = a.createOscillator(), g = a.createGain();
+  osc.type = o.type || "triangle"; osc.frequency.setValueAtTime(f, t); if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime((o.gain || .14) * vol() + .0001, t + (o.attack || .01)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  let node = osc; if(o.lp){ const fl = a.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = o.lp; osc.connect(fl); node = fl; }
+  node.connect(g).connect(a.destination); osc.start(t); osc.stop(t + dur + .03);
+}
+function noise(at, dur, o = {}){
+  const a = AU, t = a.currentTime + at, n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+  for(let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  const src = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = buf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.from || 800, t); if(o.to) fl.frequency.exponentialRampToValueAtTime(o.to, t + dur); fl.Q.value = o.q || 1;
+  g.gain.setValueAtTime((o.gain || .1) * vol() + .0001, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  src.connect(fl).connect(g).connect(a.destination); src.start(t); src.stop(t + dur);
+}
+const SFX = {
+  deal(){ noise(0, .22, {from:900, to:3200, gain:.12}); tone(220, .16, .12, {type:"sine", gain:.12}); },          // la carta scivola sul tavolo
+  flip(){ noise(0, .08, {type:"highpass", from:2500, gain:.08}); tone(660, .05, .12, {type:"sine", gain:.08}); },
+  ready(){ tone(784, 0, .09, {type:"sine", gain:.11}); tone(1175, .08, .22, {type:"sine", gain:.11}); },
+  pts(){ tone(520, 0, .1, {type:"square", gain:.05, lp:1800, to:700}); tone(880, .09, .18, {type:"sine", gain:.11}); },  // un porcellino in più
+  pass(){ noise(0, .18, {from:300, to:140, q:4, gain:.22}); noise(.2, .14, {from:280, to:130, q:4, gain:.18}); },       // grugnito
+  out(){ [[392,0],[370,.3],[349,.6]].forEach(([f,t]) => tone(f, t, .28, {type:"sawtooth", gain:.07, lp:1100})); tone(311, .9, .9, {type:"sawtooth", gain:.08, lp:900, to:280}); },
+  match(){ [659,831,988,1319].forEach((f,i) => tone(f, i*.07, .5, {type:"sine", gain:.09})); noise(.3, .5, {type:"highpass", from:5000, gain:.04}); },
+  reveal(){ for(let t = 0; t < .6; t += .05) noise(t, .045, {type:"highpass", from:1400, gain:.03 + .05*(t/.6)}); [523,659,784].forEach(f => tone(f, .62, .45, {gain:.08})); },
+  join(){ tone(660, 0, .1, {type:"sine", gain:.12}); tone(990, .09, .18, {type:"sine", gain:.12}); },
+  cd(){ tone(880, 0, .12, {type:"sine", gain:.12}); },
+  go(){ [523,659,784,1047].forEach((f,i) => tone(f, i*.06, .14, {gain:.11})); },
+  fanfare(){ [[392,0],[523,.12],[659,.24],[784,.36]].forEach(([f,t]) => tone(f, t, .14, {type:"square", gain:.05, lp:2200})); [784,988,1175].forEach(f => tone(f, .5, .8, {type:"square", gain:.045, lp:2000})); }
+};
+function sfx(n){ if(!sndOn() || !auOk) return; try{ actx(); SFX[n](); }catch(e){} }
+/* musica: accordi morbidi da lounge, basso lento; più si scalda la partita, più il ritmo sale */
+const PCH = [[220,261.6,329.6,392],[174.6,220,261.6,329.6],[196,246.9,293.7,349.2],[164.8,207.7,246.9,293.7]]; // La-7, Fa7+, Sol7, Mi7
+function musTick(){
+  if(!AU || AU.state !== "running") return;
+  const ch = PCH[Math.floor(musStep / 8) % PCH.length], k = musStep % 8, t = .04, v = .035;
+  if(k === 0) ch.forEach(f => tone(f, t, 1.9, {type:"sine", gain:v * .55, attack:.12}));                 // accordo pieno
+  if(k === 0 || k === 5) tone(ch[0] / 2, t, .5, {type:"sine", gain:v * 1.6});                             // basso
+  if(k === 3 || k === 7) tone(ch[(k + musStep) % 4] * 2, t, .3, {type:"triangle", gain:v * .8, lp:1800});   // nota che risponde
+  if(k % 2) noise(t, .05, {type:"highpass", from:7000, gain:.012});                                       // spazzola
+  musStep++;
+}
+function musWants(){ return auOk && sndOn() && AS().gameMusic !== false && document.visibilityState === "visible" && !!G; }
+function musSync(){
+  const want = musWants(), lv = G && G.card ? G.card.lvl : 1, ms = lv === 3 ? 300 : lv === 2 ? 345 : 390;
+  if(want && musT && musT.ms !== ms){ clearInterval(musT.id); musT = null; }
+  if(want && !musT){ try{ actx(); musT = {id:setInterval(musTick, ms), ms}; }catch(e){} }
+  else if(!want && musT){ clearInterval(musT.id); musT = null; }
+}
+document.addEventListener("visibilitychange", () => { musSync(); if(document.visibilityState === "hidden"){ try{ AU && AU.suspend(); }catch(e){} } });
+const SPK_ON = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>`;
+const SPK_OFF = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>`;
+function sndToggle(){ const on = !sndOn(); asSave("sfx", on); if(on && !AS().volume) asSave("volume", 70); musSync(); if(on) sfx("ready"); render(); }
 let lastKey = "", lastDeal = "", lastFx = -1;
 
 const P = id => G && G.players.find(p => p.id === id);
@@ -833,7 +900,7 @@ function topbar(){
   const host = amHost() && G && G.phase === "play";
   return `<header class="top"><div class="brand">${PIG}<span>Porcellino</span></div>
     <div class="thermo" style="--p:${(prog * 100).toFixed(1)}%" title="Temperatura"><span class="bulb">${I.chili}</span><div class="tube"><b></b></div></div>
-    <div class="tools"><button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">${I.more}</button>` : ""}</div></header>`;
+    <div class="tools"><button class="ib" data-a="snd" aria-label="${sndOn() ? "Spegni musica ed effetti" : "Accendi musica ed effetti"}">${sndOn() ? SPK_ON : SPK_OFF}</button><button class="ib" data-a="rules" aria-label="Regole">i</button>${host ? `<button class="ib" data-a="menu" aria-label="Menu dell'host">${I.more}</button>` : ""}</div></header>`;
 }
 function chips(){
   const c = G.card;
@@ -1188,6 +1255,9 @@ function render(){
   const key = scr + "|" + (c ? c.key + c.ph : "") + "|" + (G ? G.phase : "");
   const fresh = key !== lastKey; lastKey = key;
   const deal = c && c.key !== lastDeal && scr === "play"; if(c) lastDeal = c.key;
+  if(deal) sfx("deal"); else if(fresh && c && scr === "play" && c.ph === "reveal") sfx("reveal");
+  if(fresh && scr === "end") setTimeout(() => sfx("fanfare"), 400);
+  musSync();
   const keep = {};
   app.querySelectorAll("input[id]").forEach(el => keep[el.id] = {v:el.value, f:document.activeElement === el});
   app.dataset.fresh = fresh ? "1" : "0";
@@ -1203,7 +1273,7 @@ function drawQR(){
   loadScript("lib/qrcode.js", "qrcode").then(() => { const q = qrcode(0, "M"); q.addData(joinUrl()); q.make(); const b = $("#qrbox"); if(b) b.innerHTML = q.createSvgTag(6, 2); }).catch(() => {});
 }
 
-/* ---------- effetti (niente audio né vibrazione: tutto a vista) ---------- */
+/* ---------- effetti (niente vibrazione: tutto a vista) ---------- */
 function fxEl(cls, html, style, life){
   const d = document.createElement("div"); d.className = cls; d.innerHTML = html;
   if(style) Object.assign(d.style, style); $("#fx").appendChild(d);
@@ -1219,6 +1289,8 @@ function playFx(list){
   let delay = 0;
   (list || []).forEach(f => {
     const p = P(f.id);
+    if(f.k === "pts") setTimeout(() => sfx("pts"), 300 + delay);
+    if(f.k === "pass") sfx("pass"); else if(f.k === "out") setTimeout(() => sfx("out"), 300); else if(f.k === "match") setTimeout(() => sfx("match"), 250 + delay); else if(f.k === "toast") sfx("join");
     if(f.k === "pts"){ setTimeout(() => { const pos = chipPos(f.id) || {x:innerWidth / 2, y:innerHeight * .4}; fxEl("float", `+${f.n} ${I.pig}`, {left:pos.x + "px", top:pos.y + "px"}, 1600); }, 300 + delay); delay += 120; }
     else if(f.k === "pass"){ fxEl("snout", I.snout, null, 1500); toast(`${esc(p ? p.name : "")} passa ${I.snout} ne restano ${p ? p.passes : 0}`); }
     else if(f.k === "out"){ setTimeout(() => fxEl("overlay", `<div class="melt">${esc(p ? p.name : "")}</div><div class="stamp">Porcellino codardo ${I.flag}</div><p class="hint" style="margin-top:14px">Ha rifiutato e lascia la partita</p>`, null, 2900), 100); }
@@ -1244,7 +1316,7 @@ function countdown(key){
   const steps = ["3","2","1",`Indicate! ${I.point}`]; let i = 0;
   const tick = () => {
     if(i >= steps.length){ box.remove(); UI.cdDone[key] = true; render(); return; }
-    box.innerHTML = `<b class="${i === 3 ? "go" : ""}">${steps[i]}</b>`; i++;
+    box.innerHTML = `<b class="${i === 3 ? "go" : ""}">${steps[i]}</b>`; sfx(i === 3 ? "go" : "cd"); i++;
     setTimeout(tick, i === 4 ? 1100 : 750);
   };
   tick();
@@ -1302,6 +1374,7 @@ document.addEventListener("click", async e => {
     case "exit": closeRoom(); ls.del(SAVE_KEY); location.href = "./"; break;
     case "exit-ask": UI.sheet = "exit"; render(); break;
     case "rules": UI.sheet = "rules"; render(); break;
+    case "snd": sndToggle(); break;
     case "menu": UI.sheet = "menu"; render(); break;
     case "refuse-ask": UI.sheet = "refuse"; render(); break;
     case "setup-go":
@@ -1326,8 +1399,8 @@ document.addEventListener("click", async e => {
     case "scene-next": goScene((UI.scene || 0) + 1); break;
     case "scene-prev": goScene((UI.scene || 0) - 1); break;
     case "scene-tap": if(Date.now() - (UI.swiped || 0) > 300) goScene((UI.scene || 0) + 1); break;
-    case "ready": b.disabled = true; send("ready"); break;
-    case "nx": b.disabled = true; send("nx"); break;
+    case "ready": b.disabled = true; sfx("ready"); send("ready"); break;
+    case "nx": b.disabled = true; sfx("ready"); send("nx"); break;
     case "go-anyway": send("go-anyway"); break;
     case "newgame": ls.del(SAVE_KEY); UI.scr = "gate"; render(); break;
     case "resume": {
