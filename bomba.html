@@ -160,7 +160,12 @@ body[data-heat="0"] .hero{--amp:1.5}body[data-heat="1"] .hero{--amp:3}body[data-
 body[data-mode="hot"] .sylbox{background:rgba(70,20,0,.28);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
 .say{text-align:center;font:600 1.15rem var(--display);margin:0}
 .say small{display:block;font:500 .92rem var(--body);opacity:.85;margin-top:4px}
-.tapzone{position:fixed;inset:0;z-index:2;border:0;background:transparent;padding:0}
+.tapzone{position:fixed;inset:0;z-index:2;border:0;background:transparent;padding:0;outline:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tapzone:focus,.tapzone:focus-visible{outline:none}
+.play{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.cd{position:relative;height:10rem;width:100%}
+.cd span{position:absolute;inset:0;display:grid;place-items:center;font:700 9rem var(--display);color:var(--paper);text-shadow:0 8px 0 rgba(122,14,4,.8),0 0 50px rgba(255,90,31,.7);opacity:0;animation:cd 1s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(var(--k)*1s)}
+@keyframes cd{0%{transform:scale(2.4);opacity:0}22%{transform:scale(1);opacity:1}78%{opacity:1}100%{transform:scale(.6);opacity:0}}
 .holder{display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 6px;border-radius:99px;background:rgba(255,122,46,.18);box-shadow:inset 0 0 0 1.5px var(--or);font:600 1.05rem var(--display);margin:0 auto}
 .holder .av{width:34px;height:34px}
 .ready{text-align:center;font:700 1.25rem var(--display);color:var(--amber);animation:blink 1s ease-in-out infinite}
@@ -180,8 +185,9 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .mine .st{display:inline-flex;align-items:baseline;gap:2px}
 .mine .st .ic{align-self:center;margin-right:3px}
 @media (max-width:350px){.mine{padding:5px 9px;gap:4px}.mark{font-size:.9rem}.mine small{font-size:.66rem}}
-.pz{justify-self:end;width:40px;height:40px;background:rgba(255,255,255,.12)}
-.pz .ic{width:22px;height:22px}
+.pz{justify-self:end;width:42px;height:42px;color:#fff;background:radial-gradient(circle at 50% 35%,#ff4b4b,#d71920 70%);box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 0 5px rgba(215,25,32,.35),0 6px 14px -4px rgba(120,0,0,.8),inset 0 -3px 0 rgba(0,0,0,.22)}
+.pz:active{transform:scale(.92)}
+.pz .ic{width:23px;height:23px;margin-top:-2px}
 .pz.ghosted{opacity:0}
 .stagec{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-bottom:6vh}
 .rule{font:600 .95rem var(--display);letter-spacing:.14em;text-transform:uppercase;padding:7px 16px;border-radius:99px;background:rgba(20,8,2,.3);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
@@ -199,14 +205,18 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .turnban.me{background:rgba(70,20,0,.28);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)}
 .turnban.soon{color:#2a0e00;background:linear-gradient(180deg,#ffd27a,#ffb04d);box-shadow:0 0 24px -4px var(--amber);animation:soon 1s ease-in-out infinite}
 @keyframes soon{50%{transform:scale(1.05);box-shadow:0 0 34px 0 var(--amber)}}
-.pbig{display:inline-grid;place-items:center;width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 2px var(--line)}
-.pbig .ic{width:40px;height:40px;color:var(--or2)}
-.wheelbox{position:relative;height:260px;margin:0 auto;max-width:320px}
-.wheelbox::before{content:"";position:absolute;left:0;right:0;top:50%;height:52px;margin-top:-26px;border-radius:16px;background:rgba(255,122,46,.18);box-shadow:inset 0 0 0 2px var(--or);pointer-events:none}
-.wheel{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;padding:calc((260px - 52px)/2) 0;scrollbar-width:none;-webkit-mask:linear-gradient(180deg,transparent,#000 35%,#000 65%,transparent);mask:linear-gradient(180deg,transparent,#000 35%,#000 65%,transparent)}
+.pbig{display:inline-grid;place-items:center;width:84px;height:84px;border-radius:50%;color:#fff;background:radial-gradient(circle at 50% 35%,#ff4b4b,#d71920 70%);box-shadow:0 0 0 3px rgba(255,255,255,.9),0 0 0 8px rgba(215,25,32,.3),0 12px 30px -8px rgba(215,25,32,.9)}
+.pbig .ic{width:42px;height:42px;margin-top:-3px}
+.wheelbox{position:relative;height:128px;margin:0 calc(var(--g)*-1)}
+.wheelbox::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:104px;margin-left:-52px;border-radius:22px;background:rgba(255,122,46,.18);box-shadow:inset 0 0 0 2px var(--or);pointer-events:none}
+.wheel{height:100%;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
+.wheel::before,.wheel::after{content:"";flex:none;width:calc(50% - 52px)}
 .wheel::-webkit-scrollbar{display:none}
-.wi{height:52px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;gap:10px;font:600 1.1rem var(--display);opacity:.55;transition:opacity .2s,transform .2s}
-.wi.on{opacity:1;transform:scale(1.06)}
+.wi{flex:none;width:104px;height:100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0 4px;font:600 1rem var(--display);opacity:.5;transition:opacity .2s,transform .2s;cursor:pointer}
+.wi .av{width:46px;height:46px;font-size:1.25rem}
+.wi span{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wi em{line-height:1.1;text-align:center}
+.wi.on{opacity:1;transform:scale(1.08)}
 .wi.off{text-decoration:line-through}
 .wi em{font:500 .75rem var(--body);font-style:normal;color:var(--amber)}
 
@@ -321,15 +331,15 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 .boom .core{position:absolute;left:50%;top:44%;width:0;height:0}
 .boom .bm{position:absolute;width:150px;height:150px;left:-75px;top:-75px;animation:bmSwell .75s cubic-bezier(.5,0,1,.5) forwards}
 .boom .bm .bombsvg{width:100%;height:100%;animation:shake .07s linear infinite;--amp:6}
-@keyframes bmSwell{0%{transform:scale(1)}85%{transform:scale(1.5);filter:brightness(1.4)}100%{transform:scale(1.9);opacity:0;filter:brightness(3)}}
+@keyframes bmSwell{0%{transform:scale(1)}85%{transform:scale(1.5)}100%{transform:scale(1.9);opacity:0}}
 .boom .flash{position:absolute;width:40px;height:40px;left:-20px;top:-20px;border-radius:50%;background:radial-gradient(circle,#fff,#fff6c2 35%,#ffb02e 60%,rgba(255,80,20,0) 72%);opacity:0;animation:flash 1.1s ease-out forwards .7s}
 @keyframes flash{0%{transform:scale(.2);opacity:1}35%{opacity:1}100%{transform:scale(32);opacity:0}}
 .boom .ring{position:absolute;width:60px;height:60px;left:-30px;top:-30px;border-radius:50%;border:6px solid rgba(255,230,180,.9);opacity:0;animation:ring 1.1s cubic-bezier(.1,.7,.3,1) forwards;animation-delay:var(--t)}
 @keyframes ring{0%{transform:scale(.3);opacity:1;border-width:10px}100%{transform:scale(13);opacity:0;border-width:1px}}
-.boom .ball{position:absolute;width:300px;height:300px;left:-150px;top:-150px;border-radius:50%;opacity:0;filter:blur(6px);
+.boom .ball{position:absolute;width:300px;height:300px;left:-150px;top:-150px;border-radius:50%;opacity:0;
   background:radial-gradient(circle,#fff 0,#fff3b0 18%,#ffc23d 34%,#ff6a1a 52%,rgba(196,29,8,.7) 66%,rgba(120,10,0,0) 74%);animation:ball 1.5s cubic-bezier(.1,.8,.3,1) forwards .7s}
 @keyframes ball{0%{transform:scale(.05);opacity:1}30%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0}}
-.boom .fire{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s)/-2);top:calc(var(--s)/-2);border-radius:50%;filter:blur(3px);mix-blend-mode:screen;
+.boom .fire{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s)/-2);top:calc(var(--s)/-2);border-radius:50%;
   background:radial-gradient(circle,#fffbe0 0,#ffd24d 22%,#ff7a1f 48%,rgba(210,40,8,.55) 66%,rgba(150,15,0,0) 72%);opacity:0;animation:fire var(--dur) cubic-bezier(.1,.8,.3,1) forwards .72s}
 @keyframes fire{0%{transform:translate(0,0) scale(.2);opacity:1}55%{opacity:.95}100%{transform:translate(var(--x),var(--y)) scale(1.8);opacity:0}}
 .boom .ember{position:absolute;width:5px;height:5px;left:-2px;top:-2px;border-radius:50%;background:#fff1a8;box-shadow:0 0 8px 3px #ff9a3c;opacity:0;animation:emb 1.4s cubic-bezier(.1,.7,.4,1) forwards .74s}
@@ -362,6 +372,7 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}
   .boom{animation:none;background:#7a0e04}
   .boom .word,.boom .who{opacity:1;animation:none}
+  .cd span{animation:none;opacity:0}.cd span:nth-child(1){opacity:1}
 }
 </style>
 </head>
@@ -423,7 +434,7 @@ const I = {
   seat: sv("seat", `<circle cx="12" cy="12" r="5" ${STK}/><circle cx="12" cy="3.4" r="1.8" fill="currentColor"/><circle cx="20.6" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="20.6" r="1.8" fill="currentColor"/><circle cx="3.4" cy="12" r="1.8" fill="currentColor"/>`),
   dice: sv("dice", `<rect x="3.5" y="3.5" width="17" height="17" rx="4" ${STK}/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>`),
   boom: sv("boom", `<path d="M12 1.8l2.2 5.4 5.2-2.6-1.9 5.6 5.4 1.8-5.4 2 2.4 5.3-5.5-2.2L12 22.2l-2.3-5.1-5.5 2.2 2.4-5.3-5.4-2 5.4-1.8-1.9-5.6 5.2 2.6z" fill="currentColor"/>`),
-  pause: sv("pause", `<path d="M3.5 5.2v13.6c0 .8.9 1.3 1.6.9l9.6-6.8c.6-.4.6-1.3 0-1.7L5.1 4.3c-.7-.5-1.6 0-1.6.9z" fill="currentColor"/><rect x="16.2" y="5" width="2.2" height="14" rx="1.1" fill="currentColor"/><rect x="19.9" y="5" width="2.2" height="14" rx="1.1" fill="currentColor"/>`),
+  pause: sv("pause", `<path d="M10.27 3.5a2 2 0 0 1 3.46 0l8.5 14.75a2 2 0 0 1-1.73 3H3.5a2 2 0 0 1-1.73-3z" fill="currentColor"/><rect x="10.9" y="8.4" width="2.2" height="6.6" rx="1.1" fill="var(--alertc,#d71920)"/><circle cx="12" cy="17.9" r="1.35" fill="var(--alertc,#d71920)"/>`),
   prev: sv("prev", `<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
   next: sv("next", `<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
   play: sv("play", `<path d="M6 4.6v14.8c0 .9 1 1.4 1.7.9l11-7.4c.6-.4.6-1.4 0-1.8l-11-7.4C7 3.2 6 3.7 6 4.6z" fill="currentColor"/>`),
@@ -527,6 +538,15 @@ function nextOf(id){
   return id;
 }
 /* tutorial prima della prima bomba: si parte quando tutti hanno premuto «Sono pronto» */
+/* tra una bomba e l'altra non si riparte da soli: tutti premono «Pronto», poi chi accende la bomba avvia il 3-2-1 */
+function initRdy(){ G.ready = {}; G.players.forEach(p => { if(typeof isBot === "function" && isBot(p.id)) G.ready[p.id] = true; }); }
+function recapStarter(){
+  const id = G.resumed ? G.holder : G.boom && G.boom.id;
+  if(P(id) && online(P(id))) return id;
+  return G.resumed ? G.players.filter(online)[0].id : nextOf(id);
+}
+const recapMissing = () => G.players.filter(p => online(p) && !(G.ready && G.ready[p.id]));
+const COUNT_MS = 3000;
 function startIntro(){ G.phase = "intro"; G.ready = {}; G.players.forEach(p => { if(typeof isBot === "function" && isBot(p.id)) G.ready[p.id] = true; }); commit(); }
 function checkReady(){ if(G && G.phase === "intro" && G.players.filter(online).every(p => G.ready[p.id])) startGame(); }
 function startGame(){
@@ -553,7 +573,7 @@ function explode(){
   G.phase = "boom"; G.fxq.push({k:"boom", id:G.holder});
   commit();
   clearTimeout(boomT);
-  boomT = setTimeout(() => { if(!G || G.phase !== "boom") return; G.phase = G.i + 1 >= G.total ? "end" : "recap"; commit(); }, BOOM_MS);
+  boomT = setTimeout(() => { if(!G || G.phase !== "boom") return; G.phase = G.i + 1 >= G.total ? "end" : "recap"; if(G.phase === "recap") initRdy(); commit(); }, BOOM_MS);
 }
 function commit(){
   if(G.fxq && G.fxq.length){ G.fxn = (G.fxn || 0) + 1; G.fx = {n:G.fxn, l:G.fxq}; G.fxq = []; }
@@ -597,11 +617,22 @@ function hostAct(pid, a, v){
         armFuse(Math.max(4000, G.left || 0));
         G.fxq.push({k:"resume", to});
         return commit(); }
-    case "next":
-      if(G.phase !== "recap" || !(isHost || (G.boom && pid === G.boom.id))) return;
-      if(G.resumed) return lightBomb(P(G.holder) && online(P(G.holder)) ? G.holder : G.players.filter(online)[0].id);
-      G.i++;
-      return lightBomb(P(G.boom.id) && online(P(G.boom.id)) ? G.boom.id : nextOf(G.boom.id));
+    case "rready":
+      if(G.phase !== "recap" || !P(pid)) return;
+      G.ready = G.ready || {}; G.ready[pid] = true; return commit();
+    case "next": {
+      if(G.phase !== "recap") return;
+      const st = recapStarter(), all = !recapMissing().length;
+      if(!((all && (pid === st || (isHost && !(P(st) && online(P(st)))))) || (isHost && v === "force"))) return;
+      G.phase = "count"; G.countFrom = st; commit();
+      clearTimeout(boomT);
+      boomT = setTimeout(() => {
+        if(!G || G.phase !== "count") return;
+        const from = P(G.countFrom) && online(P(G.countFrom)) ? G.countFrom : G.players.filter(online)[0].id;
+        if(!G.resumed) G.i++;
+        lightBomb(from);
+      }, COUNT_MS);
+      return; }
     case "end":
       if(!isHost || G.phase === "lobby") return;
       clearTimeout(fuseT); clearTimeout(boomT); G.phase = "end"; return commit();
@@ -643,8 +674,8 @@ function botTick(){
     if(G.phase === "play" && G.holder === id){ // il bot "dice" la sua parola e passa; ogni tanto ci mette troppo
       const x = plan("p" + G.turn, 1500, Math.random() < .15 ? 9000 : 5000);
       if(!x.done && now >= x.at){ x.done = true; hostAct(id, Math.random() < .03 ? "pause" : "pass", G.turn); }
-    } else if(G.phase === "recap" && G.boom && G.boom.id === id){
-      const x = plan("r" + G.i, 3000, 5000);
+    } else if(G.phase === "recap" && recapStarter() === id && !recapMissing().length){
+      const x = plan("r" + G.i, 1200, 2500);
       if(!x.done && now >= x.at){ x.done = true; hostAct(id, "next"); }
     }
   });
@@ -928,16 +959,24 @@ const VIEWS = {
     return `<div class="screen center">${topbar()}<div class="grow"></div>
     <div class="in"><span class="eyebrow">${mine ? "Ti è esplosa in mano" : `Esplosa in mano a ${nm(G.boom.id)}`}</span></div>
     <div class="grow"></div></div>`; },
-  recap: () => { const canGo = amHost() || (G.boom && G.boom.id === NET.me);
+  recap: () => { const st = recapStarter(), miss = recapMissing(), me = G.ready && G.ready[NET.me];
+    const canLight = !miss.length && (st === NET.me || (amHost() && !(P(st) && online(P(st)))));
     const who = G.boom && P(G.boom.id);
     return `<div class="screen">${topbar()}
     <div class="in" style="text-align:center"><span class="eyebrow">${G.resumed ? "Partita ripresa" : `Bomba ${G.i + 1} di ${G.total}`}</span>
       <h1 class="big" style="margin-top:6px">${G.resumed ? "Si riparte" : who ? (who.id === NET.me ? "Sei saltato in aria" : `Boom, ${esc(who.name)}`) : "Boom"}</h1></div>
     ${rankHTML(false)}
     <div class="grow"></div>
-    ${canGo ? `<p class="hint">${G.resumed ? "La bomba riparte da dove si era fermata." : `La prossima bomba parte da ${who && who.id === NET.me ? "te" : esc(who ? who.name : "")}.`}</p><button class="btn pulse in" style="--d:3" data-a="next">${G.resumed ? "Riaccendi la bomba" : "Accendi la prossima bomba"}</button>`
-      : `<p class="hint">${esc(who ? who.name : "")} sta per riaccendere la miccia<span class="dots"></span></p>`}
+    <div class="rdybox">${readyList()}
+      <p class="hint" style="margin:8px 0 10px">${miss.length ? `${miss.length === 1 ? "Manca" : "Mancano"} <b>${andList(miss.map(p => p.id === NET.me ? {name:"tu"} : p))}</b>` : canLight ? "Tutti pronti: accendi tu la bomba" : `Tutti pronti: la accende <b>${nm(st)}</b><span class="dots"></span>`}</p>
+      ${!me ? `<button class="btn pulse" data-a="rready">${I.check} ${G.resumed ? "Pronto a ripartire" : "Pronto per la prossima bomba"}</button>`
+        : canLight ? `<button class="btn pulse" data-a="next">${I.bomb} ${G.resumed ? "Riaccendi la bomba" : "Accendi la bomba"}</button>`
+        : `<button class="btn ghost" disabled>${I.check} Pronto${miss.length ? ", aspettiamo gli altri" : ""}</button>`}
+      ${amHost() && miss.length && Object.keys(G.ready || {}).length ? `<button class="link" data-a="next" data-v="force" style="display:block;margin:6px auto 0">Parti lo stesso</button>` : ""}</div>
   </div>`; },
+  count: () => `<div class="screen center">${topbar()}<div class="grow"></div>
+    <div class="cd" aria-live="polite"><span style="--k:0">3</span><span style="--k:1">2</span><span style="--k:2">1</span></div>
+    <p class="lead">La bomba parte da <b>${G.countFrom === NET.me ? "te" : nm(G.countFrom)}</b></p><div class="grow"></div></div>`,
   end: () => { const rank = standings(), lo = rank[0].bombs, hi = rank[rank.length - 1].bombs;
     const worst = rank.filter(p => p.bombs === hi), best = rank.filter(p => p.bombs === lo);
     const line = hi > lo ? MEAN[(G.turn || 0) % MEAN.length].replace("{n}", `<b>${andList(worst)}</b>`) : "Tutti pari. Una serata stranamente pacifica.";
@@ -999,12 +1038,12 @@ function pauseView(){
   </div>`;
 }
 /* ruota: si gira con il dito, vale quello al centro */
-const WH = 52;
+const WH = 104; // larghezza di una persona nel selettore orizzontale
 function wheelInit(){
   const w = $("#wheel"); if(!w) return;
   const i = Math.max(0, G.players.findIndex(p => p.id === UI.wheel));
-  w.scrollTop = i * WH; wheelMark();
-  w.onscroll = () => { const k = Math.round(w.scrollTop / WH); const p = G.players[Math.max(0, Math.min(G.players.length - 1, k))]; if(p && p.id !== UI.wheel){ UI.wheel = p.id; } wheelMark(); };
+  w.scrollLeft = i * WH; wheelMark();
+  w.onscroll = () => { const k = Math.round(w.scrollLeft / WH); const p = G.players[Math.max(0, Math.min(G.players.length - 1, k))]; if(p && p.id !== UI.wheel){ UI.wheel = p.id; } wheelMark(); };
 }
 function wheelMark(){ const w = $("#wheel"); if(!w) return; w.querySelectorAll(".wi").forEach(el => el.classList.toggle("on", el.dataset.w === UI.wheel)); }
 
@@ -1269,7 +1308,7 @@ document.addEventListener("pointerdown", e => { if(e.target.closest('[data-a="pa
 document.addEventListener("click", async e => {
   const dt = e.target.closest("[data-scene]"); if(dt && UI.introDone){ goScene(+dt.dataset.scene); return; }
   const wi = e.target.closest("[data-w]");
-  if(wi){ const w = $("#wheel"), i = G.players.findIndex(p => p.id === wi.dataset.w); if(w && i >= 0) w.scrollTo({top:i * WH, behavior:REDUCED ? "auto" : "smooth"}); return; }
+  if(wi){ const w = $("#wheel"), i = G.players.findIndex(p => p.id === wi.dataset.w); if(w && i >= 0) w.scrollTo({left:i * WH, behavior:REDUCED ? "auto" : "smooth"}); return; }
   if(e.target.closest("[data-seat]")) return; // i posti si spostano trascinando
   const st = e.target.closest("[data-set]");
   if(st && amHost() && G && G.phase === "lobby"){ const k = st.dataset.set; G[k] = k === "total" || k === "diff" ? +st.dataset.v : st.dataset.v; commit(); return; }
@@ -1296,7 +1335,7 @@ document.addEventListener("click", async e => {
       const s = ls.get(SAVE_KEY, null); if(!s){ newRoom(); break; }
       G = s.G; G.fxq = []; lastFx = G.fx ? G.fx.n : -1; NET.code = s.code;
       G.players.forEach(p => { if(p.id !== NET.me) p.on = false; });
-      if(G.phase === "play" || G.phase === "boom" || G.phase === "pause"){ G.phase = "recap"; G.resumed = true; } // il timer non si salva: si riaccende la bomba in corso
+      if(G.phase === "play" || G.phase === "boom" || G.phase === "pause" || G.phase === "count"){ G.phase = "recap"; G.resumed = true; initRdy(); } // il timer non si salva: si riaccende la bomba in corso
       if(!(await openRoom(true))){ G = null; break; }
       UI.scr = null; commit(); break;
     }
