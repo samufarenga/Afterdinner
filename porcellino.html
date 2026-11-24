@@ -329,6 +329,8 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;tex
 .wt.off{opacity:.4;text-decoration:line-through}
 @media (max-height:700px){.scene{min-height:250px;padding:12px 12px 14px;gap:6px}.sc-vis{height:128px}.scene h2{font-size:1.3rem}.screen.intro{gap:8px}}
 @media (min-height:800px){.sc-vis{height:210px}.scene{min-height:360px}.sc-passo .ic{width:52px;height:52px}.sc-pig .av{width:60px;height:60px}}
+.nxbox{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.nxbox .waits{margin-bottom:2px}
 </style>
 </head>
 <body data-lv="1">
@@ -476,14 +478,23 @@ function nextTarget(){
   }
   return active()[0].id;
 }
+/* tra una carta e l'altra non si riparte da soli: coi telefoni di tutti ognuno preme «Pronto», poi arriva la carta nuova */
 function advance(){
+  const c = G.card;
+  if(G.mode === "all" && c && c.ph !== "reveal" && c.ph !== "after" && active().length >= 2){ c.ph = "after"; c.nx = {}; return commit(); }
+  nextCard(); commit();
+}
+function nextCard(){
   G.i++;
   if(G.i >= G.total || active().length < 2){ G.phase = "end"; G.card = null; }
   else G.card = drawCard();
-  commit();
 }
+const nxOpen = () => G && G.mode === "all" && G.phase === "play" && G.card && (G.card.ph === "reveal" || G.card.ph === "after");
+const nxNeed = () => active().filter(p => p.on !== false);
+const nxAll = () => { const n = nxNeed(); return n.length > 0 && n.every(p => (G.card.nx || {})[p.id]); };
 function give(id, n){ const p = P(id); if(!p || !n) return; p.pts += n; G.fxq.push({k:"pts", id, n}); }
 function commit(){
+  if(amHost() && nxOpen() && nxAll()) nextCard(); // pronti tutti: carta nuova
   if(amHost() && G && G.phase === "intro" && G.mode === "all" && G.players.filter(p => p.on !== false).every(p => (G.ready || {})[p.id])) startState(); // si parte quando sono pronti tutti quelli collegati
   if(G.fxq && G.fxq.length){ G.fxn = (G.fxn || 0) + 1; G.fx = {n:G.fxn, l:G.fxq}; G.fxq = []; }
   save(); publish(); render();
@@ -509,7 +520,7 @@ function hostAct(pid, a, v){
   const groupPh = c.ph === "vote" || c.ph === "guess";
   switch(a){
     case "done":
-      if(c.t === "v" && c.ph === "ask" && forT){ give(c.target, c.lvl === 3 ? 2 : 1); advance(); }
+      if(c.t === "v" && c.ph === "ask" && forT){ give(c.target, c.lvl === 3 ? 2 : 1); c.how = "done"; advance(); }
       break;
     case "pass": case "refuse": {
       let who = null;
@@ -518,7 +529,7 @@ function hostAct(pid, a, v){
       if(!who) return;
       if(a === "pass"){ if(who.passes <= 0) return; who.passes--; G.fxq.push({k:"pass", id:who.id}); }
       else { if(who.passes > 0) return; who.out = true; G.fxq.push({k:"out", id:who.id}); }
-      if(targeted) return advance();
+      if(targeted){ c.how = a === "pass" ? "pass" : "out"; c.who = who.id; return advance(); }
       c.ans[who.id] = "pass"; return checkAll();
     }
     case "vote":
@@ -554,7 +565,11 @@ function hostAct(pid, a, v){
       advance(); break;
     }
     case "next":
+      if(isHost && G.mode === "all" && nxOpen()){ nextCard(); return commit(); } // «Parti lo stesso»
       if(isHost && c.ph === "reveal") advance();
+      break;
+    case "nx":
+      if(nxOpen() && p){ (c.nx = c.nx || {})[pid] = true; commit(); }
       break;
   }
 }
@@ -633,7 +648,8 @@ function botTick(){
     if(b.done || now < b.at) return;
     const passOk = p.passes > 0 && Math.random() < .08, ans = () => c.k === "yn" ? botPick(["y","n"]) : Math.floor(botRnd(0, 12));
     const others = () => active().filter(x => x.id !== id).map(x => x.id);
-    if(c.t === "v" && c.ph === "ask" && c.target === id){ b.done = true; hostAct(id, passOk ? "pass" : "done"); }
+    if((c.ph === "reveal" || c.ph === "after") && !(c.nx || {})[id]){ b.done = true; hostAct(id, "nx"); }
+    else if(c.t === "v" && c.ph === "ask" && c.target === id){ b.done = true; hostAct(id, passOk ? "pass" : "done"); }
     else if(c.t === "i" && c.ph === "secret" && c.target === id){ b.done = true; hostAct(id, "secret", ans()); }
     else if(c.ph === "vote" && c.ans[id] === undefined){ b.done = true; if(passOk) hostAct(id, "pass"); else hostAct(id, "vote", c.t === "n" ? botPick(["y","n"]) : botPick(others())); }
     else if(c.ph === "guess" && c.target !== id && c.ans[id] === undefined){ b.done = true; hostAct(id, "guess", ans()); }
@@ -838,6 +854,16 @@ function passBtn(who, mine){
 function pickGrid(list, multi){
   return `<div class="pick in" style="--d:4">${list.map(p => `<button class="pk ${UI.sel.includes(p.id) ? "on" : ""}" data-pick="${p.id}" data-multi="${multi ? 1 : 0}">${av(p)}<span>${esc(p.name)}</span></button>`).join("")}</div>`;
 }
+function nxBox(){
+  const c = G.card, R = c.nx || {}, me = R[NET.me], need = nxNeed(), missing = need.filter(p => !R[p.id]), last = G.i + 1 >= G.total;
+  const nm = p => p.id === NET.me ? "te" : esc(p.name);
+  return `<div class="nxbox in" style="--d:5">
+    <div class="waits">${need.map(p => `<span class="wt ${R[p.id] ? "ok" : ""}">${av(p)}${p.id === NET.me ? "Tu" : esc(p.name)}</span>`).join("")}</div>
+    ${me || !P(NET.me) || P(NET.me).out ? `<button class="btn ghost" disabled>${I.check} Pronto, aspettiamo gli altri</button>`
+      : `<button class="btn" data-a="nx">${last ? "Pronto per il finale" : "Pronto per la prossima carta"} ${I.arrow}</button>`}
+    <p class="hint">${missing.length ? `Aspettiamo ${missing.length > 3 ? `ancora ${missing.length}` : missing.map(nm).join(", ").replace(/, ([^,]*)$/, " e $1")}` : "Tutti pronti!"}${amHost() && missing.length && Object.keys(R).length ? ` · <button class="link" data-a="next" style="padding:0">Parti lo stesso</button>` : ""}</p>
+  </div>`;
+}
 function waits(){
   const c = G.card, need = needed();
   return `<div class="waits in" style="--d:4">${need.map(p => `<span class="wt ${c.ans[p.id] !== undefined ? "ok" : ""}">${av(p)}${esc(p.name)}</span>`).join("")}</div>`;
@@ -958,7 +984,7 @@ const VIEWS = {
       ${[1,2,3].map(l => `<button class="opt ${UI.max === l ? "on" : ""}" data-set="max" data-v="${l}"><span class="em">${chilis(l)}</span><b>${LV[l].n}</b><small>${LV[l].d}</small></button>`).join("")}</div>
       <p class="hint" style="margin-top:8px">Si parte tiepidi e la temperatura sale carta dopo carta.</p></div>
     <div class="in" style="--d:3"><p class="lbl">Durata</p><div class="seg three">
-      ${LENS.map(([n, l]) => `<button class="opt ${UI.total === n ? "on" : ""}" data-set="total" data-v="${n}"><b>${l}</b><small>${n} carte</small></button>`).join("")}</div></div>
+      ${LENS.map(([n, l]) => `<button class="opt ${UI.total === n ? "on" : ""}" data-set="total" data-v="${n}"><b>${l}</b><small style="white-space:nowrap">${n} carte · ${Math.round(n * 70 / 300) * 5} min</small></button>`).join("")}</div></div>
     <div class="grow"></div>
     <div class="row in" style="--d:4"><button class="btn ghost" data-a="back-gate">Indietro</button><button class="btn" data-a="setup-go">Avanti</button></div>
   </div>`,
@@ -1055,8 +1081,14 @@ function playBody(){
       break;
     case "reveal":
       h = cardHTML(c, true) + revealBody(c);
-      h += `<div class="grow"></div>` + (host ? `<button class="btn in" style="--d:6" data-a="next">Prossima carta ${I.arrow}</button>` : `<p class="hint">Aspettiamo ${esc(P(G.host).name)} per la prossima carta<span class="dots"></span></p>`);
+      h += `<div class="grow"></div>` + (G.mode === "all" ? nxBox() : host ? `<button class="btn in" style="--d:6" data-a="next">Prossima carta ${I.arrow}</button>` : "");
       break;
+    case "after": { // verità: ha risposto (o passato), si commenta, poi tutti pronti
+      const w = P(c.who) || t;
+      h = cardHTML(c, true);
+      h += `<p class="lead in" style="--d:2;text-align:center">${c.how === "done" ? `${esc(t ? t.name : "")} ha risposto: <b>+${c.lvl === 3 ? 2 : 1}</b> ${I.pig}` : c.how === "pass" ? `${esc(w ? w.name : "")} ha passato ${I.snout}` : `${esc(w ? w.name : "")} si è rifiutato ed è fuori ${I.flag}`}</p>`;
+      h += `<div class="grow"></div>` + nxBox();
+      break; }
     /* ---- un telefono che gira ---- */
     case "point":
       h = cardHTML(c);
@@ -1224,6 +1256,7 @@ function showSheet(kind){
       <li><b>${I.lips} Io non ho mai</b>: chi l'ha fatto lo confessa e prende +1 ${I.pig}.</li>
       <li><b>${I.target} Indovina</b>: uno risponde in segreto, gli altri indovinano. +1 a chi risponde e a chi ci prende (+2 se il numero è esatto).</li>
       <li><b>${I.match} Match</b>: ognuno sceglie qualcuno. Se due si scelgono a vicenda: MATCH, +2 a testa.</li>
+      <li>Coi telefoni di tutti, dopo ogni carta ognuno preme <b>Pronto</b>: la carta nuova arriva quando siete pronti tutti.</li>
       <li>Coi telefoni di tutti le risposte restano segrete finché non hanno risposto tutti, poi si scopre tutto, con i nomi.</li>
       <li><b>${I.snout} 3 passo</b> a testa durante la partita. Finiti i passo, chi si rifiuta <b>perde ed esce</b>.</li>
       <li>Vince chi ha più porcellini. A fine partita: Re dei Porcellini, Santarellino, Bocca cucita, Cupido e Porcellino codardo.</li>
@@ -1289,6 +1322,7 @@ document.addEventListener("click", async e => {
     case "scene-prev": goScene((UI.scene || 0) - 1); break;
     case "scene-tap": if(Date.now() - (UI.swiped || 0) > 300) goScene((UI.scene || 0) + 1); break;
     case "ready": b.disabled = true; send("ready"); break;
+    case "nx": b.disabled = true; send("nx"); break;
     case "go-anyway": send("go-anyway"); break;
     case "newgame": ls.del(SAVE_KEY); UI.scr = "gate"; render(); break;
     case "resume": {

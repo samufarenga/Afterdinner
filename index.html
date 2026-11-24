@@ -768,6 +768,45 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%
 @media (min-height:760px){.sc-vis{height:210px}.scene{min-height:350px;gap:10px}.sp{width:76px;height:136px}.sp.big{width:108px;height:178px}.scard{width:72px;height:96px}.sfig .av{width:68px;height:68px;font-size:1.8rem}.spts,.steam{transform:scale(1.15)}}
 @media (min-height:880px){.sc-vis{height:240px}.scene{min-height:390px}}
 @media (max-height:700px){.screen.intro{gap:8px}.scene{min-height:228px;padding:10px 12px 12px;gap:4px}.sc-vis{height:122px}.intro .rdyhint{margin:4px 0}.pchips.rdy li{padding:2px 10px 2px 2px}.pchips.rdy li .av{width:24px;height:24px}.spts,.steam{transform:scale(.9)}.sp{height:100px;width:58px}.sp.big{height:118px;width:76px}.scard{width:56px;height:74px}.sfig .av{width:48px;height:48px}.scene h2{font-size:1.3rem}}
+
+/* ---------- partita: schermate che riempiono il telefono, senza bande vuote ---------- */
+html.mpmode #view{flex:1;display:flex;flex-direction:column}
+html.mpmode .pass{justify-content:flex-start}
+html.mpmode .pass>.mebar+*{margin-top:auto}
+html.mpmode .pass>:last-child{margin-bottom:auto}
+html.mpmode .pass>.spacer{display:none}
+html.mpmode .pass>.btn:last-child,html.mpmode .pass>.rdybox:last-child{margin-top:auto;margin-bottom:0}
+html.mpmode .pass>.rdybox:last-child{padding-top:10px}
+/* disegno: niente logo a metà (o con i puntini sopra o niente) */
+html.drawmode header.top{display:none!important}
+html.mpmode .resultview,html.mpmode .finale{justify-content:center}
+html.mpmode .resultview>.spacer{display:none}
+html.mpmode .resultview>.mebar{margin-bottom:auto}
+html.mpmode .resultview>.rdynext,html.mpmode .resultview>:last-child{margin-top:auto}
+/* pausa tra i turni */
+.rdybox{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+.rdybox .pchips.rdy{margin:0}
+.rdybox .btn .gly{width:18px;height:18px;vertical-align:-3px}
+.rdywho{margin:0;text-align:center}
+.rdywho .linkbtn{padding:0 2px;color:var(--mango)}
+.rdynext{position:sticky;bottom:0;z-index:3;margin-inline:-16px;padding:12px 16px max(12px,env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(20,23,63,0),var(--night) 22%);display:flex;flex-direction:column;gap:8px}
+.rnx{margin:0;text-align:center;font:600 1rem var(--display);color:var(--paper)}
+.rnx b{color:var(--mango)}
+/* chi indovina aspetta: schermo acceso, scritta grande */
+html.gwaitmode body::before{background-image:radial-gradient(circle at 20% 12%,rgba(255,164,27,.55),transparent 45%),radial-gradient(circle at 85% 88%,rgba(20,212,148,.45),transparent 50%),linear-gradient(160deg,#ff3d72 0%,#8f63ff 55%,#3d8bff 100%);animation:gwbg 6s ease-in-out infinite alternate}
+@keyframes gwbg{to{filter:hue-rotate(-25deg) saturate(1.15)}}
+html.gwaitmode .iconbtn{background:rgba(20,23,63,.35);border-color:rgba(255,255,255,.25)}
+.gwait .mebar{background:rgba(20,23,63,.45);border-color:rgba(255,255,255,.2)}
+.gwtitle{font:700 clamp(2.3rem,11vw,3.3rem)/1.02 var(--display);color:#fff;text-shadow:0 4px 24px rgba(20,23,63,.35);margin:0}
+.gwtitle span{display:inline-flex;gap:5px;vertical-align:middle;margin-left:4px}
+.gwtitle span i{width:10px;height:10px;border-radius:50%;background:#fff;animation:gwdot 1.2s ease-in-out infinite}
+.gwtitle span i:nth-child(2){animation-delay:.15s}.gwtitle span i:nth-child(3){animation-delay:.3s}
+@keyframes gwdot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-6px)}}
+.gwait .megatime{color:#fff;text-shadow:0 10px 40px rgba(20,23,63,.45)}
+.gwait .sentbox{width:100%}
+.gwait .sentbox .eyebrow{color:rgba(255,255,255,.85)}
+.gwait .sentlist li{background:rgba(20,23,63,.42)!important}
+@media (max-height:700px){.gwtitle{font-size:2.1rem}.gwait .megatime{font-size:5.2rem}.rdyscreen .big-av{width:84px;height:84px;font-size:2.4rem}.rdyscreen h1{font-size:1.9rem}}
 </style>
 </head>
 <body>
@@ -858,8 +897,8 @@ const ICONS = (() => {
   };
 })();
 const CATALOG = [
-  {id:"scarabocchi", name:"Scarabocchi di gruppo", icon:"scribble", color:"#22c4ff", ready:true, players:"3-8", mins:"15-25", phones:"all", desc:"Indovina la parola dai disegni dei tuoi amici."},
-  {id:"coppia", name:"Scarabocchi di coppia", icon:"duo", color:"#ff3d72", ready:true, players:"2", mins:"12-15", phones:"all", desc:"Uno contro uno: disegni in diretta, l'altro indovina contro il tempo."},
+  {id:"scarabocchi", name:"Scarabocchi di gruppo", icon:"scribble", color:"#22c4ff", ready:true, players:"3-8", mins:"20-40", phones:"all", desc:"Indovina la parola dai disegni dei tuoi amici."},
+  {id:"coppia", name:"Scarabocchi di coppia", icon:"duo", color:"#ff3d72", ready:true, players:"2", mins:"10-25", phones:"all", desc:"Uno contro uno: disegni in diretta, l'altro indovina contro il tempo."},
   {id:"lampo", name:"Lampo", icon:"bolt", color:"#ffa41b", ready:false, players:"3-10", mins:"20-40", phones:"one", desc:"Mima, descrivi o disegna la parola prima che scada il tempo."},
   {id:"senzadire", name:"Senza dire", icon:"nosay", color:"#ff3d72", players:"4-12", mins:"20-30", phones:"one", desc:"Fai indovinare la parola senza usare le cinque vietate."},
   {id:"intruso", name:"L'Intruso", icon:"mask", color:"#8f63ff", players:"4-10", mins:"10-15", phones:"both", desc:"Tutti conoscono il luogo segreto, tranne uno. Scovalo."},
@@ -870,7 +909,7 @@ const CATALOG = [
   {id:"verofalso", name:"Vero o falso su di me", icon:"truth", color:"#9be21c", players:"4-10", mins:"15-20", phones:"all", desc:"Tre fatti su di te, uno è falso. Chi ci casca?"},
   {id:"chidinoi", name:"Chi di noi?", icon:"people", color:"#ff6fcf", players:"4-12", mins:"15", phones:"both", desc:"Voto segreto su chi del gruppo farebbe cosa."},
   {id:"stima", name:"Stima", icon:"target", color:"#22c4ff", players:"3-10", mins:"15-20", phones:"all", desc:"Domande con un numero per risposta. Vince chi si avvicina."},
-  {id:"porcellino", name:"Porcellino", icon:"pig", color:"#e8233f", adult:true, ready:true, players:"3-12", mins:"20-40", phones:"both", desc:""},
+  {id:"porcellino", name:"Porcellino", icon:"pig", color:"#e8233f", adult:true, ready:true, players:"3-12", mins:"20-45", phones:"both", desc:""},
   {id:"quiz", name:"Quiz del gruppo", icon:"trophy", color:"#ffa41b", players:"4-12", mins:"20-30", phones:"one", desc:"Quiz a squadre, con domande anche su di voi."}
 ];
 CATALOG.sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0)); // prima i giochi pronti, poi quelli in arrivo (stesso ordine all'interno)
@@ -1260,6 +1299,7 @@ function render(){
   }
   document.documentElement.classList.toggle("wheelmode", !!$("#wheel"));
   document.documentElement.classList.toggle("drawmode", !!$(".drawscreen, .duoguess"));
+  document.documentElement.classList.toggle("gwaitmode", !!$(".gwait"));
   document.documentElement.classList.toggle("mpmode", S.screen === "mp" && !!M && M.phase !== "lobby");
   if(typeof sndBtn === "function") sndBtn();
   if($("#wheel")) wheelInit();
@@ -1506,7 +1546,8 @@ const RULES = {
       <li>Chi organizza apre Scarabocchi di gruppo e mostra il QR, oppure manda il link. Gli altri lo inquadrano, scrivono il nome ed entrano. Non serve installare niente.</li>
       <li>L'host sceglie la difficoltà delle parole, il tempo per disegnare (1, 2 o 3 minuti), la modalità Sprint e il numero di giri.</li></ol>
     <h3>Il turno</h3><ol>
-      <li>A turno, uno di voi <b>indovina</b>. Preme Via e non vede la parola.</li>
+      <li>A turno, uno di voi <b>indovina</b> e non vede la parola.</li>
+      <li>Prima di ogni turno c'è una pausa: chi indovina preme <b>Sono pronto a indovinare</b>, gli altri <b>Sono pronto a disegnare</b>. Si parte quando siete pronti tutti.</li>
       <li>Tutti gli altri vedono la parola e la <b>disegnano</b> sul proprio telefono, in silenzio. Niente lettere, numeri, gesti o suoni.</li>
       <li>Chi ha finito preme <b>Invia</b>. Un disegno non inviato entro il tempo non vale.</li>
       <li>Mentre gli altri disegnano, chi indovina vede solo un grande timer.</li>
@@ -1535,8 +1576,8 @@ const RULES = {
       <li>Chi organizza apre Scarabocchi di coppia e mostra il QR, oppure manda il link. L'altro lo inquadra, scrive il nome ed entra.</li>
       <li>L'host sceglie la difficoltà delle parole e il numero di turni.</li></ol>
     <h3>Il turno</h3><ol>
-      <li>Prima di iniziare l'host sceglie quanti turni: <b>6, 10 o 16</b> (circa 8, 13 o 21 minuti). A ogni turno ci si scambia i ruoli, quindi ognuno disegna e indovina lo stesso numero di volte.</li>
-      <li>Chi <b>disegna</b> preme Via: solo allora vede la parola e ha <b>60 secondi</b>. Chi indovina vede «sta iniziando a disegnare». Niente lettere, numeri, gesti o suoni.</li>
+      <li>Prima di iniziare l'host sceglie quanti turni: <b>6, 10 o 16</b> (circa 10, 15 o 25 minuti, contando anche le pause tra un turno e l'altro). A ogni turno ci si scambia i ruoli, quindi ognuno disegna e indovina lo stesso numero di volte.</li>
+      <li>Prima di ogni turno c'è una pausa: ognuno preme <b>Sono pronto</b>. Quando siete pronti tutti e due, chi <b>disegna</b> vede la parola e ha <b>60 secondi</b>. Niente lettere, numeri, gesti o suoni.</li>
       <li>Chi <b>indovina</b> vede il disegno <b>in diretta</b>, tratto per tratto, mentre nasce.</li>
       <li>Si possono scrivere <b>tutte le risposte che si vuole</b> finché c'è tempo. Ogni risposta sbagliata compare anche sul telefono di chi disegna, così può correggere il tiro.</li>
       <li>Valgono i sinonimi stretti (cornetto o brioche) e un piccolo errore di battitura, ma singolare e plurale contano.</li>
@@ -1564,7 +1605,7 @@ $("#info-btn").addEventListener("click", openRules);
 function hostItems(){
   if(!M) return [];
   const g = mpPlayer(guesserId()), nx = M.phase === "result" ? mpPlayer(peekNext()) : null, it = [];
-  if(M.phase === "ready") it.push(["go", isDuo() ? "Fai partire il turno" : `Fai partire il turno di ${g ? g.name : ""}`]);
+  if(M.phase === "ready") it.push(["go", "Parti senza aspettare tutti", "Il turno inizia subito"]);
   if(M.phase === "turn" && !isDuo()) it.push(["close", "Chiudi i disegni ora", "Si passa subito a chi indovina"]);
   if(M.phase === "reveal" && !M.revealed) it.push(["reveal", `Scopri i disegni al posto di ${g ? g.name : ""}`]);
   if(M.phase === "reveal" && M.revealed && M.view < M.queue.length) it.push(["skipdraw", "Salta questo disegno", "Si passa al disegno dopo"]);
@@ -1576,7 +1617,7 @@ function hostItems(){
 }
 function hostDo(a, arg){
   if(NET.role !== "host" || !M) return;
-  if(a === "go"){ hostReceive(isDuo() ? NET.myId : guesserId(), isDuo() ? {t:"start", force:true} : {t:"start"}); return; }
+  if(a === "go"){ hostReceive(NET.myId, {t:"start"}); return; }
   if(a === "close" && M.phase === "turn"){ toReveal(); }
   else if(a === "reveal" && M.phase === "reveal"){ M.revealed = true; }
   else if(a === "skipdraw" && M.phase === "reveal" && M.revealed && M.view < M.queue.length){ M.view++; turnCheck(); }
@@ -1632,7 +1673,7 @@ new MutationObserver(list => list.forEach(r => r.addedNodes.forEach(m => {
 ["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
 document.addEventListener("touchmove", e => { if(e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 /* versione dell'app: se online ce n'è una più nuova, lo dico e si aggiorna con un tocco */
-const APP_VERSION = "23.11 · 14:15";
+const APP_VERSION = "24.11 · 11:50";
 /* aggiornamento vero: aggiorna il service worker, svuota le cache e riapre la pagina saltando la cache */
 function hardReload(){
   let gone = false;
@@ -1888,7 +1929,11 @@ function act(msg){ if(NET.role === "host") hostReceive(NET.myId, {...msg, pid:NE
 
 /* ---------- host: regole e stato ---------- */
 function mpBroadcast(msg){ if(!M) return; M.players.forEach(p => { if(p.id !== NET.myId) NET.sendTo(p.id, msg); }); }
-function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => n * r * (M.seconds + 30) / 60; return [3,2,1].find(r => est(r) <= 25) || 1; }
+/* durata vera di una partita: oltre al disegno contano le risposte, i commenti e le risate tra un turno e l'altro */
+const GROUP_TURN = secs => secs * .85 + 100;          // secondi a turno: disegno (spesso si consegna prima) + scoperta dei disegni + pausa
+const DUO_TURN = 95;                                   // coppia: in media si indovina a metà tempo, poi si commenta
+const estMin = (turns, per) => { const m = (turns * per + 60) / 60; return m < 10 ? Math.round(m) : Math.round(m / 5) * 5; };
+function recRounds(){ const n = Math.max(M.players.filter(p => p.on).length, 3), est = r => estMin(n * r, GROUP_TURN(M.seconds)); return [3,2,1].find(r => est(r) <= 30) || 1; }
 /* ---------- trailer: prima del primo turno, poche scene che scorrono da sole (2,8 s), poi «Sono pronto a giocare» ---------- */
 /* Come in Bomba: un tocco va avanti, col dito si scorre avanti e indietro; tornando indietro o arrivati in fondo l'autoplay si ferma */
 const SC_MS = 2800;
@@ -1995,6 +2040,7 @@ function duoRecord(){
 }
 function duoBest(){ try{ return (JSON.parse(localStorage.getItem("ad.duoRecords") || "{}") || {})[M.rounds * 2] || null; }catch(_){ return null; } }
 function publish(){
+  if(NET.role === "host" && rdyOpen() && rdyAll()) rdyGo(); // pronti tutti quelli collegati: si parte
   if(NET.role === "host" && M.phase === "intro" && M.players.filter(p => p.on).every(p => (M.ready || {})[p.id])) introEnd(); // si parte quando sono pronti tutti quelli collegati
   duoRecord();
   if(isDuo() && M.phase !== "final" && NET.role === "host"){ const b = duoBest(); M.best = b ? b.pts : null; }
@@ -2039,7 +2085,7 @@ function armAutoFinal(){
   if(!M.autoAt) M.autoAt = Date.now() + 12000;
   NET.autoT = setTimeout(() => { if(M && M.phase === "result" && !peekNext()){ M.autoAt = null; M.turn++; toNextTurn(); publish(); } }, Math.max(0, M.autoAt - Date.now()));
 }
-function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.last = {word:M.word, by:guesserId(), ...o}; }
+function mpEndTurn(o){ clearTimeout(NET.turnT); M.paused = null; M.phase = "result"; M.rdy = {}; M.last = {word:M.word, by:guesserId(), ...o}; }
 // chi perde la connessione durante il turno conta ancora: non si scopre prima della fine del tempo
 // chi si scollega durante il turno conta ancora per qualche secondo (può rientrare e consegnare), poi non lo si aspetta più
 const stillDrawing = () => M.players.filter(p => p.id !== guesserId() && !M.queue.includes(p.id) && (p.on || (p.offAt && M.startedAt && p.offAt >= M.startedAt && Date.now() - p.offAt < 5000)));
@@ -2064,8 +2110,22 @@ function toNextTurn(){
   if(M.turn >= M.order.length){ M.turn = 0; M.round++; }
   M.phase = (M.order.length && M.round <= M.rounds && nextGuesser()) ? "ready" : "final";
   if(M.phase === "final") M.lineSeed = Math.floor(Math.random()*1000);
-  MD = {}; M.queue = []; M.tries = [];
+  MD = {}; M.queue = []; M.tries = []; M.rdy = {};
 }
+/* tra un turno e l'altro non si riparte da soli: si riparte quando tutti hanno premuto «Sono pronto» */
+const rdyOpen = () => M && (M.phase === "ready" || (M.phase === "result" && !!peekNext()));
+function startTurn(){
+  const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
+  M.queue = []; M.view = 0; M.tries = []; M.paused = null; M.revealed = false; M.rdy = {};
+  M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000; M.startedAt = Date.now();
+  armTurnTimer(); LIVE = {key:liveKey(), s:[], a:LIVE.a};
+  mpBroadcast({t:"drawings", imgs:MD});
+}
+function rdyGo(){
+  if(M.phase === "result"){ clearTimeout(NET.autoT); M.autoAt = null; M.turn++; toNextTurn(); }
+  if(M.phase === "ready") startTurn();
+}
+function rdyAll(){ const on = M.players.filter(p => p.on); return on.length > 0 && on.every(p => (M.rdy || {})[p.id]); }
 /* l'host toglie un giocatore che non è tornato: la partita continua senza di lui */
 function mpRemove(id){
   if(!M || id === M.host || !mpPlayer(id)) return;
@@ -2197,15 +2257,15 @@ function hostReceive(pid, msg){
       } break;
     case "ready": if(M.phase === "intro" && p){ (M.ready = M.ready || {})[pid] = true; publish(); } break;
     case "goanyway": if(M.phase === "intro" && pid === M.host){ introEnd(); publish(); } break;
-    case "start":
-      if(M.phase === "ready" && (isDuo() ? pid === drawerId() || (pid === M.host && (msg.skip || msg.force)) : pid === guesserId() || (pid === M.host && msg.skip))){
+    case "start": // l'host salta il turno o lo fa partire senza aspettare tutti
+      if(M.phase === "ready" && pid === M.host){
         if(msg.skip){ M.turn++; toNextTurn(); publish(); break; }
-        const c = drawWord(); M.word = c.word; M.cat = c.cat; MD = {};
-        M.queue = []; M.view = 0; M.tries = []; M.paused = null; M.revealed = false;
-        M.phase = "turn"; M.endsAt = Date.now() + M.seconds*1000; M.startedAt = Date.now();
-        armTurnTimer(); LIVE = {key:liveKey(), s:[], a:LIVE.a};
-        mpBroadcast({t:"drawings", imgs:MD}); publish();
+        startTurn(); publish();
       } break;
+    case "rdy": // pausa tra un turno e l'altro: ognuno dice che è pronto
+      if(p && rdyOpen()){ (M.rdy = M.rdy || {})[pid] = true; publish(); } break;
+    case "rdygo":
+      if(pid === M.host && rdyOpen()){ rdyGo(); publish(); } break;
     case "send": // un disegnatore ha finito e invia il disegno
       if((M.phase === "turn" || M.phase === "reveal") && pid !== guesserId() && !M.queue.includes(pid) && typeof msg.img === "string" && msg.img.length < 400000){
         MD[pid] = msg.img; M.queue.push(pid);
@@ -2578,9 +2638,10 @@ function botTick(){
     const id = p.id, me = (msg) => hostReceive(id, {...msg, pid:id});
     const base = `${M.round}.${M.turn}.${M.startedAt || 0}.${M.phase}`;
     const duo = isDuo(), g = guesserId();
-    if(M.phase === "ready"){
-      if(duo ? drawerId() === id : g === id){ const b = botPlan(id, base, rnd(1500, 3000)); if(!b.done && now >= b.at){ b.done = true; me({t:"start"}); } }
+    if(rdyOpen() && !(M.rdy || {})[id]){
+      const b = botPlan(id, base + "r", rnd(1500, 5000)); if(!b.done && now >= b.at){ b.done = true; me({t:"rdy"}); }
     }
+    if(M.phase === "ready"){}
     else if(M.phase === "turn" && !duo){
       if(g === id || M.queue.includes(id)) return;
       const total = M.seconds * 1000, left = M.endsAt - now;
@@ -2825,6 +2886,18 @@ function guessInfo(){
 }
 /* fila dei disegni: già visti (sbagliato o saltato), quello che sta guardando, quelli dopo */
 /* chi ha inviato, in ordine di arrivo, e chi sta ancora disegnando */
+/* pausa tra i turni: «Sono pronto a indovinare» / «Sono pronto a disegnare», e chi manca ancora */
+function rdyHTML(chips){
+  const R = M.rdy || {}, gid = M.phase === "result" ? peekNext() : guesserId(), me = R[NET.myId];
+  const missing = M.players.filter(p => p.on && !R[p.id]), nm = p => p.id === NET.myId ? "te" : esc(p.name);
+  const who = missing.length ? `Aspettiamo ${missing.length > 3 ? `ancora ${missing.length} amici` : missing.map(nm).join(missing.length === 2 ? " e " : ", ").replace(/, ([^,]*)$/, " e $1")}` : "Tutti pronti!";
+  return `<div class="rdybox">
+    ${chips ? `<ul class="pchips rdy">${M.players.map(p => `<li class="${R[p.id] ? "ok" : ""} ${p.on ? "" : "off"}">${av(p)}<span>${p.id === NET.myId ? "Tu" : esc(p.name)}</span>${R[p.id] ? GLY.ok : ""}</li>`).join("")}</ul>` : ""}
+    ${me ? `<button class="btn ghost" disabled style="width:100%">${GLY.ok} Pronto, aspettiamo gli altri</button>`
+      : `<button class="btn ${NET.myId === gid ? "mint" : "pink"}" id="mp-rdy" style="width:100%">${NET.myId === gid ? "Sono pronto a indovinare" : "Sono pronto a disegnare"}</button>`}
+    <p class="hint rdywho">${who}${NET.role === "host" && missing.length && Object.keys(R).length ? ` · <button class="linkbtn" id="mp-rdygo">Parti lo stesso</button>` : ""}</p>
+  </div>`;
+}
 function sentListHTML(){
   const sent = M.queue.map(id => mpPlayer(id)).filter(Boolean), todo = stillDrawing();
   const name = p => p.id === NET.myId ? "Tu" : esc(p.name);
@@ -2845,7 +2918,7 @@ function timerHTML(){ return `<div class="mptime" id="mptime">${M.paused != null
 function duoSetupHTML(online){
   return `<div class="opts">
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
-            <div class="opt"><label>Turni (ognuno disegna la metà delle volte)</label><div class="seg">${[3,5,8].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r*2} turni<small>≈ ${Math.round(r*2*80/60)} min</small>${r===5?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div></div>
+            <div class="opt"><label>Turni (ognuno disegna la metà delle volte)</label><div class="seg">${[3,5,8].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r*2} turni<small>≈ ${estMin(r*2, DUO_TURN)} min</small>${r===5?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div></div>
           </div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
             <li>${M.rounds*2} turni, i ruoli si scambiano: uno disegna, l'altro indovina. 60 secondi a turno.</li>
@@ -2889,7 +2962,7 @@ function mpView(){
             <div class="opt"><label>Difficoltà delle parole</label><div class="seg">${LEVELS.map(([k,l]) => `<button data-mpset="level" data-v="${k}" aria-pressed="${M.level===k}">${l}</button>`).join("")}</div></div>
             <div class="opt"><label>Tempo per disegnare</label>${seg("seconds",[60,120,180],v=>`${v/60} min`)}<p class="hint" style="margin-top:6px">Un disegno non inviato entro il tempo non vale.</p></div>
             <div class="opt"><label>Quando arriva il primo disegno</label><div class="seg"><button data-mpset="sprint" data-v="0" aria-pressed="${!M.sprint}">Nessuna fretta</button><button data-mpset="sprint" data-v="1" aria-pressed="${!!M.sprint}">Sprint: 30 s</button></div><p class="hint" style="margin-top:6px">${M.sprint ? "Quando arriva il primo disegno, chi sta ancora disegnando ha 30 secondi per finire." : "Il tempo resta uguale per tutti fino alla fine."}</p></div>
-            <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => Math.round(n * r * (M.seconds + 30) / 60), rec = [3,2,1].find(r => est(r) <= 25) || 1;
+            <div class="opt"><label>Giri (quante volte indovina ognuno)</label>${(() => { const n = Math.max(online, 3), est = r => estMin(n * r, GROUP_TURN(M.seconds)), rec = recRounds();
               return `<div class="seg">${[1,2,3].map(r => `<button data-mpset="rounds" data-v="${r}" aria-pressed="${M.rounds===r}" class="est">${r} ${r === 1 ? "giro" : "giri"}<small>${Math.max(online, 2) * r} turni</small><small>≈ ${est(r)} min</small>${r===rec?`<small class="rec">consigliato</small>`:""}</button>`).join("")}</div>`; })()}</div>
           </div>
           <details class="rules"><summary><b>Come si gioca</b></summary><ol>
@@ -2910,25 +2983,25 @@ function mpView(){
     case "intro": return introView();
     case "ready":
       if(isDuo()){ const d = mpPlayer(drawerId());
-        if(amGuesser()) return `<section class="screen pass bigwait">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
-        ${av(d, "big-av")}<div><h1>${esc(d ? d.name : "")} sta iniziando a disegnare</h1></div>
-        <div class="think"><i></i><i></i><i></i></div>
+        if(amGuesser()) return `<section class="screen pass rdyscreen">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${av(d, "big-av")}<div><h1>${(M.rdy || {})[NET.myId] ? `${esc(d ? d.name : "")} sta per disegnare` : "Tocca a te indovinare"}</h1><p class="lead">Disegna ${esc(d ? d.name : "")}, tu vedi il disegno in diretta.</p></div>
         <div class="duoscale"><span><b>3pt</b> entro 20 s</span><span><b>2pt</b> entro 40 s</span><span><b>1pt</b> entro 60 s</span></div>
-        ${NET.role === "host" && d && !d.on ? `<p class="hint">${esc(d.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il turno</button>` : ""}</section>`;
-        return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${NET.role === "host" && d && !d.on ? `<p class="hint">${esc(d.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il turno</button>` : ""}
+        ${rdyHTML(false)}</section>`;
+        return `<section class="screen pass rdyscreen">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(me, "big-av")}<div><h1>Tocca a te disegnare</h1>
-        <p class="lead">${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi. La parola compare quando premi Via.</p></div>
+        <p class="lead">${esc(g ? g.name : "")} vede il tuo disegno mentre lo fai. Hai 60 secondi. La parola compare quando siete pronti tutti e due.</p></div>
         <div class="duoscale"><span><b>3pt</b> entro 20 s</span><span><b>2pt</b> entro 40 s</span><span><b>1pt</b> entro 60 s</span></div>
-        <div class="spacer"></div><button class="btn stickybtn" id="mp-go" style="width:100%">Via!</button></section>`; }
-      if(amGuesser()) return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
-        ${av(me, "big-av")}<div><h1>Tocca a te!</h1>
+        ${rdyHTML(false)}</section>`; }
+      if(amGuesser()) return `<section class="screen pass rdyscreen">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${av(me, "big-av")}<div><h1>Tocca a te indovinare!</h1>
         <p class="lead">Gli altri disegnano, tu aspetti. Poi scopri i disegni e indovini.</p></div>
-        <div class="spacer"></div><button class="btn" id="mp-go" style="width:100%">Via!</button></section>`;
-      return `<section class="screen pass">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
+        ${rdyHTML(true)}</section>`;
+      return `<section class="screen pass rdyscreen">${meBar()}<span class="eyebrow roundinfo">${turnLabel()}</span>
         ${av(g, "big-av")}
-        <div><p class="lead" style="margin:0 0 6px">Indovina</p><h1>${esc(g.name)}</h1></div>
-        <p class="hint">Preparati a disegnare.</p>
-        ${NET.role === "host" && !g.on ? `<p class="hint">${esc(g.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il suo turno</button>` : ""}</section>`;
+        <div><p class="lead" style="margin:0 0 6px">Indovina</p><h1>${esc(g.name)}</h1><p class="lead">Tu e gli altri disegnate la stessa parola.</p></div>
+        ${NET.role === "host" && !g.on ? `<p class="hint">${esc(g.name)} è offline.</p><button class="btn ghost" id="mp-skip">Salta il suo turno</button>` : ""}
+        ${rdyHTML(true)}</section>`;
     case "turn": {
       if(isDuo() && amGuesser()){ const d = mpPlayer(drawerId());
         return `<section class="screen duoguess">
@@ -2938,8 +3011,8 @@ function mpView(){
           <ul class="tries" id="ctries">${duoTriesHTML()}</ul>
         </section>`; }
       const sent = M.queue.includes(NET.myId), drawers = M.players.filter(p => p.on && p.id !== guesserId()).length;
-      if(amGuesser()) return `<section class="screen pass bigwait">${meBar()}
-          <span class="eyebrow">Stanno disegnando per te</span>
+      if(amGuesser()) return `<section class="screen pass bigwait gwait">${meBar()}
+          <h1 class="gwtitle">Gli altri stanno disegnando per te<span aria-hidden="true"><i></i><i></i><i></i></span></h1>
           <div class="megatime" id="mptime">${Math.max(0, Math.ceil((mpEndsLocal - Date.now())/1000))}</div>
           ${sentListHTML()}</section>`;
       if(sent) return `<section class="screen pass bigwait watchwait">${meBar()}
@@ -3005,7 +3078,7 @@ function mpView(){
         ${lbHTML()}`}
         <div class="spacer"></div>
         ${lastTurn ? `<p class="hint" style="text-align:center;margin:0">Classifica finale tra <b id="autofin">${Math.max(0, Math.ceil(((M.autoAt || 0) - Date.now())/1000))}</b> s</p>${canNext ? `<button class="btn ghost stickybtn" id="mp-next">Vai subito</button>` : ""}`
-          : canNext ? `<button class="btn stickybtn" id="mp-next">${nx.id === NET.myId ? "Tocca a te indovinare · Avanti" : `Avanti (${esc(nx.name)} è offline)`}</button>` : `<p class="hint" style="text-align:center;margin:0">${isDuo() ? `Ora tocca a te disegnare. <b>${esc(nx.name)}</b> fa partire il prossimo turno` : `Guardate i disegni. Poi <b>${esc(nx.name)}</b> fa partire il prossimo turno`}</p>`}</section>`;
+          : `<div class="rdynext"><p class="rnx">Prossimo turno: ${nx.id === NET.myId ? "<b>indovini tu</b>" : `indovina <b>${esc(nx.name)}</b>`}</p>${rdyHTML(false)}</div>`}</section>`;
     }
     case "final": {
       if(isDuo()){ const turns = M.rounds * 2, rec = M.record, avg = M.hits ? Math.round(M.hitSecs / M.hits) : null;
@@ -3056,6 +3129,9 @@ function guestWelcome(){
 
 function mpRender(force){
   if(S.screen !== "mp") return;
+  if(!force && rdyOpen() && !(isDuo() && M.phase === "ready") && mpKey && mpKey.startsWith(M.phase + "|" + M.turn + "|" + M.round + "|") && $(".rdybox")){ // chi è pronto cambia: aggiorno solo il riquadro, niente animazioni ripetute
+    const box = $(".rdybox"), t = document.createElement("div"); t.innerHTML = rdyHTML(!!box.querySelector(".pchips")); box.replaceWith(t.firstElementChild); return;
+  }
   if(!M || M.phase !== "intro"){ if(SC.on){ clearTimeout(SC.t); SC = {k:0, auto:true, on:false, t:null}; } }
   else if(!force && $("#scene")){ const rb = $("#readybox"), h = readyBox(); if(rb && rb.innerHTML !== h) rb.innerHTML = h; return; } // il trailer non riparte a ogni «pronto»
   const drawing = M && M.phase === "turn" && !amGuesser() && !(M.queue||[]).includes(NET.myId);
@@ -3104,6 +3180,8 @@ view.addEventListener("click", e => {
   else if(id === "bot-add"){ botAdd(); }
   else if(id === "bot-del"){ botRemoveAll(); }
   else if(id === "mp-go"){ act({t:"start"}); }
+  else if(id === "mp-rdy"){ b.disabled = true; act({t:"rdy"}); }
+  else if(id === "mp-rdygo"){ act({t:"rdygo"}); }
   else if(id === "mp-ready"){ b.disabled = true; act({t:"ready"}); }
   else if(id === "mp-goanyway"){ act({t:"goanyway"}); }
   else if(d.sc != null){ scGo(+d.sc, true); }
