@@ -187,6 +187,16 @@ body[data-mode="hot"] .mark span{color:#fff3c4}
 @media (max-width:350px){.mine{padding:5px 9px;gap:4px}.mark{font-size:.9rem}.mine small{font-size:.66rem}}
 .pz{justify-self:end;width:42px;height:42px;color:#fff;background:radial-gradient(circle at 50% 35%,#ff4b4b,#d71920 70%);box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 0 5px rgba(215,25,32,.35),0 6px 14px -4px rgba(120,0,0,.8),inset 0 -3px 0 rgba(0,0,0,.22)}
 .pz:active{transform:scale(.92)}
+.bandr{justify-self:end;display:flex;align-items:center}
+.bmore{position:absolute;right:4px;top:calc(100% + 10px);width:42px;height:34px;border-radius:99px;background:rgba(20,8,2,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.hlist{display:flex;flex-direction:column;gap:8px;margin:4px 0 12px}
+.hitem{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:0;border-radius:16px;padding:12px 14px;background:var(--glass);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--paper);font:600 1.02rem var(--display)}
+.hitem span{font:500 .82rem var(--body);opacity:.75}
+.hitem b{display:flex;align-items:center;gap:8px}
+.hitem.danger{color:#ffb3a8;box-shadow:inset 0 0 0 1.5px rgba(255,80,60,.5)}
+.hitem.armed{background:rgba(255,122,46,.2);box-shadow:inset 0 0 0 2px var(--or)}
+.hitem.danger.armed{background:rgba(215,25,32,.25);box-shadow:inset 0 0 0 2px #ff4b4b}
+.hitem em{font:600 .8rem var(--display);font-style:normal;color:var(--amber);margin-top:2px}
 .pz .ic{width:23px;height:23px;margin-top:-2px}
 .pz.ghosted{opacity:0}
 .stagec{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-bottom:6vh}
@@ -638,6 +648,39 @@ function hostAct(pid, a, v){
       clearTimeout(fuseT); clearTimeout(boomT); G.phase = "end"; return commit();
   }
 }
+/* comandi dell'host (tre puntini), come negli altri giochi */
+function hostItems(){
+  if(!G) return [];
+  const it = [];
+  if(G.phase === "intro") it.push(["go-anyway", "Parti senza aspettare tutti", "Il trailer si chiude e parte la prima bomba"]);
+  if(G.phase === "recap") it.push(["force", "Accendi la bomba senza aspettare tutti", "Parte subito il 3-2-1"]);
+  if(G.phase === "play" || G.phase === "pause") it.push(["void", "Annulla questa bomba", "Nessuno prende la bomba, si torna alla classifica"]);
+  if(G.phase === "play") it.push(["pause", "Metti in pausa", "Il timer si ferma"]);
+  if(G.players.length > 1 && !["lobby","end"].includes(G.phase)) it.push(["kick-list", "Togli un giocatore", "Scegli chi"]);
+  if(G.phase !== "end") it.push(["end", "Termina partita", "Si va alla classifica finale", "danger"]);
+  return it;
+}
+function hostDo(a, arg){
+  if(!amHost() || !G) return;
+  if(a === "go-anyway") return hostAct(NET.me, "go-anyway");
+  if(a === "force") return hostAct(NET.me, "next", "force");
+  if(a === "pause") return hostAct(NET.me, "pause");
+  if(a === "end") return hostAct(NET.me, "end");
+  if(a === "void" && (G.phase === "play" || G.phase === "pause")){
+    clearTimeout(fuseT); G.phase = "recap"; G.resumed = true; G.holder = G.holder || G.players[0].id; initRdy(); return commit();
+  }
+  if(a === "kick" && arg && P(arg) && arg !== NET.me){
+    if(G.holder === arg) G.holder = nextOf(arg);
+    if(G.boom && G.boom.id === arg) G.boom.id = G.holder || nextOf(arg);
+    if(G.countFrom === arg) G.countFrom = nextOf(arg);
+    if(G.last && G.last.id === arg) G.last = null;
+    G.players = G.players.filter(p => p.id !== arg); delete (G.ready || {})[arg];
+    const c = NET.conns && NET.conns.get(arg); if(NET.sendTo) NET.sendTo(arg, {t:"closed"}); try{ c && c.close(); }catch(e){} NET.conns && NET.conns.delete(arg);
+    recolor();
+    if(G.players.length < 2){ clearTimeout(fuseT); G.phase = "end"; }
+    commit(); checkReady(); return;
+  }
+}
 function uniqueName(name, selfId){
   let n = cleanName(name) || "Giocatore", k = 2;
   const taken = x => G.players.some(p => p.id !== selfId && p.name.toLowerCase() === x.toLowerCase());
@@ -996,7 +1039,7 @@ function band(pause){
   const me = P(NET.me), b = me ? me.bombs : 0;
   return `<header class="band"><div class="mark">After<span>D</span>inner</div>
     <div class="mine"><span class="st" title="Le tue bombe">${I.bomb}<b>${b}</b><small>${b === 1 ? "bomba" : "bombe"}</small></span><i></i><span class="st" title="La tua posizione"><b>${myRank()}°</b><small>posto</small></span></div>
-    ${pause ? `<button class="ib pz" data-a="pause" aria-label="Pausa">${I.pause}</button>` : `<span class="ib pz ghosted">${I.pause}</span>`}</header>`;
+    <div class="bandr">${amHost() ? `<button class="ib bmore" data-a="menu" aria-label="Comandi dell'host">${I.more}</button>` : ""}${pause ? `<button class="ib pz" data-a="pause" aria-label="Pausa">${I.pause}</button>` : `<span class="ib pz ghosted">${I.pause}</span>`}</div></header>`;
 }
 const gap = n => `<span class="gap">${"<i></i>".repeat(n)}</span>`;
 function sylHTML(){
@@ -1235,12 +1278,24 @@ function showSheet(kind){
       <li>Nessuno viene eliminato. Dopo l'ultima bomba <b>chi ha più bombe perde</b>, chi ne ha meno vince.</li>
       <li>${G && G.order === "rand" ? "Questa partita: la bomba passa a qualcuno a caso." : "Questa partita: la bomba passa al vicino, girando a sinistra intorno al tavolo."}</li>
     </ul><button class="btn" data-close>Ho capito</button>`;
-  else if(kind === "menu") h = `<h2>Menu dell'host</h2>
-    <button class="btn danger" data-a="end" data-close>Termina la partita</button><button class="btn" data-close>Chiudi</button>`;
+  else if(kind === "menu") h = `<h2>Comandi dell'host</h2><p class="hint" style="margin:0 0 6px;text-align:left">Tocca una voce, poi tocca di nuovo per confermare.</p>
+    <div class="hlist">${hostItems().map(([a, t, sub, cls]) => `<button class="hitem ${cls || ""}" data-ha="${a}"><b>${esc(t)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</button>`).join("")}</div>
+    <button class="btn ghost" data-close>Chiudi</button>`;
+  else if(kind === "kick") h = `<h2>Chi togliamo?</h2><p class="hint" style="margin:0 0 6px;text-align:left">Tocca un nome, poi tocca di nuovo per confermare.</p>
+    <div class="hlist">${G.players.filter(p => p.id !== NET.me).map(p => `<button class="hitem" data-ha="kick" data-kid="${p.id}"><b>${av(p)} ${esc(p.name)}</b><span>${online(p) ? "online" : "offline"} · ${p.bombs || 0} ${p.bombs === 1 ? "bomba" : "bombe"}</span></button>`).join("")}</div>
+    <button class="btn ghost" data-close>Chiudi</button>`;
   else if(kind === "exit") h = `<h2>Uscire dalla partita?</h2><p>La stanza si chiude per tutti.</p>
     <div class="row"><button class="btn ghost" data-close>Resto</button><button class="btn" data-a="exit" data-close>Esci</button></div>`;
   bg.innerHTML = `<div class="sheet">${h}</div>`;
-  bg.addEventListener("click", e => { if(e.target === bg || e.target.closest("[data-close]")){ UI.sheet = null; bg.remove(); } });
+  bg.addEventListener("click", e => {
+    const hi = e.target.closest(".hitem");
+    if(hi){
+      if(hi.dataset.ha === "kick-list"){ bg.remove(); showSheet("kick"); return; }
+      if(!hi.classList.contains("armed")){ bg.querySelectorAll(".hitem.armed").forEach(x => { x.classList.remove("armed"); x.querySelector("em")?.remove(); });
+        hi.classList.add("armed"); hi.insertAdjacentHTML("beforeend", "<em>Tocca di nuovo per confermare</em>"); return; }
+      bg.remove(); hostDo(hi.dataset.ha, hi.dataset.kid); return;
+    }
+    if(e.target === bg || e.target.closest("[data-close]")){ UI.sheet = null; bg.remove(); } });
   document.body.appendChild(bg);
   UI.sheet = null;
 }
